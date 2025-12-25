@@ -1,0 +1,6 @@
+# Python
+__pycache__/
+*.py[cod]
+# 데이터베이스 파일
+*.sqlite3
+db.sqlite3
