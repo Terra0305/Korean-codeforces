@@ -22,7 +22,7 @@
   z-index: 50;
 }
 
-.logo {
+.navbar-logo {
   font-size: 1.5rem;
   font-weight: 800;
   color: var(--text-main);
@@ -30,7 +30,7 @@
   align-items: center;
   gap: 10px;
 }
-.logo span { color: var(--primary-color); }
+.navbar-logo span { color: var(--primary-color); }
 
 .user-profile {
   display: flex;
@@ -76,4 +76,26 @@
   color: #000000; /* Black styling */
   font-weight: 700;
   font-size: 1.05rem;
+}
+
+.button {
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.user-name-btn {
+  background: none;
+  border: none;
+  color: var(--text-main);
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.clock-text {
+    font-family: monospace;
 }
