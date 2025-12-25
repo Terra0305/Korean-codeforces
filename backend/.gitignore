@@ -4,3 +4,5 @@ __pycache__/
 # 데이터베이스 파일
 *.sqlite3
 db.sqlite3
+
+venv/
