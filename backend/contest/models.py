@@ -18,8 +18,12 @@ class Contest(models.Model):
 
 #문제
 class Problem(models.Model):
-    contest = models.ForeignKey(Contest, on_delete=models.CASCADE, verbose_name="관련 대회")
-    
+    contest = models.ForeignKey(
+        Contest, 
+        on_delete=models.CASCADE, 
+        related_name='problems',
+        verbose_name="관련 대회"
+    )
     # 문제 번호 ex) A번 문제 B번 문제 
     index = models.CharField(max_length=10, verbose_name="문제 번호") 
     
@@ -40,12 +44,21 @@ class Problem(models.Model):
 
 #참가자
 class Participant(models.Model):
+
     # 추후 User 모델과 연결
     # 직접 User를 import 하지 않고 설정을 통해 가져오므로, 나중에 유저 기능이 합쳐져도 에러x
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="참가자")
-    
-    # 어떤 대회에 참가했는지 연결
-    contest = models.ForeignKey(Contest, on_delete=models.CASCADE, verbose_name="참가 대회")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name='participated_contests', #유저 입장에서 참가한 대회 조회 가능
+        verbose_name="참가자"
+    )
+    contest = models.ForeignKey(
+        Contest, 
+        on_delete=models.CASCADE, 
+        related_name='participants', # 대회 입장에서 참가자들 조회 가능
+        verbose_name="참가 대회"
+    )
     
     # 문자열 형태로 풀이 현황 저장
     # 예시: "+:+2:-1" (A번 정답, B번 2번 시도 후 정답, C번 1번 시도 후 실패)
