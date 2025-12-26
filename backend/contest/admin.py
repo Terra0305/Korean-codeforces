@@ -1,3 +1,4 @@
+import time
 from django.contrib import admin
 from .models import Contest, Problem, Participant
 from .utils import fetch_contest_data
@@ -23,6 +24,9 @@ class ContestAdmin(admin.ModelAdmin):
         fail_count = 0
         
         for contest in queryset:
+            # Codeforces API 제한(초당 5회)을 준수하기 위해 0.5초 대기
+            time.sleep(0.5)
+            
             # utils.py에 정의된 fetch 함수 호출
             if fetch_contest_data(contest.id):
                 success_count += 1

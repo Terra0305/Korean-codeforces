@@ -1,3 +1,4 @@
+import time
 from django.core.management.base import BaseCommand
 from contest.utils import fetch_contest_data
 from contest.models import Contest
@@ -22,6 +23,8 @@ class Command(BaseCommand):
 
         # 각 대회 ID에 대해 데이터 가져오기 수행
         for cid in contest_ids:
+            # API 제한 준수를 위한 대기
+            time.sleep(0.5)
             self.stdout.write(f"Fetching contest {cid}...")
             if fetch_contest_data(cid):
                 self.stdout.write(self.style.SUCCESS(f"Successfully fetched contest {cid}"))
