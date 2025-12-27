@@ -30,6 +30,7 @@ class Problem(models.Model):
     # ICPC 룰이라 점수가 없으면 기본값을 넣거나 null
     points = models.FloatField(default=0, verbose_name="배점")
     rating = models.IntegerField(default=0, verbose_name="난이도")
+    url = models.URLField(max_length=200, blank=True, verbose_name="문제 링크")
     description_kr = models.TextField(blank=True, verbose_name="문제 설명")
 
     class Meta:
