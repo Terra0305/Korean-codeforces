@@ -42,9 +42,6 @@ class ProfileAdmin(admin.ModelAdmin):
         ('학교 정보', {
             'fields': ('school', 'department', 'student_id')
         }),
-        ('레이팅', {
-            'fields': ('elo_rating',)
-        }),
         ('메타 정보', {
             'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',)

@@ -117,10 +117,9 @@ user/
 ### 관리자 전용 (IsAdminUser 권한 필요)
 - `GET /api/users/admin/users/` - 전체 회원 목록 조회 (페이지네이션, 검색)
 - `GET /api/users/admin/users/<user_id>/` - 특정 회원 상세 조회
-- `PATCH /api/users/admin/users/<user_id>/elo/` - ELO 레이팅 수정
 - `GET /api/users/admin/stats/` - 회원 통계
 
-**총 15개 API**
+**총 14개 API**
 
 ---
 
@@ -296,32 +295,7 @@ GET /api/users/admin/users/1/
 }
 ```
 
-#### 4-3. ELO 레이팅 수정
-
-**요청:**
-```http
-PATCH /api/users/admin/users/1/elo/
-Content-Type: application/json
-
-{
-  "elo_rating": 2000
-}
-```
-
-**응답:**
-```json
-{
-  "message": "ELO 레이팅이 업데이트되었습니다.",
-  "user_id": 1,
-  "username": "testuser",
-  "old_elo": 1500,
-  "new_elo": 2000
-}
-```
-
-
-
-#### 4-4. 회원 통계
+#### 4-3. 회원 통계
 
 **요청:**
 ```http
@@ -437,22 +411,6 @@ python manage.py createsuperuser
 ### 관리자 권한 확인
 - Django Admin: `http://localhost:8000/admin/`
 - `is_staff=True` 또는 `is_superuser=True` 필요
-
-### ELO 레이팅 수정 방법
-
-**방법 1: 관리자 API 사용 (권장)**
-```bash
-curl -X PATCH http://localhost:8000/api/users/admin/users/1/elo/ \
-  -H "Content-Type: application/json" \
-  -b cookies.txt \
-  -d '{"elo_rating": 2000}'
-```
-
-**방법 2: Django Admin 페이지**
-1. `http://localhost:8000/admin/` 접속
-2. "사용자 프로필" 메뉴 클릭
-3. 수정할 사용자 선택
-4. ELO rating 필드 수정 후 저장
 
 ---
 

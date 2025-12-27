@@ -8,7 +8,6 @@ from .views import (
     CurrentUserView,
     AdminUserListView,
     AdminUserDetailView,
-    AdminUpdateEloView,
     AdminStatsView
 )
 
@@ -50,6 +49,5 @@ urlpatterns = [
     # 관리자 전용
     path('admin/users/', AdminUserListView.as_view(), name='admin-user-list'),
     path('admin/users/<int:user_id>/', AdminUserDetailView.as_view(), name='admin-user-detail'),
-    path('admin/users/<int:user_id>/elo/', AdminUpdateEloView.as_view(), name='admin-update-elo'),
     path('admin/stats/', AdminStatsView.as_view(), name='admin-stats'),
 ]

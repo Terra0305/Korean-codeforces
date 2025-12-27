@@ -311,53 +311,6 @@ class AdminUserDetailView(APIView):
         })
 
 
-class AdminUpdateEloView(APIView):
-    """
-    관리자 전용 - ELO 레이팅 수정
-    PATCH /api/users/admin/users/<user_id>/elo/
-    """
-    permission_classes = [IsAdminUser]
-
-    def patch(self, request, user_id):
-        try:
-            user = User.objects.get(id=user_id)
-            profile = user.profile
-        except User.DoesNotExist:
-            return Response({
-                'error': '사용자를 찾을 수 없습니다.'
-            }, status=status.HTTP_404_NOT_FOUND)
-        except Profile.DoesNotExist:
-            return Response({
-                'error': '프로필을 찾을 수 없습니다.'
-            }, status=status.HTTP_404_NOT_FOUND)
-
-        new_elo = request.data.get('elo_rating')
-
-        if new_elo is None:
-            return Response({
-                'error': 'elo_rating 필드가 필요합니다.'
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            new_elo = int(new_elo)
-        except ValueError:
-            return Response({
-                'error': 'elo_rating은 정수여야 합니다.'
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        old_elo = profile.elo_rating
-        profile.elo_rating = new_elo
-        profile.save()
-
-        return Response({
-            'message': 'ELO 레이팅이 업데이트되었습니다.',
-            'user_id': user.id,
-            'username': user.username,
-            'old_elo': old_elo,
-            'new_elo': new_elo
-        })
-
-
 class AdminStatsView(APIView):
     """
     관리자 전용 - 회원 통계
