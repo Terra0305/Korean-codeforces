@@ -9,7 +9,7 @@ interface User {
 interface AuthContextType {
     user: User | null;
     isLoggedin: boolean;
-    login: (name: string, studentId: string) => void;
+    login: (name: string, studentId: string) => boolean;
     logout: () => void;
 }
 
@@ -20,10 +20,12 @@ export const AuthProvider = ({ children } : {children : ReactNode}) => {
 
     const login = (name: string, studentId: string) => {
         setUser({name, studentId});
+        return true;
     };
 
     const logout = () => {
         setUser(null);
+        return true;
     };
 
     return (

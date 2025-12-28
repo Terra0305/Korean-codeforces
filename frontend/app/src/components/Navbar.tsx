@@ -1,17 +1,17 @@
 import './Navbar.css';
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
-import Login from './user/Login';
 import UserProfile from './user/UserProfile';
 import LoginButton from './user/LoginButton';
+import AuthModal from './user/AuthModal';
 
 const Navbar = () => {
     const {isLoggedin} = useAuth();
 
-    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-    const handleLoginClick = () => {
-        setIsLoginModalOpen(true);
+    const handleAuthClick = () => {
+        setIsAuthModalOpen(true);
     }
 
   return (
@@ -26,10 +26,10 @@ const Navbar = () => {
         {isLoggedin ? (
           <UserProfile />
         ) : (
-          <LoginButton onClick={handleLoginClick} />
+          <LoginButton onClick={handleAuthClick} />
         )}
     </nav>
-    {isLoginModalOpen && <Login onClose={() => setIsLoginModalOpen(false)} />}
+    {isAuthModalOpen && <AuthModal onClose={() => setIsAuthModalOpen(false)} />}
     </>
   );
 };

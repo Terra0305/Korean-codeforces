@@ -4,9 +4,10 @@ import { useState } from 'react';
 
 interface LoginProps {
     onClose: () => void;
+    onSwitchToSignup: () => void;
 }
 
-const Login = ({ onClose }: LoginProps) => {
+const Login = ({ onClose, onSwitchToSignup }: LoginProps) => {
     const { login } = useAuth();
     const [formData, setFormData] = useState({
         handle: '',
@@ -15,16 +16,17 @@ const Login = ({ onClose }: LoginProps) => {
 
     const handleLogin = (e : React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        login(formData.handle, formData.password);
-        onClose(); // Close modal on success
+        const success = login(formData.handle, formData.password);
+        if (success) {
+            onClose();
+        }
+        else{
+            alert('로그인 실패');
+        }
     }
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="auth-container" onClick={(e) => e.stopPropagation()}>
-                <div style={{display: 'flex', justifyContent: 'flex-end'}}>
-                     <button onClick={onClose} style={{background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-sub)'}}>&times;</button>
-                </div>
+        <>
                 <div className="login-logo">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
@@ -47,10 +49,9 @@ const Login = ({ onClose }: LoginProps) => {
                 </form>
 
                 <div className="footer-links">
-                    계정이 없으신가요? <a href="#" onClick={(e) => e.preventDefault()}>회원가입 하기</a>
+                    계정이 없으신가요? <a href="#" onClick={onSwitchToSignup}>회원가입 하기</a>
                 </div>
-            </div>
-        </div>
+        </>
     );
 }
 
