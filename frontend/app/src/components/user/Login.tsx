@@ -14,9 +14,9 @@ const Login = ({ onClose, onSwitchToSignup }: LoginProps) => {
         password: '',
     });
 
-    const handleLogin = (e : React.FormEvent<HTMLFormElement>) => {
+    const handleLogin = async (e : React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const success = login(formData.handle, formData.password);
+        const success = await login(formData.handle, formData.password);
         if (success) {
             onClose();
         }
