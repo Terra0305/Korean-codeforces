@@ -20,5 +20,6 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/users/', include('user.urls')),
-    # path('api/contests/', include('contest.urls')),  # contest 앱 URL 추가 시 사용
+    path('api/contests/', include('contest.urls')),  # contest 앱 URL 추가
+    path('api-auth/', include('rest_framework.urls')),  # API 문서에서 로그인 가능하도록 추가 테스트용
 ]
