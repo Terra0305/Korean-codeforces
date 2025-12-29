@@ -28,6 +28,7 @@ urlpatterns = [
 # -------------------------------------------------------------
 # GET    /admin/problems/          : 문제 전체 목록 조회 (List)
 #        ?contest={id}&index={idx} : 대회 ID 및 문제 번호로 필터링
+#쿼리를 통해 알아낸 pk로 다음들 수행가능
 # POST   /admin/problems/          : 새 문제 생성 (Create)
 # GET    /admin/problems/{pk}/     : 특정 문제 상세 조회 (Retrieve)
 # PUT    /admin/problems/{pk}/     : 특정 문제 전체 수정 (Update)

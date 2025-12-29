@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from .models import Contest, Problem
 from .serializers import ContestSerializer, ProblemSerializer
 from .utils import fetch_contest_data
@@ -18,9 +20,9 @@ class AdminContestViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        name = self.request.query_params.get('name')
         if name:
             queryset = queryset.filter(name__icontains=name)
-            
         return queryset
 
     def perform_create(self, serializer):
@@ -31,6 +33,15 @@ class AdminContestViewSet(viewsets.ModelViewSet):
             print(f"Successfully fetched data for contest {instance.id}")
         else:
             print(f"Failed to fetch data for contest {instance.id}")
+    
+    @action(detail=True, methods=['post'])
+    def sync_codeforces(self, request, pk=None):
+        contest = self.get_object() # 해당 대회 객체 가져오기
+        result = fetch_contest_data(contest.id)
+        
+        if result:
+            return Response({'status': '동기화 성공', 'data': result})
+        return Response({'status': '동기화 실패'}, status=400)
 
 
 class AdminProblemViewSet(viewsets.ModelViewSet):
