@@ -1,5 +1,6 @@
 import './Login.css';
 import { useState } from 'react';
+import client from '../../api/client';
 
 interface SignupProps{
     onSwitchToLogin: () => void;
@@ -7,18 +8,46 @@ interface SignupProps{
 
 const Signup = ({onSwitchToLogin}: SignupProps) => {
     const [formData, setFormData] = useState({
-        handle: '',
-        studentId: '',
-        email: '',
+        username: '',
         password: '',
-        confirmPassword: '',
+        password_confirm: '',
+        school: '',
+        department: '',
+        student_id: '',
+        real_name: '',
+        codeforces_id: ''
     });
 
-    const handleSignup = (e : React.FormEvent<HTMLFormElement>) => {
+    const handleSignup = async (e : React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        alert("회원가입 성공");
-        onSwitchToLogin();
+
+        if (formData.password !== formData.password_confirm) {
+            alert('비밀번호가 일치하지 않습니다.');
+            return;
+        }
+
+        try {
+            const response = await client.post('/users/register/', formData);
+            if (response.status === 201) {
+                alert('회원가입이 완료되었습니다.');
+                onSwitchToLogin();
+            }
+        } catch (error: any) {
+            console.error('Signup failed:', error);
+            const errorMessage = error.response?.data ? 
+                Object.values(error.response.data as Record<string, string[]>).flat().join('\n') :
+                '회원가입에 실패했습니다.';
+            alert(errorMessage);
+        }
     }
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
 
     return (
     <div className="signup-wrapper">
@@ -27,38 +56,115 @@ const Signup = ({onSwitchToLogin}: SignupProps) => {
             <p>우리 학교 학생 인증을 통해 가입하세요.</p>
         </div>
 
-        <form action="login.html" onSubmit={handleSignup}>
+        <form onSubmit={handleSignup}>
+            <div className="form-group">
+                <label className="form-label">아이디 (ID)</label>
+                <input 
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange} 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="아이디를 입력해주세요" 
+                    required
+                />
+            </div>
+
+            <div className="form-group">
+                <label className="form-label">비밀번호</label>
+                <input 
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange} 
+                    type="password" 
+                    className="form-input" 
+                    placeholder="영문/숫자/특수문자 포함 8자 이상" 
+                    required
+                />
+            </div>
+
+            <div className="form-group">
+                <label className="form-label">비밀번호 확인</label>
+                <input 
+                    name="password_confirm"
+                    value={formData.password_confirm}
+                    onChange={handleChange} 
+                    type="password" 
+                    className="form-input" 
+                    placeholder="비밀번호를 다시 입력해주세요" 
+                    required
+                />
+            </div>
+
+            <div className="form-group">
+                <label className="form-label">이름 (Real Name)</label>
+                <input 
+                    name="real_name"
+                    value={formData.real_name}
+                    onChange={handleChange} 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="실명을 입력해주세요" 
+                    required
+                />
+            </div>
+
             <div className="form-group">
                 <label className="form-label">Codeforces Handle</label>
                 <div className="input-group">
-                    <input onChange={(e)=>setFormData({...formData, handle: e.target.value})} type="text" className="form-input" placeholder="ex) tourist" required/>
+                    <input 
+                        name="codeforces_id"
+                        value={formData.codeforces_id}
+                        onChange={handleChange} 
+                        type="text" 
+                        className="form-input" 
+                        placeholder="ex) tourist" 
+                        required
+                    />
                     <button type="button" className="btn-verify" onClick={(e)=>(e.preventDefault())}>Check</button>
                 </div>
-                <div className="helper-text">실제 사용하는 Codeforces 핸들을 입력해주세요.</div>
             </div>
 
             <div className="form-group">
-                <label className="form-label">Student ID (학번)</label>
+                <label className="form-label">학교 (School)</label>
+                <input 
+                    name="school"
+                    value={formData.school}
+                    onChange={handleChange} 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="학교명을 입력해주세요" 
+                    required
+                />
+            </div>
+
+            <div className="form-group">
+                <label className="form-label">학과 (Department)</label>
+                <input 
+                    name="department"
+                    value={formData.department}
+                    onChange={handleChange} 
+                    type="text" 
+                    className="form-input" 
+                    placeholder="학과를 입력해주세요" 
+                    required
+                />
+            </div>
+
+            <div className="form-group">
+                <label className="form-label">학번 (Student ID)</label>
                 <div className="input-group">
-                    <input onChange={(e)=>setFormData({...formData, studentId: e.target.value})} type="number" className="form-input" placeholder="20250000" id="studentId" required/>
+                    <input 
+                        name="student_id"
+                        value={formData.student_id}
+                        onChange={handleChange} 
+                        type="text" 
+                        className="form-input" 
+                        placeholder="학번을 입력해주세요" 
+                        required
+                    />
                     <button type="button" className="btn-verify" onClick={(e)=>(e.preventDefault())}>Verify</button>
                 </div>
-                <div className="helper-text" id="verify-msg">학번 입력 후 Verify 버튼을 눌러주세요.</div>
-            </div>
-
-            <div className="form-group">
-                <label className="form-label">School Email</label>
-                <input onChange={(e)=>setFormData({...formData, email: e.target.value})} type="email" className="form-input" placeholder="example@univ.ac.kr" required/>
-            </div>
-
-            <div className="form-group">
-                <label className="form-label">Password</label>
-                <input onChange={(e)=>setFormData({...formData, password: e.target.value})} type="password" className="form-input" placeholder="Min. 8 characters" required/>
-            </div>
-
-            <div className="form-group">
-                <label className="form-label">Confirm Password</label>
-                <input onChange={(e)=>setFormData({...formData, confirmPassword: e.target.value})} type="password" className="form-input" placeholder="Re-enter password" required/>
             </div>
 
             <button type="submit" className="btn-submit">회원가입 완료</button>

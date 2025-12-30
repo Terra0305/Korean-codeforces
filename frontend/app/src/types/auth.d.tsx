@@ -20,6 +20,11 @@ export interface LoginResponse {
     user: User;
 }
 
+export interface SignupResponse {
+    message: string;
+    user: User;
+}
+
 export interface ApiError {
     error: string;
 }

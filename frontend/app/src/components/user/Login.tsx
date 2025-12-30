@@ -1,14 +1,15 @@
 import './Login.css';
 import { useAuth } from '../../context/AuthContext';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginProps {
     onClose: () => void;
-    onSwitchToSignup: () => void;
 }
 
-const Login = ({ onClose, onSwitchToSignup }: LoginProps) => {
+const Login = ({ onClose }: LoginProps) => {
     const { login } = useAuth();
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         handle: '',
         password: '',
@@ -24,6 +25,12 @@ const Login = ({ onClose, onSwitchToSignup }: LoginProps) => {
             alert('로그인 실패');
         }
     }
+
+    const handleSignupClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        onClose();
+        navigate('/signup');
+    };
 
     return (
         <>
@@ -49,7 +56,7 @@ const Login = ({ onClose, onSwitchToSignup }: LoginProps) => {
                 </form>
 
                 <div className="footer-links">
-                    계정이 없으신가요? <a href="#" onClick={onSwitchToSignup}>회원가입 하기</a>
+                    계정이 없으신가요? <a href="#" onClick={handleSignupClick}>회원가입 하기</a>
                 </div>
         </>
     );
