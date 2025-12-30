@@ -56,6 +56,7 @@
     *   프론트엔드 라우팅 및 API 호출을 위한 `VITE_API_BASE_URL` 환경 변수 주입 완료.
     *   **404 및 400 Bad Request 해결**: 백엔드 `ALLOWED_HOSTS`가 비어있어 접속이 차단됨 -> `*` (전체 허용)으로 변경하여 해결.
     *   **할당량 초과(Quota Exceeded) 이슈**: 무료(F1) 요금제의 CPU 한도 도달 -> **Basic (B1) 또는 Shared (D1) 요금제로 업그레이드 권장**.
+    *   **이미지 가져오기 실패(ImagePullFailure)**: App Service가 ACR에 접근할 권한이 없음 -> ACR 관리자 계정 활성화 후 App Service 배포 센터에 자격 증명(ID/PW) 등록하여 해결.
 
 ## 5. 유지보수 및 업데이트 방법
 
