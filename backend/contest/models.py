@@ -5,9 +5,9 @@ from django.conf import settings
 #대회
 class Contest(models.Model):
     id = models.IntegerField(primary_key=True, verbose_name="대회 ID (Codeforces)")
-    name = models.CharField(max_length=100, verbose_name="대회명")
-    start_time = models.DateTimeField("대회 시작시간")#시작시간
-    end_time = models.DateTimeField("대회 종료시간") #종료시간
+    name = models.CharField(max_length=100, null=True, blank=True, verbose_name="대회명")
+    start_time = models.DateTimeField(null=True, blank=True, verbose_name="대회 시작시간")#시작시간
+    end_time = models.DateTimeField(null=True, blank=True, verbose_name="대회 종료시간") #종료시간
 
     class Meta:
         verbose_name = "대회"
