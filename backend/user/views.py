@@ -5,11 +5,13 @@ from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth import get_user_model
+import requests
 
 from .models import Profile
 from .serializers import (
     UserRegistrationSerializer,
     ProfileSerializer,
+    ProfileLoginSerializer,
     ProfileUpdateSerializer,
     PasswordChangeSerializer
 )
@@ -71,7 +73,7 @@ class LoginView(APIView):
                 'user': {
                     'id': user.id,
                     'username': user.username,
-                    'profile': ProfileSerializer(profile).data
+                    'profile': ProfileLoginSerializer(profile).data
                 }
             }, status=status.HTTP_200_OK)
         else:
@@ -100,7 +102,6 @@ class ProfileViewSet(viewsets.ViewSet):
     - GET /api/users/profile/ - 현재 사용자 프로필 조회
     - PUT /api/users/profile/ - 프로필 전체 수정
     - PATCH /api/users/profile/ - 프로필 부분 수정
-    - GET /api/users/profile/top/ - 상위 랭킹 조회
     - GET /api/users/profile/search/?name=xxx - 이름으로 검색
     """
     permission_classes = [IsAuthenticated]
@@ -153,13 +154,6 @@ class ProfileViewSet(viewsets.ViewSet):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def top(self, request):
-        """ELO 레이팅 상위 사용자 조회"""
-        limit = int(request.query_params.get('limit', 10))
-        top_users = Profile.objects.select_related('user').order_by('-elo_rating')[:limit]
-        serializer = ProfileSerializer(top_users, many=True)
-        return Response(serializer.data)
-
     def search(self, request):
         """이름으로 사용자 검색"""
         name = request.query_params.get('name', '')
@@ -173,25 +167,6 @@ class ProfileViewSet(viewsets.ViewSet):
         ).select_related('user')
         serializer = ProfileSerializer(users, many=True)
         return Response(serializer.data)
-
-    def by_codeforces(self, request):
-        """Codeforces ID로 사용자 조회"""
-        cf_id = request.query_params.get('codeforces_id', '')
-        if not cf_id:
-            return Response({
-                'error': 'Codeforces ID를 입력해주세요.'
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            profile = Profile.objects.select_related('user').get(
-                codeforces_id=cf_id
-            )
-            serializer = ProfileSerializer(profile)
-            return Response(serializer.data)
-        except Profile.DoesNotExist:
-            return Response({
-                'error': '해당 Codeforces ID를 가진 사용자가 없습니다.'
-            }, status=status.HTTP_404_NOT_FOUND)
 
 
 class PasswordChangeView(APIView):
@@ -232,8 +207,66 @@ class CurrentUserView(APIView):
         return Response({
             'id': request.user.id,
             'username': request.user.username,
-            'profile': ProfileSerializer(profile).data
+            'profile': ProfileLoginSerializer(profile).data
         })
+
+
+class VerifyCodeforcesView(APIView):
+    """
+    Codeforces ID 검증 API
+    GET /api/users/verify-codeforces/?handle=xxx
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        handle = request.query_params.get('handle', '').strip()
+
+        if not handle:
+            return Response({
+                'error': 'Codeforces handle을 입력해주세요.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Codeforces API 호출
+        try:
+            cf_api_url = f'https://codeforces.com/api/user.info?handles={handle}'
+            response = requests.get(cf_api_url, timeout=10)
+
+            if response.status_code != 200:
+                return Response({
+                    'exists': False,
+                    'error': 'Codeforces API 호출에 실패했습니다.'
+                }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+
+            data = response.json()
+
+            # Codeforces API 응답 확인
+            if data.get('status') == 'OK' and len(data.get('result', [])) > 0:
+                user_info = data['result'][0]
+                return Response({
+                    'exists': True,
+                    'handle': user_info.get('handle')
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    'exists': False,
+                    'message': '해당 Codeforces handle이 존재하지 않습니다.'
+                }, status=status.HTTP_404_NOT_FOUND)
+
+        except requests.exceptions.Timeout:
+            return Response({
+                'exists': False,
+                'error': 'Codeforces API 응답 시간이 초과되었습니다.'
+            }, status=status.HTTP_504_GATEWAY_TIMEOUT)
+        except requests.exceptions.RequestException as e:
+            return Response({
+                'exists': False,
+                'error': f'Codeforces API 연결에 실패했습니다: {str(e)}'
+            }, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except Exception as e:
+            return Response({
+                'exists': False,
+                'error': f'예상치 못한 오류가 발생했습니다: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # ============================================================================

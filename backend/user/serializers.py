@@ -91,6 +91,23 @@ class ProfileSerializer(serializers.ModelSerializer):
         return value
 
 
+class ProfileLoginSerializer(serializers.ModelSerializer):
+    """
+    로그인 응답용 시리얼라이저 (created_at, updated_at 제외)
+    """
+    class Meta:
+        model = Profile
+        fields = [
+            'school',
+            'department',
+            'student_id',
+            'real_name',
+            'codeforces_id',
+            'elo_rating'
+        ]
+        read_only_fields = ['codeforces_id', 'elo_rating']
+
+
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     """
     프로필 수정용 시리얼라이저 (제한된 필드만 수정 가능)
