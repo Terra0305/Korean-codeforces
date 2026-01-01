@@ -11,13 +11,13 @@ const Login = ({ onClose }: LoginProps) => {
     const { login } = useAuth();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
-        handle: '',
+        username: '',
         password: '',
     });
 
     const handleLogin = async (e : React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const success = await login(formData.handle, formData.password);
+        const success = await login(formData.username, formData.password);
         if (success) {
             onClose();
         }
@@ -43,8 +43,8 @@ const Login = ({ onClose }: LoginProps) => {
 
                 <form onSubmit={handleLogin}> 
                     <div className="form-group">
-                        <label className="form-label">코드포스 핸들 (ID)</label>
-                        <input type="text" className="form-input" placeholder="핸들(Handle)을 입력해주세요." required value={formData.handle} onChange={(e) => setFormData({...formData, handle: e.target.value})}/>
+                        <label className="form-label">아이디 (ID)</label>
+                        <input type="text" className="form-input" placeholder="아이디를 입력해주세요." required value={formData.username} onChange={(e) => setFormData({...formData, username: e.target.value})}/>
                     </div>
 
                     <div className="form-group">
