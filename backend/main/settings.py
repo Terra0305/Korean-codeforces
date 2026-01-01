@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +26,7 @@ SECRET_KEY = 'django-insecure-sc&%-5w7xk6x+dteu$qq1olf2*_$-)&-k(kug-#kq=ultq0i1*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
 
 # Application definition
@@ -158,7 +159,11 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",  # Vite 기본 포트
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
+    "https://frontend-28mi.onrender.com",  # Render Frontend
 ]
+
+if os.environ.get("CORS_ALLOWED_ORIGINS"):
+    CORS_ALLOWED_ORIGINS.extend(os.environ.get("CORS_ALLOWED_ORIGINS").split(","))
 
 CORS_ALLOW_CREDENTIALS = True  # 쿠키/세션 인증을 위해 필요
 
@@ -183,13 +188,18 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
+
 # CSRF 설정
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
+    "https://frontend-28mi.onrender.com",  # Render Frontend
 ]
+
+if os.environ.get("CSRF_TRUSTED_ORIGINS"):
+    CSRF_TRUSTED_ORIGINS.extend(os.environ.get("CSRF_TRUSTED_ORIGINS").split(","))
 
 # 세션 설정
 SESSION_COOKIE_HTTPONLY = True
