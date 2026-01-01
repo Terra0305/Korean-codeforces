@@ -8,9 +8,7 @@ Korean-Codeforces 프로젝트의 회원 관리 시스템입니다.
 - **Session 기반 인증** (쿠키 사용)
 - Django 기본 User 모델 + Profile 확장
 
-### 로그인 방법
-- **username** + **password**로 로그인
-- 이메일은 사용하지 않음
+
 
 ### 회원가입 필수 항목
 - `username` (로그인 ID)
@@ -21,12 +19,6 @@ Korean-Codeforces 프로젝트의 회원 관리 시스템입니다.
 - `student_id` (학번)
 - `real_name` (실명)
 
-### 주요 특징
-- User와 Profile 1:1 관계
-- ELO 레이팅 시스템 (기본값 1500)
-- Codeforces ID 기반 사용자 관리
-
----
 
 ## 데이터베이스 구조
 
@@ -54,29 +46,6 @@ user.models.Profile
 └── updated_at (DateTime, Auto)           # 수정일
 ```
 
-**관계도:**
-```
-User (1) ←→ (1) Profile
-```
-
-**필수 입력 필드 (회원가입):**
-- `username` - 사용자명 (로그인 ID)
-- `password` - 비밀번호
-- `codeforces_id` - Codeforces ID
-- `school` - 학교명
-- `department` - 학과명
-- `student_id` - 학번
-- `real_name` - 실명
-
-**인덱스:**
-- `codeforces_id` (Unique Index)
-- `student_id` (Unique Index)
-
-**정렬 기본값:**
-- `elo_rating` 내림차순
-- `created_at` 내림차순
-
----
 
 ## 파일 구조
 
@@ -147,15 +116,18 @@ POST /api/users/register/
 1. 입력 검증
    - `username` 중복 확인
    - `codeforces_id` 중복 확인
+   - `codeforces_id` **실제 존재 여부 확인 (Codeforces API 호출)**
    - `student_id` 중복 확인 (입력 시)
    - 비밀번호 일치 확인 (`password` == `password_confirm`)
    - 비밀번호 강도 검증
 2. `User` 생성 (Django 기본 테이블)
 3. `Profile` 생성 (1:1 연결)
    - `elo_rating`은 기본값 1500으로 설정
+   - `codeforces_id`는 대소문자 정규화되어 저장 (Codeforces 공식 핸들)
 4. 응답 (201 Created)
 
-**코드 위치:** `user/serializers.py:UserRegistrationSerializer`
+
+
 
 ---
 
@@ -550,6 +522,10 @@ GET /api/users/admin/stats/
 - 길이: 3~24자
 - 허용 문자: 영문자, 숫자, 언더스코어 (`_`)
 - 중복 불가
+- **실제 존재 여부 검증 (NEW):**
+  - 회원가입 시 Codeforces API(`user.info`)를 호출하여 실제 존재하는 핸들인지 자동 확인
+  - 존재하지 않는 핸들로는 가입 불가
+  - 대소문자 정규화 적용 (Codeforces 공식 핸들로 저장)
 
 ### Student ID (학번)
 - 길이: 최대 20자
@@ -563,34 +539,6 @@ GET /api/users/admin/stats/
 
 ---
 
-## 보안
-
-### 비밀번호
-- **해싱:** PBKDF2_SHA256 (Django 기본)
-- **솔팅:** 자동 생성
-- **반복 횟수:** 600,000회 (Django 5.x 기본값)
-
-### 세션
-```python
-SESSION_COOKIE_HTTPONLY = True    # JavaScript 접근 차단
-SESSION_COOKIE_SAMESITE = 'Lax'   # CSRF 방지
-SESSION_COOKIE_AGE = 86400        # 24시간
-```
-
-### CORS
-```python
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:5173"
-]
-CORS_ALLOW_CREDENTIALS = True
-```
-
-### CSRF
-- Django CSRF 미들웨어 활성화
-- 프론트엔드에서 `X-CSRFToken` 헤더 전송 필요
-
----
 
 ## 설치 및 실행
 
@@ -620,12 +568,3 @@ python manage.py createsuperuser
 - Django Admin: `http://localhost:8000/admin/`
 - `is_staff=True` 또는 `is_superuser=True` 필요
 
----
-
-## 문제 해결
-
-### Q: 관리자 API 호출 시 403 Forbidden이 발생합니다
-**A:** `is_staff=True` 또는 `is_superuser=True` 권한이 필요합니다. `python manage.py createsuperuser`로 관리자 계정을 생성하거나, Django Admin에서 기존 사용자에게 staff 권한을 부여하세요.
-
-### Q: 회원 목록 API가 너무 느립니다
-**A:** 페이지네이션을 사용하세요. `?page=1&limit=20` 파라미터로 한 번에 조회할 데이터 양을 제한할 수 있습니다.
