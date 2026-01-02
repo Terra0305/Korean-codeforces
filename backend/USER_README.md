@@ -8,9 +8,7 @@ Korean-Codeforces 프로젝트의 회원 관리 시스템입니다.
 - **Session 기반 인증** (쿠키 사용)
 - Django 기본 User 모델 + Profile 확장
 
-### 로그인 방법
-- **username** + **password**로 로그인
-- 이메일은 사용하지 않음
+
 
 ### 회원가입 필수 항목
 - `username` (로그인 ID)
@@ -21,12 +19,6 @@ Korean-Codeforces 프로젝트의 회원 관리 시스템입니다.
 - `student_id` (학번)
 - `real_name` (실명)
 
-### 주요 특징
-- User와 Profile 1:1 관계
-- ELO 레이팅 시스템 (기본값 1500)
-- Codeforces ID 기반 사용자 관리
-
----
 
 ## 데이터베이스 구조
 
@@ -54,29 +46,6 @@ user.models.Profile
 └── updated_at (DateTime, Auto)           # 수정일
 ```
 
-**관계도:**
-```
-User (1) ←→ (1) Profile
-```
-
-**필수 입력 필드 (회원가입):**
-- `username` - 사용자명 (로그인 ID)
-- `password` - 비밀번호
-- `codeforces_id` - Codeforces ID
-- `school` - 학교명
-- `department` - 학과명
-- `student_id` - 학번
-- `real_name` - 실명
-
-**인덱스:**
-- `codeforces_id` (Unique Index)
-- `student_id` (Unique Index)
-
-**정렬 기본값:**
-- `elo_rating` 내림차순
-- `created_at` 내림차순
-
----
 
 ## 파일 구조
 
@@ -103,13 +72,14 @@ user/
 - `POST /api/users/logout/` - 로그아웃
 - `GET /api/users/me/` - 현재 사용자 정보
 
+### Codeforces 검증
+- `GET /api/users/verify-codeforces/?handle=XXX` - Codeforces ID 검증
+
 ### 프로필
 - `GET /api/users/profile/` - 내 프로필 조회
 - `PUT /api/users/profile/` - 프로필 전체 수정
 - `PATCH /api/users/profile/` - 프로필 부분 수정
-- `GET /api/users/profile/top/?limit=N` - ELO 상위 랭킹
 - `GET /api/users/profile/search/?name=XXX` - 이름 검색
-- `GET /api/users/profile/by_codeforces/?codeforces_id=XXX` - CF ID 조회
 
 ### 비밀번호
 - `POST /api/users/change-password/` - 비밀번호 변경
@@ -119,7 +89,7 @@ user/
 - `GET /api/users/admin/users/<user_id>/` - 특정 회원 상세 조회
 - `GET /api/users/admin/stats/` - 회원 통계
 
-**총 14개 API**
+**총 13개 API**
 
 ---
 
@@ -146,15 +116,18 @@ POST /api/users/register/
 1. 입력 검증
    - `username` 중복 확인
    - `codeforces_id` 중복 확인
+   - `codeforces_id` **실제 존재 여부 확인 (Codeforces API 호출)**
    - `student_id` 중복 확인 (입력 시)
    - 비밀번호 일치 확인 (`password` == `password_confirm`)
    - 비밀번호 강도 검증
 2. `User` 생성 (Django 기본 테이블)
 3. `Profile` 생성 (1:1 연결)
    - `elo_rating`은 기본값 1500으로 설정
+   - `codeforces_id`는 대소문자 정규화되어 저장 (Codeforces 공식 핸들)
 4. 응답 (201 Created)
 
-**코드 위치:** `user/serializers.py:UserRegistrationSerializer`
+
+
 
 ---
 
@@ -191,9 +164,7 @@ POST /api/users/login/
       "student_id": "2024001",
       "real_name": "홍길동",
       "codeforces_id": "testcf123",
-      "elo_rating": 1500,
-      "created_at": "2025-12-27T00:00:00Z",
-      "updated_at": "2025-12-27T00:00:00Z"
+      "elo_rating": 1500
     }
   }
 }
@@ -203,7 +174,137 @@ POST /api/users/login/
 
 ---
 
-### 3. 프로필 수정
+### 3. 로그아웃
+
+**요청:**
+```json
+POST /api/users/logout/
+```
+
+**처리 순서:**
+1. Django 세션 삭제: `logout(request)`
+2. 쿠키 제거
+3. 응답 (200 OK)
+
+**응답:**
+```json
+{
+  "message": "로그아웃 되었습니다."
+}
+```
+
+**권한:** 로그인 필요 (`IsAuthenticated`)
+
+**코드 위치:** `user/views.py:LogoutView`
+
+---
+
+### 4. 현재 사용자 정보 조회
+
+**요청:**
+```http
+GET /api/users/me/
+```
+
+**처리 순서:**
+1. 세션에서 현재 로그인한 사용자 정보 조회
+2. 연결된 프로필 정보 조회
+3. 응답 (200 OK)
+
+**응답:**
+```json
+{
+  "id": 1,
+  "username": "testuser",
+  "profile": {
+    "school": "서울대학교",
+    "department": "컴퓨터공학부",
+    "student_id": "2024001",
+    "real_name": "홍길동",
+    "codeforces_id": "testcf123",
+    "elo_rating": 1500
+  }
+}
+```
+
+**참고:** 로그인/현재 사용자 조회 시에는 `created_at`, `updated_at` 필드를 제외합니다. 이 정보가 필요한 경우 프로필 조회 API(`GET /api/users/profile/`)를 사용하세요.
+
+**권한:** 로그인 필요 (`IsAuthenticated`)
+
+**코드 위치:** `user/views.py:CurrentUserView`
+
+---
+
+### 5. Codeforces ID 검증
+
+**요청:**
+```http
+GET /api/users/verify-codeforces/?handle=tourist
+```
+
+**쿼리 파라미터:**
+- `handle` - Codeforces handle (필수)
+
+**처리 순서:**
+1. Codeforces API 호출: `https://codeforces.com/api/user.info?handles={handle}`
+2. API 응답 확인
+3. 사용자 정보 반환 (존재하는 경우)
+
+**응답 (200 OK - 사용자 존재):**
+```json
+{
+  "exists": true,
+  "handle": "tourist"
+}
+```
+
+**응답 (404 Not Found - 사용자 없음):**
+```json
+{
+  "exists": false,
+  "message": "해당 Codeforces handle이 존재하지 않습니다."
+}
+```
+
+**에러 응답 (400 Bad Request):**
+```json
+{
+  "error": "Codeforces handle을 입력해주세요."
+}
+```
+
+**에러 응답 (503 Service Unavailable):**
+```json
+{
+  "exists": false,
+  "error": "Codeforces API 호출에 실패했습니다."
+}
+```
+
+**에러 응답 (504 Gateway Timeout):**
+```json
+{
+  "exists": false,
+  "error": "Codeforces API 응답 시간이 초과되었습니다."
+}
+```
+
+**권한:** 누구나 접근 가능 (`AllowAny`)
+
+**사용 예시:**
+- 회원가입 시 Codeforces ID 유효성 검증
+- 프로필 수정 시 Codeforces ID 변경 전 검증
+
+**참고:**
+- Codeforces 공식 API (`https://codeforces.com/apiHelp/methods#user.info`)를 사용
+- 타임아웃: 10초
+- 단순히 handle의 존재 여부만 확인
+
+**코드 위치:** `user/views.py:VerifyCodeforcesView`
+
+---
+
+### 6. 프로필 수정
 
 **요청:**
 ```json
@@ -228,11 +329,90 @@ PATCH /api/users/profile/
 
 ---
 
-### 4. 관리자 API (Admin Only)
+### 7. 이름으로 사용자 검색
+
+**요청:**
+```http
+GET /api/users/profile/search/?name=홍길동
+```
+
+**쿼리 파라미터:**
+- `name` - 검색할 이름 (필수, 부분 일치 검색)
+
+**응답:**
+```json
+[
+  {
+    "school": "서울대학교",
+    "department": "컴퓨터공학부",
+    "student_id": "2024001",
+    "real_name": "홍길동",
+    "codeforces_id": "testcf123",
+    "elo_rating": 1500,
+    "created_at": "2025-12-27T00:00:00Z",
+    "updated_at": "2025-12-27T00:00:00Z"
+  }
+]
+```
+
+**에러 응답 (400 Bad Request):**
+```json
+{
+  "error": "검색할 이름을 입력해주세요."
+}
+```
+
+**권한:** 로그인 필요 (`IsAuthenticated`)
+
+**코드 위치:** `user/views.py:ProfileViewSet.search`
+
+---
+
+### 8. 비밀번호 변경
+
+**요청:**
+```json
+POST /api/users/change-password/
+{
+  "old_password": "OldPass123!",
+  "new_password": "NewPass456!",
+  "new_password_confirm": "NewPass456!"
+}
+```
+
+**처리 순서:**
+1. 현재 비밀번호 확인 (`old_password` 검증)
+2. 새 비밀번호 일치 확인 (`new_password` == `new_password_confirm`)
+3. 비밀번호 강도 검증
+4. 비밀번호 업데이트
+5. 응답 (200 OK)
+
+**응답:**
+```json
+{
+  "message": "비밀번호가 성공적으로 변경되었습니다."
+}
+```
+
+**에러 응답 (400 Bad Request):**
+```json
+{
+  "old_password": ["현재 비밀번호가 일치하지 않습니다."],
+  "new_password": ["새 비밀번호는 최소 8자 이상이어야 합니다."]
+}
+```
+
+**권한:** 로그인 필요 (`IsAuthenticated`)
+
+**코드 위치:** `user/views.py:PasswordChangeView`
+
+---
+
+### 9. 관리자 API (Admin Only)
 
 관리자 권한(`is_staff=True` 또는 `is_superuser=True`)이 필요합니다.
 
-#### 4-1. 전체 회원 목록 조회
+#### 9-1. 전체 회원 목록 조회
 
 **요청:**
 ```http
@@ -266,7 +446,7 @@ GET /api/users/admin/users/?page=1&limit=20&search=홍길동
 }
 ```
 
-#### 4-2. 특정 회원 상세 조회
+#### 9-2. 특정 회원 상세 조회
 
 **요청:**
 ```http
@@ -295,7 +475,7 @@ GET /api/users/admin/users/1/
 }
 ```
 
-#### 4-3. 회원 통계
+#### 9-3. 회원 통계
 
 **요청:**
 ```http
@@ -342,6 +522,10 @@ GET /api/users/admin/stats/
 - 길이: 3~24자
 - 허용 문자: 영문자, 숫자, 언더스코어 (`_`)
 - 중복 불가
+- **실제 존재 여부 검증 (NEW):**
+  - 회원가입 시 Codeforces API(`user.info`)를 호출하여 실제 존재하는 핸들인지 자동 확인
+  - 존재하지 않는 핸들로는 가입 불가
+  - 대소문자 정규화 적용 (Codeforces 공식 핸들로 저장)
 
 ### Student ID (학번)
 - 길이: 최대 20자
@@ -355,34 +539,6 @@ GET /api/users/admin/stats/
 
 ---
 
-## 보안
-
-### 비밀번호
-- **해싱:** PBKDF2_SHA256 (Django 기본)
-- **솔팅:** 자동 생성
-- **반복 횟수:** 600,000회 (Django 5.x 기본값)
-
-### 세션
-```python
-SESSION_COOKIE_HTTPONLY = True    # JavaScript 접근 차단
-SESSION_COOKIE_SAMESITE = 'Lax'   # CSRF 방지
-SESSION_COOKIE_AGE = 86400        # 24시간
-```
-
-### CORS
-```python
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:5173"
-]
-CORS_ALLOW_CREDENTIALS = True
-```
-
-### CSRF
-- Django CSRF 미들웨어 활성화
-- 프론트엔드에서 `X-CSRFToken` 헤더 전송 필요
-
----
 
 ## 설치 및 실행
 
@@ -412,12 +568,3 @@ python manage.py createsuperuser
 - Django Admin: `http://localhost:8000/admin/`
 - `is_staff=True` 또는 `is_superuser=True` 필요
 
----
-
-## 문제 해결
-
-### Q: 관리자 API 호출 시 403 Forbidden이 발생합니다
-**A:** `is_staff=True` 또는 `is_superuser=True` 권한이 필요합니다. `python manage.py createsuperuser`로 관리자 계정을 생성하거나, Django Admin에서 기존 사용자에게 staff 권한을 부여하세요.
-
-### Q: 회원 목록 API가 너무 느립니다
-**A:** 페이지네이션을 사용하세요. `?page=1&limit=20` 파라미터로 한 번에 조회할 데이터 양을 제한할 수 있습니다.
