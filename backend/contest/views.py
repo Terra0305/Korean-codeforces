@@ -64,3 +64,34 @@ class AdminProblemViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(index=index)
             
         return queryset
+
+
+class ContestViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    일반 사용자용 대회 조회 ViewSet
+    """
+    queryset = Contest.objects.all().order_by('-start_time')
+    serializer_class = ContestSerializer
+
+
+class ProblemViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    일반 사용자용 문제 조회 ViewSet
+    """
+    queryset = Problem.objects.all().order_by('contest', 'index')
+    serializer_class = ProblemSerializer
+
+    def list_by_contest(self, request, contest_id=None):
+        """특정 대회에 속한 문제 목록 조회"""
+        queryset = self.queryset.filter(contest_id=contest_id)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve_by_contest(self, request, contest_id=None, pk=None):
+        """특정 문제 조회 (대회 ID 검증 포함)"""
+        try:
+            problem = self.queryset.get(contest_id=contest_id, pk=pk)
+            serializer = self.get_serializer(problem)
+            return Response(serializer.data)
+        except Problem.DoesNotExist:
+            return Response({'error': '문제를 찾을 수 없습니다.'}, status=404)
