@@ -27,7 +27,7 @@ const Signup = ({onSwitchToLogin}: SignupProps) => {
         }
 
         try {
-            const response = await client.post('/users/register/', formData);
+            const response = await client.post('/api/users/register/', formData);
             if (response.status === 201) {
                 alert('회원가입이 완료되었습니다.');
                 onSwitchToLogin();

@@ -12,6 +12,7 @@ export interface Profile {
 export interface User {
     id: number;
     username: string;
+    is_staff: boolean;
     profile: Profile;
 }
 

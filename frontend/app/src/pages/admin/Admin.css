@@ -1,0 +1,62 @@
+/* Admin specific styles */
+.admin-page-container {
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.admin-header {
+    border-bottom: 2px solid #e53e3e;
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+    color: #e53e3e;
+}
+
+.admin-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.admin-form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #c53030;
+}
+
+.admin-form-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ebbcbc;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.admin-form-input:focus {
+    outline: none;
+    border-color: #e53e3e;
+    box-shadow: 0 0 0 2px rgba(229, 62, 62, 0.2);
+}
+
+.admin-btn {
+    background-color: #e53e3e;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.admin-btn:hover {
+    background-color: #c53030;
+}
+
+.admin-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-top: 4px solid #e53e3e;
+}

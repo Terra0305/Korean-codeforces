@@ -6,6 +6,7 @@ import { LoginResponse, Profile } from "../types/auth.d";
 interface User {
     id: number;
     username: string;
+    is_staff: boolean;
     profile: Profile;
 }
 
@@ -23,7 +24,7 @@ export const AuthProvider = ({ children } : {children : ReactNode}) => {
 
     const login = async (username: string, password: string): Promise<boolean> => {
         try{
-            const response = await client.post<LoginResponse>("/users/login/", {username, password});
+            const response = await client.post<LoginResponse>("/api/users/login/", {username, password});
             if (response.status === 200) {
                 setUser(response.data.user);
                 return true;

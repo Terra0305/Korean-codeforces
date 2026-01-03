@@ -47,6 +47,7 @@ class LoginView(APIView):
     POST /api/users/login/
     """
     permission_classes = [AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         username = request.data.get('username')
@@ -73,6 +74,7 @@ class LoginView(APIView):
                 'user': {
                     'id': user.id,
                     'username': user.username,
+                    'is_staff': user.is_staff,
                     'profile': ProfileLoginSerializer(profile).data
                 }
             }, status=status.HTTP_200_OK)
