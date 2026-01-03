@@ -6,6 +6,7 @@ from .views import (
     ProfileViewSet,
     PasswordChangeView,
     CurrentUserView,
+    VerifyCodeforcesView,
     AdminUserListView,
     AdminUserDetailView,
     AdminStatsView
@@ -20,16 +21,8 @@ profile_list = ProfileViewSet.as_view({
     'patch': 'partial_update'
 })
 
-profile_top = ProfileViewSet.as_view({
-    'get': 'top'
-})
-
 profile_search = ProfileViewSet.as_view({
     'get': 'search'
-})
-
-profile_by_codeforces = ProfileViewSet.as_view({
-    'get': 'by_codeforces'
 })
 
 urlpatterns = [
@@ -40,11 +33,12 @@ urlpatterns = [
     path('me/', CurrentUserView.as_view(), name='current-user'),
     path('change-password/', PasswordChangeView.as_view(), name='change-password'),
 
+    # Codeforces 검증
+    path('verify-codeforces/', VerifyCodeforcesView.as_view(), name='verify-codeforces'),
+
     # 프로필 관련
     path('profile/', profile_list, name='profile'),
-    path('profile/top/', profile_top, name='profile-top'),
     path('profile/search/', profile_search, name='profile-search'),
-    path('profile/by_codeforces/', profile_by_codeforces, name='profile-by-codeforces'),
 
     # 관리자 전용
     path('admin/users/', AdminUserListView.as_view(), name='admin-user-list'),

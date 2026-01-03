@@ -91,6 +91,23 @@ class ProfileSerializer(serializers.ModelSerializer):
         return value
 
 
+class ProfileLoginSerializer(serializers.ModelSerializer):
+    """
+    로그인 응답용 시리얼라이저 (created_at, updated_at 제외)
+    """
+    class Meta:
+        model = Profile
+        fields = [
+            'school',
+            'department',
+            'student_id',
+            'real_name',
+            'codeforces_id',
+            'elo_rating'
+        ]
+        read_only_fields = ['codeforces_id', 'elo_rating']
+
+
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     """
     프로필 수정용 시리얼라이저 (제한된 필드만 수정 가능)
@@ -162,10 +179,48 @@ class UserRegistrationSerializer(serializers.Serializer):
         return value
 
     def validate_codeforces_id(self, value):
-        """Codeforces ID 중복 검증"""
+        """
+        Codeforces ID 검증
+        1. DB 중복 검증
+        2. Codeforces API로 실제 존재 여부 확인
+        """
+        import requests
+
+        # 1. DB 중복 검증
         if Profile.objects.filter(codeforces_id=value).exists():
             raise serializers.ValidationError('이미 등록된 Codeforces ID입니다.')
-        return value
+
+        # 2. Codeforces API로 실제 존재 여부 확인
+        try:
+            cf_api_url = f'https://codeforces.com/api/user.info?handles={value}'
+            response = requests.get(cf_api_url, timeout=10)
+
+            if response.status_code != 200:
+                raise serializers.ValidationError(
+                    'Codeforces API 호출에 실패했습니다. 잠시 후 다시 시도해주세요.'
+                )
+
+            data = response.json()
+
+            # Codeforces API 응답 확인
+            if data.get('status') != 'OK' or len(data.get('result', [])) == 0:
+                raise serializers.ValidationError(
+                    f'"{value}"는 존재하지 않는 Codeforces 핸들입니다. '
+                    'Codeforces 계정을 먼저 생성해주세요.'
+                )
+
+            # 대소문자 정확한 핸들로 정규화 (Codeforces는 대소문자 구분)
+            actual_handle = data['result'][0].get('handle')
+            return actual_handle
+
+        except requests.exceptions.Timeout:
+            raise serializers.ValidationError(
+                'Codeforces API 응답 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.'
+            )
+        except requests.exceptions.RequestException as e:
+            raise serializers.ValidationError(
+                'Codeforces 서버 연결에 실패했습니다. 네트워크 연결을 확인해주세요.'
+            )
 
     def validate_student_id(self, value):
         """학번 중복 검증"""
