@@ -160,6 +160,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
     "https://frontend-28mi.onrender.com",  # Render Frontend
+    "https://mango-mud-0cd127600.6.azurestaticapps.net",  # Azure Static Web App
 ]
 
 if os.environ.get("CORS_ALLOWED_ORIGINS"):
@@ -196,6 +197,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5173",
     "https://frontend-28mi.onrender.com",  # Render Frontend
+    "https://mango-mud-0cd127600.6.azurestaticapps.net",  # Azure Static Web App
 ]
 
 if os.environ.get("CSRF_TRUSTED_ORIGINS"):
