@@ -25,7 +25,7 @@ const SignupPage = () => {
         }
 
         try {
-            const response = await client.post('/users/register/', formData);
+            const response = await client.post('/api/users/register/', formData);
             if (response.status === 201) {
                 alert('회원가입이 완료되었습니다.');
                 navigate('/'); // Go back to home, user can login there
