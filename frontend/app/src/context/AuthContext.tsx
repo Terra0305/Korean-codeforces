@@ -1,4 +1,4 @@
-import { createContext, useState, useContext } from "react";
+import { createContext, useState, useContext, useEffect } from "react";
 import type {ReactNode} from "react";
 import client from "../api/client";
 import { LoginResponse, Profile } from "../types/auth.d";
@@ -21,6 +21,26 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children } : {children : ReactNode}) => {
     const [user, setUser] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Check for existing session on mount
+    useEffect(() => {
+        const checkSession = async () => {
+            try {
+                const response = await client.get('/api/users/me/');
+                if (response.status === 200) {
+                    const userData = response.data;
+                    setUser(userData); 
+                }
+            } catch (error) {
+                alert("세션이 만료되었습니다.");
+                setUser(null);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        checkSession();
+    }, []);
 
     const login = async (username: string, password: string): Promise<boolean> => {
         try{
@@ -36,9 +56,13 @@ export const AuthProvider = ({ children } : {children : ReactNode}) => {
         }
     };
 
-    const logout = () => {
+    const logout = async () => {
+        try {
+             await client.post('/api/users/logout/');
+        } catch (error) {
+             console.error("Logout failed", error);
+        }
         setUser(null);
-        return true;
     };
 
     return (

@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import client from '../../api/client';
 
 const UserProfile = () => {
     const {user, logout} = useAuth();
@@ -7,6 +8,16 @@ const UserProfile = () => {
     
     // Admin check
     const isAdmin = user?.is_staff;
+
+    const handleUserInfoClick = async () => {
+        try {
+            const response = await client.get('/api/users/me/');
+            console.log("User Info Response:", response.data);
+            alert("User info logged to console");
+        } catch (error) {
+            console.error("Failed to fetch user info:", error);
+        }
+    };
 
     return (
         <div className="user-profile">
@@ -35,7 +46,7 @@ const UserProfile = () => {
             >
                 {user?.profile.student_id}
             </div>
-            <button className="user-name-btn" onClick={()=>{}}>{user?.profile.real_name}</button>
+            <button className="user-name-btn" onClick={handleUserInfoClick}>{user?.profile.real_name}</button>
             <button onClick={logout} className="button">Logout</button>
           </div>
     );

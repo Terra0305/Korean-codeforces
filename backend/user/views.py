@@ -209,6 +209,7 @@ class CurrentUserView(APIView):
         return Response({
             'id': request.user.id,
             'username': request.user.username,
+            'is_staff': request.user.is_staff,
             'profile': ProfileLoginSerializer(profile).data
         })
 
