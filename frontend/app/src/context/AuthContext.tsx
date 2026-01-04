@@ -21,7 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children } : {children : ReactNode}) => {
     const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    //const [isLoading, setIsLoading] = useState(true);
 
     // Check for existing session on mount
     useEffect(() => {
@@ -36,7 +36,7 @@ export const AuthProvider = ({ children } : {children : ReactNode}) => {
                 alert("세션이 만료되었습니다.");
                 setUser(null);
             } finally {
-                setIsLoading(false);
+                //setIsLoading(false);
             }
         };
         checkSession();
