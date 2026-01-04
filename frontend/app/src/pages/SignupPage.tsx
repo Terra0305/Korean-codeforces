@@ -2,8 +2,10 @@ import '../components/user/Login.css';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import client from '../api/client';
+import { useAuth } from '../context/AuthContext';
 
 const SignupPage = () => {
+    const {setIsLoading} = useAuth();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
@@ -25,6 +27,7 @@ const SignupPage = () => {
         }
 
         try {
+            setIsLoading(true);
             const response = await client.post('/api/users/register/', formData);
             if (response.status === 201) {
                 alert('회원가입이 완료되었습니다.');
@@ -36,6 +39,8 @@ const SignupPage = () => {
                 Object.values(error.response.data as Record<string, string[]>).flat().join('\n') :
                 '회원가입에 실패했습니다.';
             alert(errorMessage);
+        } finally {
+            setIsLoading(false);
         }
     }
 

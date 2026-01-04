@@ -12,7 +12,7 @@ interface NavbarProps {
 }
 
 const Navbar = ({ contestTitle, remainingTime }: NavbarProps) => {
-    const {isLoggedin} = useAuth();
+    const {isLoggedin, isLoading} = useAuth();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const navigate = useNavigate();
 
@@ -30,6 +30,12 @@ const Navbar = ({ contestTitle, remainingTime }: NavbarProps) => {
 
     return (
         <>
+        {isLoading && (
+            <div className="loading-overlay">
+                <div className="loading-spinner"></div>
+                <div className="loading-text">Loading...</div>
+            </div>
+        )}
         <nav className="navbar">
             <div style={{display: 'flex', alignItems: 'center', gap: '2rem'}}>
                 <div className="navbar-logo" onClick={() => navigate('/')} style={{cursor: 'pointer'}}>
