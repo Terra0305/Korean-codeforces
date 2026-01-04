@@ -33,7 +33,9 @@ export const AuthProvider = ({ children } : {children : ReactNode}) => {
                     setUser(userData); 
                 }
             } catch (error) {
-                alert("세션이 만료되었습니다.");
+                if(user){
+                    alert("세션이 만료되었습니다.");
+                }
                 setUser(null);
             } finally {
                 //setIsLoading(false);
