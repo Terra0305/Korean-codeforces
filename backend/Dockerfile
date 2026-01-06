@@ -21,4 +21,10 @@ COPY . .
 EXPOSE 8000
 
 # Command to run the application
-CMD sh -c "python manage.py migrate && gunicorn main.wsgi:application --bind 0.0.0.0:8000"
+# Copy and setup entrypoint script
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+
+# Command to run the application
+CMD ["./entrypoint.sh"]
+
