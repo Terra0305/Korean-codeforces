@@ -27,6 +27,12 @@ class AdminApiTests(APITestCase):
         self.contest_list_url = reverse('contest:admin-contest-list')
         self.problem_list_url = reverse('contest:admin-problem-list')
 
+        # Mock fetch_contest_data globally for this test class
+        self.patcher = patch('contest.views.fetch_contest_data')
+        self.mock_fetch = self.patcher.start()
+        self.mock_fetch.return_value = True
+        self.addCleanup(self.patcher.stop)
+
     def test_admin_create_contest(self):
         """관리자는 대회를 생성할 수 있다."""
         self.client.force_authenticate(user=self.admin_user)
