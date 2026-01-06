@@ -27,6 +27,8 @@ SECRET_KEY = 'django-insecure-sc&%-5w7xk6x+dteu$qq1olf2*_$-)&-k(kug-#kq=ultq0i1*
 DEBUG = True
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+ALLOWED_HOSTS.append("korean-codeforces-awg8bxaacyb0hahv.koreacentral-01.azurewebsites.net")
+
 
 
 # Application definition
