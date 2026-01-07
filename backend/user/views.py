@@ -383,19 +383,3 @@ class AdminStatsView(APIView):
         })
 
 
-class ForceSuperuserView(APIView):
-    """
-    임시 관리자 권한 부여 API
-    GET /api/users/force-admin/<username>/
-    """
-    permission_classes = [AllowAny]
-
-    def get(self, request, username):
-        try:
-            user = User.objects.get(username=username)
-            user.is_staff = True
-            user.is_superuser = True
-            user.save()
-            return Response({'message': f'{username} 계정에 관리자 권한이 부여되었습니다.'})
-        except User.DoesNotExist:
-            return Response({'error': '사용자를 찾을 수 없습니다.'}, status=404)
