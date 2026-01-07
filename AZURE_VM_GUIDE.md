@@ -49,21 +49,23 @@ ssh azureuser@<VM-IP-ADDRESS>
 접속 후 아래 명령어를 순서대로 실행하여 Docker를 설치하고 서버를 켭니다.
 
 ```bash
-# 1. 시스템 업데이트 및 Docker 설치
+# 1. 시스템 업데이트 및 Docker 설치 (한 줄씩 복사해서 실행하세요)
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
 sudo usermod -aG docker $USER
 
-# 2. (재접속 필요) 권한 적용을 위해 나가서 다시 들어옴
+# 2. 권한 적용 (필수: 여기서 일단 로그아웃 됩니다)
 exit
+
+# 3. [내 컴퓨터] 다시 SSH 접속
 ssh azureuser@<VM-IP-ADDRESS>
 
-# 3. 프로젝트 코드 다운로드
+# 4. 소스코드 다운로드
 git clone https://github.com/Terra0305/Korean-codefoce.git
 cd Korean-codefoce
 git checkout dev
 
-# 4. 서버 실행
+# 5. 서버 실행 (자동으로 빌드되고 켜집니다)
 docker compose up -d --build
 ```
 
