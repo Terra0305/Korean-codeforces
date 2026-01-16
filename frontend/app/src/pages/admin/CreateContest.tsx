@@ -25,7 +25,7 @@ const CreateContest = () => {
         e.preventDefault();
         
         try {
-            const response = await client.post('/admin/contests/', formData);
+            const response = await client.post('/api/contests/admin/contests/', formData);
             if (response.status === 201) {
                 alert('대회가 성공적으로 생성되었습니다.');
                 // Optionally navigate somewhere or clear form

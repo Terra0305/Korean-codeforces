@@ -42,7 +42,7 @@ const CreateProblem = () => {
         try {
             // Remove contestName before sending to API
             const { contestName, ...submitData } = formData;
-            const response = await client.post('/admin/problems/', submitData);
+            const response = await client.post('/api/contests/admin/problems/', submitData);
             
             if (response.status === 201) {
                 alert('문제가 성공적으로 생성되었습니다.');
