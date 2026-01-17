@@ -22,7 +22,7 @@ const ContestSelectionModal = ({ onClose, onSelect }: ContestSelectionModalProps
             try {
                 // 관리자는 모든 대회를 볼 수 있어야 하므로 admin 엔드포인트나 일반 엔드포인트 사용
                 // 여기서는 일반 조회 API를 사용해도 무방 (대회 목록 조회)
-                const response = await client.get('/contest/contests/');
+                const response = await client.get('/api/contests/contests/');
                 setContests(response.data);
             } catch (error) {
                 console.error("Failed to fetch contests:", error);
