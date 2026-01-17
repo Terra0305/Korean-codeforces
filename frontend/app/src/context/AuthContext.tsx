@@ -2,6 +2,9 @@ import { createContext, useState, useContext, useEffect } from "react";
 import type {ReactNode} from "react";
 import client from "../api/client";
 import { LoginResponse, Profile } from "../types/auth.d";
+import { Cookies } from "react-cookie";
+
+const cookies = new Cookies();
 
 interface User {
     id: number;
@@ -52,6 +55,8 @@ export const AuthProvider = ({ children } : {children : ReactNode}) => {
             const response = await client.post<LoginResponse>("/api/users/login/", {username, password});
             if (response.status === 200) {
                 setUser(response.data.user);
+                client.defaults.headers.common['x-csrftoken'] = cookies.get('csrftoken');
+                console.log(client.defaults.headers.common['x-csrftoken']);
                 return true;
             }
             return false;
