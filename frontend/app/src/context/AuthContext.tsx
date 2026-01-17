@@ -36,6 +36,7 @@ export const AuthProvider = ({ children } : {children : ReactNode}) => {
                 if (response.status === 200) {
                     const userData = response.data;
                     setUser(userData); 
+                    client.defaults.headers.common['x-csrftoken'] = cookies.get('csrftoken');
                 }
             } catch (error) {
                 if(user){
@@ -55,8 +56,6 @@ export const AuthProvider = ({ children } : {children : ReactNode}) => {
             const response = await client.post<LoginResponse>("/api/users/login/", {username, password});
             if (response.status === 200) {
                 setUser(response.data.user);
-                client.defaults.headers.common['x-csrftoken'] = cookies.get('csrftoken');
-                console.log(client.defaults.headers.common['x-csrftoken']);
                 return true;
             }
             return false;
