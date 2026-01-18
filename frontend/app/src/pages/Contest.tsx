@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { problemApi, Problem } from '../api/problemApi';
 import './Contest.css';
 
 const Contest = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const isDebugMode = id === '1234567890';
     
     // 1시간 45분 30초 = 6330초 (임시 타이머)
@@ -49,10 +50,8 @@ const Contest = () => {
         return () => clearInterval(timerInterval);
     }, []);
 
-    const openProblem = (url: string) => {
-        // 실제 구현 시: 해당 문제의 상세 페이지(번역본 등)로 이동하거나 모달 띄우기
-        // 현재는 Codeforces 원본 링크로 이동하도록 설정하거나, 알림만 띄움
-        alert(`[문제 보기]\n\n실제 구현 시 이 페이지에서 문제의 번역 전문을 보여줍니다.\nURL: ${url}`);
+    const openProblem = (problemId: number) => {
+        navigate(`/problem/${problemId}`);
     };
 
     return (
@@ -110,7 +109,7 @@ const Contest = () => {
                                 <tr key={problem.id}>
                                     <td>{problem.index}</td>
                                     <td>
-                                        <div className="problem-link" onClick={() => openProblem(problem.url)}>
+                                        <div className="problem-link" onClick={() => openProblem(problem.id)}>
                                             {problem.index}. {problem.description_kr || "No Description"}
                                         </div>
                                     </td>
