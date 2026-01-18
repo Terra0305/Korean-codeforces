@@ -1,31 +1,39 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { problemApi, Problem } from '../api/problemApi';
 import './Contest.css';
-
-interface Problem {
-    id: string;
-    name: string;
-    points: number;
-    status: 'AC' | 'Attempt' | 'None';
-    attempts?: number;
-    timeLimit: string;
-    memoryLimit: string;
-}
 
 const Contest = () => {
     const { id } = useParams();
     const isDebugMode = id === '1234567890';
     
-    // 1시간 45분 30초 = 6330초
+    // 1시간 45분 30초 = 6330초 (임시 타이머)
     const [remainingSeconds, setRemainingSeconds] = useState(6330);
     const [activeTab, setActiveTab] = useState('problems');
+    const [problems, setProblems] = useState<Problem[]>([]);
 
     useEffect(() => {
         if (isDebugMode) {
             console.log("Debug Mode Activated: You are viewing the contest with ID 1234567890");
         }
     }, [isDebugMode]);
+
+    useEffect(() => {
+        if (id) {
+            const fetchProblems = async () => {
+                try {
+                    const data = await problemApi.getProblemsByContest(id);
+                    // 인덱스 기준 정렬 (A, B, C, D...)
+                    const sortedData = data.sort((a, b) => a.index.localeCompare(b.index));
+                    setProblems(sortedData);
+                } catch (error) {
+                    console.error("Failed to fetch problems:", error);
+                }
+            };
+            fetchProblems();
+        }
+    }, [id]);
 
     useEffect(() => {
         const timerInterval = setInterval(() => {
@@ -41,27 +49,31 @@ const Contest = () => {
         return () => clearInterval(timerInterval);
     }, []);
 
-
-
-    const openProblem = (problemId: string) => {
-        alert(`[문제 ${problemId} 번역본 보기]\n\n실제 구현 시 이 페이지에서 문제의 번역 전문을 보여줍니다.\n\n사용자는 번역본을 읽고 Codeforces Virtual Contest Submission 페이지로 이동하여 답안을 제출합니다.`);
+    const openProblem = (url: string) => {
+        // 실제 구현 시: 해당 문제의 상세 페이지(번역본 등)로 이동하거나 모달 띄우기
+        // 현재는 Codeforces 원본 링크로 이동하도록 설정하거나, 알림만 띄움
+        alert(`[문제 보기]\n\n실제 구현 시 이 페이지에서 문제의 번역 전문을 보여줍니다.\nURL: ${url}`);
     };
-
-    const problems: Problem[] = [
-        { id: 'A', name: 'A. 최소 사각형 만들기 (Minimizing Rectangle)', points: 500, status: 'AC', timeLimit: '1.0s', memoryLimit: '256MB' },
-        { id: 'B', name: 'B. 문자열 균형 맞추기 (Balancing Strings)', points: 1000, status: 'Attempt', attempts: 3, timeLimit: '2.0s', memoryLimit: '512MB' },
-        { id: 'C', name: 'C. 가장 긴 팰린드롬 경로 (Longest Palindrome Path)', points: 1500, status: 'None', timeLimit: '1.5s', memoryLimit: '256MB' },
-        { id: 'D', name: 'D. 분할 정복 기반 수열 정렬 (Divide and Conquer Sort)', points: 2000, status: 'None', timeLimit: '3.0s', memoryLimit: '1024MB' },
-    ];
 
     return (
         <div className="contest-page">
-            <Navbar 
-                contestTitle="제 12회 정기 가상 대회" 
-                remainingTime={remainingSeconds} 
-            />
+            <Navbar />
+            
+            
 
             <main className="contest-main">
+                <header className="contest-header">
+                <h1 className="contest-title">{`Contest #${id}`}</h1>
+                <div className="contest-timer">
+                    {(() => {
+                        if (remainingSeconds <= 0) return "Contest Ended";
+                        const h = Math.floor(remainingSeconds / 3600);
+                        const m = Math.floor((remainingSeconds % 3600) / 60);
+                        const s = remainingSeconds % 60;
+                        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+                    })()}
+                </div>
+            </header>
                 <nav className="tabs">
                     <div 
                         className={`tab-item ${activeTab === 'problems' ? 'active' : ''}`}
@@ -87,38 +99,25 @@ const Contest = () => {
                     <table className="contest-table">
                         <thead>
                             <tr>
-                                <th style={{width: '5%'}}>#</th>
-                                <th style={{width: '45%'}}>문제명 (Problem Name)</th>
+                                <th style={{width: '10%'}}>#</th>
+                                <th style={{width: '60%'}}>문제명 (Problem Name)</th>
                                 <th style={{width: '15%'}}>점수 (Points)</th>
                                 <th style={{width: '15%'}}>상태 (Status)</th>
-                                <th style={{width: '20%'}}>제한 (Constraints)</th>
                             </tr>
                         </thead>
                         <tbody>
                             {problems.map(problem => (
                                 <tr key={problem.id}>
-                                    <td>{problem.id}</td>
+                                    <td>{problem.index}</td>
                                     <td>
-                                        <div className="problem-link" onClick={() => openProblem(problem.id)}>
-                                            {problem.name}
+                                        <div className="problem-link" onClick={() => openProblem(problem.url)}>
+                                            {problem.index}. {problem.description_kr || "No Description"}
                                         </div>
                                     </td>
-                                    <td>{problem.points}</td>
+                                    <td>{problem.points ?? '-'}</td>
                                     <td>
-                                        {problem.status === 'AC' && (
-                                            <span className="status status-ac">Accepted</span>
-                                        )}
-                                        {problem.status === 'Attempt' && (
-                                            <>
-                                                <span className="status status-attempt">Failed Attempts</span>
-                                                <span className="status-attempts-count">{problem.attempts} Attempts</span>
-                                            </>
-                                        )}
-                                        {problem.status === 'None' && (
-                                            <span className="status status-none">Not Attempted</span>
-                                        )}
+                                        {/* Status column initially empty as requested */}
                                     </td>
-                                    <td>Time: {problem.timeLimit} / Memory: {problem.memoryLimit}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -128,5 +127,6 @@ const Contest = () => {
         </div>
     );
 };
+
 
 export default Contest;

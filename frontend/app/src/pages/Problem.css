@@ -1,0 +1,169 @@
+:root {
+    /* Shared variables might be in global css, but defining here for safety as per html */
+    --primary-color: #3182ce;
+    --bg-color: #f7fafc;
+    --card-bg: #ffffff;
+    --text-main: #2d3748;
+    --text-sub: #718096;
+    --border-color: #e2e8f0;
+    --code-bg: #edf2f7;
+}
+
+.problem-page-body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.problem-header {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.8rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 50px;
+    flex-shrink: 0;
+}
+
+.back-btn {
+    text-decoration: none;
+    color: var(--text-sub);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+.problem-timer {
+    font-family: monospace;
+    font-weight: bold;
+    color: #e53e3e;
+    font-size: 1.2rem;
+}
+
+/* Main Split Layout */
+.split-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden; /* Scroll handled inside */
+}
+
+/* Left Panel: Problem Description */
+.left-panel {
+    flex: 6; /* 60% width */
+    background: white;
+    padding: 2rem 3rem;
+    overflow-y: auto; /* Internal scroll */
+    border-right: 1px solid var(--border-color);
+}
+
+/* Right Panel: Codeforces Connection */
+.right-panel {
+    flex: 4; /* 40% width */
+    background: #f8f9fa;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    border-left: 1px solid #e2e8f0;
+}
+
+/* Typography */
+.left-panel h1 { margin-top: 0; font-size: 1.8rem; color: var(--primary-color); }
+.left-panel h3 { margin-top: 1.5rem; border-bottom: 2px solid var(--bg-color); padding-bottom: 5px; }
+.left-panel p { line-height: 1.6; color: #4a5568; }
+
+.problem-meta {
+    color: var(--text-sub);
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+    background: var(--bg-color);
+    padding: 10px;
+    border-radius: 6px;
+}
+
+/* Code/Sample Blocks */
+.sample-block {
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}
+.sample-header {
+    background: #e2e8f0;
+    padding: 5px 10px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: var(--text-sub);
+    display: flex;
+    justify-content: space-between;
+}
+.left-panel pre {
+    background: var(--card-bg);
+    margin: 0;
+    padding: 10px;
+    font-family: Consolas, monospace;
+    white-space: pre-wrap;
+}
+
+/* Right Panel Components */
+.cf-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.btn-submit {
+    width: 100%;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 15px;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+.btn-submit:hover { background-color: #2b6cb0; }
+
+.status-box {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 1rem;
+    background: #fafbfc;
+}
+
+.status-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+}
+.verdict {
+    font-weight: bold;
+}
+.verdict-running { color: #d69e2e; }
+.verdict-ac { color: #38a169; }
+
+.loader {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
