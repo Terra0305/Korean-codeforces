@@ -39,15 +39,22 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS("\nStopped contest updater."))
 
     def update_contest(self, contest):
-        participants = Participant.objects.filter(contest=contest)
+        
+        participants = Participant.objects.filter(contest=contest).select_related('user__profile')
+        
         if not participants.exists():
             self.stdout.write(f" - [{contest.name}] No participants.")
             return
 
         self.stdout.write(f" - [{contest.name}] Updating {participants.count()} participants...")
         
+        updated_participants = []
+        
         for participant in participants:
             try:
+                #API Rate Limit 방지
+                time.sleep(0.5)
+                
                 handle = participant.user.profile.codeforces_id
                 result = fetch_participant_status(contest.id, handle)
                 
@@ -55,10 +62,12 @@ class Command(BaseCommand):
                     participant.problem_status = result['problem_status']
                     participant.total_score = result['total_score']
                     participant.penalty = result['penalty']
-                    participant.save()
-                    # self.stdout.write(f"   -> Updated {handle}") # 너무 시끄러울 수 있으므로 주석 처리하거나 필요시 해제
+                    updated_participants.append(participant)
+                    
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f"   -> Error updating {participant.user.username}: {e}"))
-                
-            # API 호출 간 약간의 딜레이 (Rate Limit 방지) - 필요시 
-            # time.sleep(0.1) 
+        
+        # DB 저장
+        if updated_participants:
+            Participant.objects.bulk_update(updated_participants, ['problem_status', 'total_score', 'penalty'])
+            self.stdout.write(f"   -> Successfully updated {len(updated_participants)} participants (Bulk Update).") 
