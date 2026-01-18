@@ -1,0 +1,144 @@
+:root {
+    --primary-color: #3182ce;
+    --primary-dark: #2c5282;
+    --bg-color: #f7fafc;
+    --card-bg: #ffffff;
+    --text-main: #2d3748;
+    --text-sub: #718096;
+    --border-color: #e2e8f0;
+    --accent-gradient: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+}
+
+.main-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: 2rem;
+}
+
+/* Cards */
+.card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    overflow: hidden;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--bg-color);
+}
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+/* Hero Banner Style */
+.hero-banner {
+    background: var(--accent-gradient);
+    color: white;
+    padding: 2.5rem 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 10px 15px -3px rgba(66, 153, 225, 0.4);
+}
+
+.hero-tag {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: inline-block;
+    margin-bottom: 1rem;
+}
+
+.hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin: 0 0 1rem 0;
+    line-height: 1.2;
+}
+
+.hero-secret-info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0,0,0,0.2);
+    width: fit-content;
+    margin: 0 auto 2rem auto;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+/* Spoiler Effect */
+.blur-text {
+    color: rgba(255,255,255,0.6);
+    filter: blur(6px);
+    user-select: none;
+    transition: filter 0.3s;
+}
+
+.hero-timer {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 2rem;
+}
+.hero-timer span {
+    font-weight: 800;
+    color: #ffd700; /* Gold */
+}
+
+.btn-hero {
+    background-color: white;
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    font-weight: 800;
+    padding: 12px 32px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-hero:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+/* Table Styles */
+.main-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+.main-table th { text-align: left; color: var(--text-sub); font-weight: 600; padding: 12px; border-bottom: 2px solid var(--bg-color); }
+.main-table td { padding: 16px 12px; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
+.main-table tr:last-child td { border-bottom: none; }
+
+.status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+.status-done { background: #edf2f7; color: #4a5568; } 
+
+.btn { background-color: var(--primary-color); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+.btn:hover { background-color: var(--primary-dark); }
+.btn-outline { background: transparent; border: 1px solid #cbd5e0; color: #4a5568; }
+
+/* Sidebar & Others */
+.sidebar-section { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.rank-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--bg-color); }
+.rank-high { color: #e53e3e; font-weight: bold; }
+
+/* Modal not included as it's not part of Main content directly (Nav handles it or separate component) */
