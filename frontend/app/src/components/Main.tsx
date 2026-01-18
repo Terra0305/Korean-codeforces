@@ -1,13 +1,6 @@
 import { useState, useEffect } from 'react';
-import client from '../api/client';
+import { contestApi, Contest } from '../api/contestApi';
 import './Main.css';
-
-interface Contest {
-    id: number;
-    name: string;
-    start_time: string;
-    end_time: string;
-}
 
 const Main = () => {
     // Timer Logic for Countdown
@@ -17,10 +10,9 @@ const Main = () => {
     useEffect(() => {
         const fetchContests = async () => {
             try {
-                // User asked for /api/contests/contests
-                const response = await client.get('/api/contests/contests/');
-                setContests(response.data.results);
-                console.log("Fetched contests:", response.data);
+                const results = await contestApi.getAllContests();
+                setContests(results);
+                console.log("Fetched contests:", results);
             } catch (error) {
                 console.error("Failed to fetch contests:", error);
             }
