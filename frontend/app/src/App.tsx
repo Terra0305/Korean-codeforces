@@ -7,6 +7,7 @@ import SignupPage from './pages/SignupPage.tsx';
 import Contest from './pages/Contest.tsx';
 import CreateContest from './pages/admin/CreateContest.tsx';
 import CreateProblem from './pages/admin/CreateProblem.tsx';
+import Problem from './pages/Problem.tsx';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/contest/:id" element={<Contest />} />
           <Route path="/admin/create-contest" element={<CreateContest />} />
           <Route path="/admin/create-problem" element={<CreateProblem />} />
+          <Route path="/problem/:id" element={<Problem />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

@@ -1,79 +1,40 @@
-:root {
-    --primary-color: #3182ce;
-    --primary-dark: #2c5282;
-    --bg-color: #f7fafc;
-    --card-bg: #ffffff;
-    --text-main: #2d3748;
-    --text-sub: #718096;
-    --border-color: #e2e8f0;
-    --success-color: #38a169; /* Green for AC */
-    --warning-color: #ecc94b; /* Yellow for Attempts */
-}
-
-.contest-page {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-main);
-    min-height: 100vh;
-}
-
-/* Header (Simplified for Contest Page) */
 .contest-header {
-    background-color: var(--card-bg);
-    border-bottom: 1px solid var(--border-color);
-    padding: 1rem 2rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    display: flex;
-    justify-content: space-between;
+    background-color: white;
+    padding: 0.2rem 0rem 2rem;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
 }
+
 .contest-title {
-    font-size: 1.5rem;
+    font-size: 2.5rem;
     font-weight: 700;
-    color: var(--primary-dark);
-}
-.timer {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: #e53e3e; /* Red for urgency */
-    padding: 5px 15px;
-    border: 2px solid #e53e3e;
-    border-radius: 4px;
-    font-family: monospace;
+    color: #2d3748;
+    margin: 0;
 }
 
-/* Main Content & Tabs */
+.contest-timer {
+    color: #e53e3e;
+    font-weight: 800;
+    font-family: monospace;
+    font-size: 3rem;
+    border: 2px solid #e53e3e;
+    padding: 4px 12px;
+    border-radius: 6px;
+    background-color: #fff5f5;
+    text-align: center;
+}
+
 .contest-main {
     max-width: 1200px;
     margin: 2rem auto;
     padding: 0 1rem;
 }
 
-.tabs {
-    display: flex;
-    border-bottom: 2px solid var(--border-color);
-    margin-bottom: 1rem;
-}
-
-.tab-item {
-    padding: 10px 20px;
-    cursor: pointer;
-    font-weight: 600;
-    color: var(--text-sub);
-    border-bottom: 2px solid transparent;
-    transition: color 0.2s;
-}
-
-.tab-item.active {
-    color: var(--primary-color);
-    border-bottom: 2px solid var(--primary-color);
-}
-
-/* Problem Table */
 .problem-container {
-    background: var(--card-bg);
+    background: white;
     border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     overflow: hidden;
 }
 
@@ -81,45 +42,66 @@
     width: 100%;
     border-collapse: collapse;
 }
+
 .contest-table th {
+    background-color: #f7fafc;
+    padding: 12px 16px;
     text-align: left;
-    color: var(--text-sub);
     font-weight: 600;
-    padding: 15px 20px;
-    border-bottom: 1px solid var(--border-color);
-    background: var(--bg-color);
+    color: #4a5568;
+    border-bottom: 2px solid #e2e8f0;
 }
+
 .contest-table td {
-    padding: 15px 20px;
-    border-bottom: 1px solid var(--border-color);
+    padding: 16px;
+    border-bottom: 1px solid #edf2f7;
+    color: #2d3748;
 }
-.contest-table tr:last-child td { border-bottom: none; }
+
+.contest-table tr:hover {
+    background-color: #f8fafc;
+}
 
 .problem-link {
-    color: var(--primary-dark);
+    color: #3182ce;
     font-weight: 600;
+    cursor: pointer;
     text-decoration: none;
     transition: color 0.2s;
+}
+
+.problem-link:hover {
+    color: #2c5282;
+    text-decoration: underline;
+}
+
+.tabs {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #edf2f7;
+}
+
+.tab-item {
+    padding-bottom: 10px;
+    font-weight: 500;
+    color: #718096;
     cursor: pointer;
-}
-.problem-link:hover { text-decoration: underline; color: var(--primary-color); }
-
-/* Status Badges */
-.status {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    font-weight: bold;
+    position: relative;
+    transition: all 0.2s;
 }
 
-.status-ac { background-color: var(--success-color); color: white; } /* Accepted */
-.status-attempt { background-color: var(--warning-color); color: var(--text-main); } /* Attempts */
-.status-none { background-color: #e2e8f0; color: var(--text-sub); } /* Not Attempted */
+.tab-item.active {
+    color: #3182ce;
+    font-weight: 600;
+}
 
-.status-attempts-count {
-    font-size: 0.8rem;
-    color: var(--text-sub);
-    display: block;
-    margin-top: 2px;
+.tab-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #3182ce;
 }
