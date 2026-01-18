@@ -1,6 +1,7 @@
 import './App.css';
 import { AuthProvider } from './context/AuthContext.tsx';
 import Navbar from './components/Navbar.tsx';
+import Main from './components/Main';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import SignupPage from './pages/SignupPage.tsx';
 import Contest from './pages/Contest.tsx';
@@ -12,7 +13,12 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Navbar />} />
+          <Route path="/" element={
+            <>
+              <Navbar />
+              <Main />
+            </>
+          } />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/contest/:id" element={<Contest />} />
           <Route path="/admin/create-contest" element={<CreateContest />} />
