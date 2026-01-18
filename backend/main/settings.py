@@ -48,6 +48,13 @@ INSTALLED_APPS = [
     # Local apps
     'contest',
     'user',
+
+    # Health Check
+    'health_check',
+    'health_check.db',
+    'health_check.cache',
+    'health_check.storage',
+    'health_check.contrib.migrations',
 ]
 
 MIDDLEWARE = [
