@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { contestApi, Contest } from '../api/contestApi';
 import './Main.css';
 
 const Main = () => {
+    const navigate = useNavigate();
     // Timer Logic for Countdown
     const [contests, setContests] = useState<Contest[]>([]);
     const [now, setNow] = useState(new Date());
@@ -69,14 +71,13 @@ const Main = () => {
         return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
     };
 
-    // Logic for Past Contest Table
-    const pastContests = contests
-        .filter(c => new Date(c.end_time) < now)
+    // Logic for Contest Table (Show latest 3 contests regardless of status)
+    const recentContests = contests
         .sort((a, b) => new Date(b.end_time).getTime() - new Date(a.end_time).getTime())
         .slice(0, 3);
     
     // Fill empty rows if less than 3
-    const tableRows = [...pastContests];
+    const tableRows = [...recentContests];
     while (tableRows.length < 3) {
         tableRows.push(null as any);
     }
@@ -89,6 +90,15 @@ const Main = () => {
     const formatDate = (dateStr: string) => {
         const d = new Date(dateStr);
         return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}`;
+    };
+
+    const getContestStatus = (contest: Contest) => {
+        const start = new Date(contest.start_time);
+        const end = new Date(contest.end_time);
+
+        if (now < start) return { text: '예정', className: 'status-badge status-upcoming', style: { background: '#ebf8ff', color: '#2b6cb0' } };
+        if (now >= start && now < end) return { text: '진행중', className: 'status-badge status-running', style: { background: '#c6f6d5', color: '#2f855a' } };
+        return { text: '종료됨', className: 'status-badge status-done', style: { background: '#edf2f7', color: '#4a5568' } };
     };
 
     return (
@@ -128,7 +138,7 @@ const Main = () => {
 
                 <div className="card">
                     <div className="card-header">
-                        <span className="card-title">📚 Past Contest History</span>
+                        <span className="card-title">📚 Recent Contests</span>
                         <button className="btn-outline btn" style={{ fontSize: '0.8rem' }} onClick={handleDummyClick}>View All</button>
                     </div>
                     
@@ -143,15 +153,29 @@ const Main = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {tableRows.map((contest, index) => (
+                            {tableRows.map((contest, index) => {
+                                const status = contest ? getContestStatus(contest) : null;
+                                return (
                                 <tr key={contest ? contest.id : `empty-${index}`}>
-                                    {contest ? (
+                                    {contest && status ? (
                                         <>
                                             <td><strong>{contest.name}</strong></td>
                                             <td style={{ color: 'var(--text-sub)' }}>{new Date(contest.start_time).toLocaleTimeString()}</td>
                                             <td>{formatDate(contest.end_time)}</td>
-                                            <td><span className="status-badge status-done">종료됨</span></td>
-                                            <td><button className="btn-outline btn" style={{ padding: '4px 10px', fontSize: '0.8rem' }} onClick={handleDummyClick}>결과 보기</button></td>
+                                            <td>
+                                                <span className={status.className} style={status.style}>
+                                                    {status.text}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <button 
+                                                    className="btn-outline btn" 
+                                                    style={{ padding: '4px 10px', fontSize: '0.8rem' }} 
+                                                    onClick={() => navigate(`/contest/${contest.id}`)}
+                                                >
+                                                    대회 이동
+                                                </button>
+                                            </td>
                                         </>
                                     ) : (
                                         <>
@@ -163,7 +187,8 @@ const Main = () => {
                                         </>
                                     )}
                                 </tr>
-                            ))}
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
