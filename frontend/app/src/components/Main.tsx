@@ -1,9 +1,32 @@
 import { useState, useEffect } from 'react';
+import client from '../api/client';
 import './Main.css';
+
+interface Contest {
+    id: number;
+    name: string;
+    start_time: string;
+    end_time: string;
+}
 
 const Main = () => {
     // Timer Logic for Countdown
     const [timeLeft, setTimeLeft] = useState(4 * 3600 + 12 * 60 + 59); // Example: 4h 12m 59s
+    const [contests, setContests] = useState<Contest[]>([]);
+
+    useEffect(() => {
+        const fetchContests = async () => {
+            try {
+                // User asked for /api/contests/contests
+                const response = await client.get('/api/contests/contests/');
+                setContests(response.data.results);
+                console.log("Fetched contests:", response.data.results);
+            } catch (error) {
+                console.error("Failed to fetch contests:", error);
+            }
+        };
+        fetchContests();
+    }, []);
 
     useEffect(() => {
         const timer = setInterval(() => {
