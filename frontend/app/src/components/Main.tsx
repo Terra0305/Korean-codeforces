@@ -20,7 +20,7 @@ const Main = () => {
                 // User asked for /api/contests/contests
                 const response = await client.get('/api/contests/contests/');
                 setContests(response.data.results);
-                console.log("Fetched contests:", response.data.results);
+                console.log("Fetched contests:", contests);
             } catch (error) {
                 console.error("Failed to fetch contests:", error);
             }
