@@ -29,6 +29,8 @@ urlpatterns = [
 # PUT    /admin/contests/{pk}/     : 특정 대회 전체 수정 (Update)
 # PATCH  /admin/contests/{pk}/     : 특정 대회 일부 수정 (Partial Update)
 # DELETE /admin/contests/{pk}/     : 특정 대회 삭제 (Destroy)
+# POST   /admin/contests/{pk}/sync_codeforces/ : Codeforces 데이터 수동 동기화
+# POST   /admin/contests/{pk}/apply_rating/    : ELO 레이팅 반영 (관리자 전용)
 
 
 # 2. 문제 관리 (AdminProblemViewSet)

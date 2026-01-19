@@ -3,6 +3,8 @@ from django.utils import timezone
 from datetime import datetime, timezone as datetime_timezone
 from .models import Contest, Problem, Participant
 
+API_COOLDOWN = 0.5  # API 호출 간 대기 시간 (초)
+
 def fetch_contest_data(contest_id):
     
     #Codeforces API를 통해 대회 정보와 문제 정보를 가져와 데이터베이스를 갱신
@@ -71,3 +73,133 @@ def fetch_contest_data(contest_id):
     except Exception as e:
         print(f"Exception fetching contest {contest_id}: {e}")
         return False
+
+def fetch_participant_status(contest_id, handle):
+    """
+    Codeforces에서 특정 대회의 사용자 채점 기록을 가져와 문제 상세 풀이 현황을 반환
+    
+    Args:
+        contest_id (int): 대회 ID
+        handle (str): Codeforces 핸들
+        
+    Returns:
+        dict: {
+            "problem_status": str,  # "+:+2:-1" 형식
+            "total_score": float,   # 총점
+            "penalty": int          # 패널티 (분 단위)
+        }
+        또는 None (실패 시)
+    """
+    
+    # 1. 대회 제출 기록 가져오기 (contest.status API)
+    # from=1&count=1000 정도로 충분하다고 가정 (일반적인 대회 제출 수 고려)
+    url = f"https://codeforces.com/api/contest.status?contestId={contest_id}&handle={handle}&from=1&count=1000"
+    
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        
+        if data['status'] != 'OK':
+            print(f"Error fetching status for {handle} in {contest_id}: {data.get('comment')}")
+            return None
+            
+        submissions = data['result']
+        
+        # 2. 대회의 문제 목록 가져오기 (DB에서 조회)
+        # 문제 순서(index)를 보장하기 위해 DB에서 가져옴
+        # 사전에 fetch_contest_data가 실행되어 DB에 문제 정보가 있다고 가정
+        try:
+            contest = Contest.objects.get(id=contest_id)
+            problems = contest.problems.all().order_by('index') # A, B, C 순서 정렬
+        except Contest.DoesNotExist:
+            print(f"Contest {contest_id} not found in DB.")
+            return None
+            
+        if not problems:
+            print(f"No problems found for contest {contest_id}.")
+            return None
+
+        # 문제별 상태 추적용 딕셔너리
+        # key: 문제 index (예: "A"), value: { "solved": bool, "attempts": int, "penalty_time": int (분) }
+        problem_stats = { p.index: { "solved": False, "attempts": 0, "penalty_time": 0 } for p in problems }
+        
+        # 제출 기록은 최신순(내림차순)으로 오므로, 역순(시간순)으로 뒤집어서 처리
+        # (먼저 푼 것이 인정되므로)
+        submissions.reverse() 
+        
+        for sub in submissions:
+            problem_index = sub['problem']['index']
+            
+            # DB에 없는 문제는 무시
+            if problem_index not in problem_stats:
+                continue
+            
+            stats = problem_stats[problem_index]
+            
+            # 이미 푼 문제는 더 이상 계산하지 않음
+            if stats["solved"]:
+                continue
+                
+            verdict = sub.get('verdict')
+            
+            # OK(정답)인 경우
+            if verdict == 'OK':
+                stats["solved"] = True
+                # 풀이 시간(초) -> 분 단위 변환 (Codeforces는 relativeTimeSeconds 제공)
+                # 대회 시작 후 흐른 시간
+                relative_seconds = sub.get('relativeTimeSeconds', 0)
+                stats["penalty_time"] = int(relative_seconds / 60)
+            
+            # 오답인 경우 시도 횟수 증가
+            # 실제 패널티 계산 시에는 푼 문제에 대해서만 (시도횟수 * 20분) 적용함.
+            elif verdict != 'OK':
+                stats["attempts"] += 1
+
+        # 3. 결과 집계
+        status_parts = []
+        total_score = 0.0
+        total_penalty = 0
+        
+        for p in problems:
+            stats = problem_stats[p.index]
+            
+            # 문자열 생성 (예: "+", "+2", "-1")
+            # +: 1번 만에 정답 (attempts=0) -> "+", 시도후 정답 -> "+attempts"
+            # -: 못 풀고 시도만 함 -> "-attempts"
+            # 시도조차 안했으면? -> "0" 
+            
+            status_str = "0"
+            
+            if stats["solved"]:
+                if stats["attempts"] == 0:
+                    status_str = "+"
+                else:
+                    status_str = f"+{stats['attempts']}"
+                
+                # 점수 계산 (문제 배점)
+                total_score += p.points
+                
+                # 패널티 계산: (풀이 시간) + (틀린 횟수 * 20분)
+                total_penalty += stats["penalty_time"] + (stats["attempts"] * 20)
+                
+            else:
+                if stats["attempts"] > 0:
+                    status_str = f"-{stats['attempts']}"
+                else:
+                    status_str = "0" # 시도 안함
+            
+            status_parts.append(status_str)
+            
+        # status 문자열 조합 (구분자: ":")
+        final_status_str = ":".join(status_parts)
+        
+        return {
+            "problem_status": final_status_str,
+            "total_score": total_score,
+            "penalty": total_penalty
+        }
+        
+    except Exception as e:
+        print(f"Exception fetching status for {handle}: {e}")
+        return None

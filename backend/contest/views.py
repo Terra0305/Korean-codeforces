@@ -43,6 +43,19 @@ class AdminContestViewSet(viewsets.ModelViewSet):
             return Response({'status': '동기화 성공', 'data': result})
         return Response({'status': '동기화 실패'}, status=400)
 
+    @action(detail=True, methods=['post'])
+    def apply_rating(self, request, pk=None):
+        """대회 결과를 바탕으로 ELO 레이팅 반영 (관리자 전용)"""
+        contest = self.get_object()
+        from .rating_calculator import apply_contest_rating
+        
+        result = apply_contest_rating(contest.id)
+        
+        if result['success']:
+            return Response({'status': '성공', 'message': result['message']})
+        else:
+            return Response({'status': '실패', 'message': result['message']}, status=400)
+
 
 class AdminProblemViewSet(viewsets.ModelViewSet):
     """

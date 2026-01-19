@@ -8,6 +8,9 @@ class Contest(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True, verbose_name="대회명")
     start_time = models.DateTimeField(null=True, blank=True, verbose_name="대회 시작시간")#시작시간
     end_time = models.DateTimeField(null=True, blank=True, verbose_name="대회 종료시간") #종료시간
+    
+    # ELO 레이팅 반영 여부 (중복 반영 방지)
+    is_rating_applied = models.BooleanField(default=False, verbose_name="레이팅 반영 여부")
 
     class Meta:
         verbose_name = "대회"
