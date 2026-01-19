@@ -3,6 +3,8 @@ from django.utils import timezone
 from datetime import datetime, timezone as datetime_timezone
 from .models import Contest, Problem, Participant
 
+API_COOLDOWN = 0.5  # API 호출 간 대기 시간 (초)
+
 def fetch_contest_data(contest_id):
     
     #Codeforces API를 통해 대회 정보와 문제 정보를 가져와 데이터베이스를 갱신
@@ -122,14 +124,14 @@ def fetch_participant_status(contest_id, handle):
         # key: 문제 index (예: "A"), value: { "solved": bool, "attempts": int, "penalty_time": int (분) }
         problem_stats = { p.index: { "solved": False, "attempts": 0, "penalty_time": 0 } for p in problems }
         
-        # 제출 기록은 최신순(내림차순)으로 오므로, 역순(시간순)으로 뒤집어서 처리하는 것이 로직상 편함
+        # 제출 기록은 최신순(내림차순)으로 오므로, 역순(시간순)으로 뒤집어서 처리
         # (먼저 푼 것이 인정되므로)
         submissions.reverse() 
         
         for sub in submissions:
             problem_index = sub['problem']['index']
             
-            # DB에 없는 문제(예: 대회 중 삭제된 문제 등)는 무시
+            # DB에 없는 문제는 무시
             if problem_index not in problem_stats:
                 continue
             
@@ -149,10 +151,7 @@ def fetch_participant_status(contest_id, handle):
                 relative_seconds = sub.get('relativeTimeSeconds', 0)
                 stats["penalty_time"] = int(relative_seconds / 60)
             
-            # 오답인 경우 (컴파일 에러 등은 보통 패널티 제외하지만, Codeforces 룰에 따라 다름)
-            # 여기선 간단히 OK가 아니면 시도 횟수 증가로 처리 (테스트 케이스 1번 실패 등 고려 필요할 수도 있음)
-            # 일반적인 ICPC 룰: CE(Compilation Error)는 패널티 제외, 나머지는 포함
-            # 하지만 상세 룰 구현이 복잡하므로, 일단 OK 아니면 오답으로 간주하고 시도 횟수만 카운트하되, 
+            # 오답인 경우 시도 횟수 증가
             # 실제 패널티 계산 시에는 푼 문제에 대해서만 (시도횟수 * 20분) 적용함.
             elif verdict != 'OK':
                 stats["attempts"] += 1
@@ -168,8 +167,7 @@ def fetch_participant_status(contest_id, handle):
             # 문자열 생성 (예: "+", "+2", "-1")
             # +: 1번 만에 정답 (attempts=0) -> "+", 시도후 정답 -> "+attempts"
             # -: 못 풀고 시도만 함 -> "-attempts"
-            # 시도조차 안했으면? -> "0" 또는 공백? 예시에는 없지만 보통 "0" 처리하거나 생략
-            # 여기서는 시도 없으면 "0"으로 표시하겠습니다.
+            # 시도조차 안했으면? -> "0" 
             
             status_str = "0"
             

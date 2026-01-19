@@ -4,8 +4,8 @@ from user.models import Profile
 
 def calculate_elo_changes(participants):
     """
-    참가자 리스트(랭킹순 정렬됨)를 받아 각 참가자의 Rating 변화량을 계산합니다.
-    알고리즘: Simplified Pairwise ELO (O(N^2))
+    참가자 리스트(랭킹순 정렬됨)를 받아 각 참가자의 Rating 변화량을 계산
+    
     """
     changes = {p.id: 0 for p in participants}
     
@@ -43,8 +43,8 @@ def calculate_elo_changes(participants):
 
 def apply_contest_rating(contest_id):
     """
-    특정 대회의 결과를 바탕으로 참가자들의 ELO Rating을 반영합니다.
-    (Idempotency 보장: 이미 반영된 경우 실행하지 않음)
+    특정 대회의 결과를 바탕으로 참가자들의 ELO Rating을 반영.
+    (이미 반영된 경우 실행하지 않음)
     """
     try:
         contest = Contest.objects.get(id=contest_id)
@@ -74,14 +74,14 @@ def apply_contest_rating(contest_id):
             old_rating = profile.elo_rating
             new_rating = int(old_rating + delta)
             
-            # 레이팅이 음수가 되지 않도록 보정 (선택 사항, 보통 0 또는 100 하한선 둠)
+            # 레이팅이 음수가 되지 않도록 보정
             if new_rating < 0:
                 new_rating = 0
                 
             profile.elo_rating = new_rating
             updated_profiles.append(profile)
             
-            # (옵션) 로그 남기기 등
+            # (옵션) 로그 남기기
             # print(f"User {profile.user.username}: {old_rating} -> {new_rating} ({delta:+.2f})")
             
         # 일괄 업데이트

@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from contest.models import Contest, Participant
-from contest.utils import fetch_participant_status
+from contest.utils import fetch_participant_status, API_COOLDOWN
 import time
 
 class Command(BaseCommand):
@@ -53,7 +53,7 @@ class Command(BaseCommand):
         for participant in participants:
             try:
                 #API Rate Limit 방지
-                time.sleep(0.5)
+                time.sleep(API_COOLDOWN)
                 
                 handle = participant.user.profile.codeforces_id
                 result = fetch_participant_status(contest.id, handle)

@@ -1,6 +1,6 @@
 import time
 from django.core.management.base import BaseCommand
-from contest.utils import fetch_contest_data
+from contest.utils import fetch_contest_data, API_COOLDOWN
 from contest.models import Contest
 #커맨드에서 대회,문제 데이터를 갱신할려는 경우  사용하는 코드
 #사용 예시 : python manage.py crawl_codeforces 1800 1801
@@ -24,7 +24,7 @@ class Command(BaseCommand):
         # 각 대회 ID에 대해 데이터 가져오기 수행
         for cid in contest_ids:
             # API 제한 준수를 위한 대기
-            time.sleep(0.5)
+            time.sleep(API_COOLDOWN)
             self.stdout.write(f"Fetching contest {cid}...")
             if fetch_contest_data(cid):
                 self.stdout.write(self.style.SUCCESS(f"Successfully fetched contest {cid}"))
