@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { problemApi, Problem } from '../api/problemApi';
+import { contestApi, Contest as ContestType } from '../api/contestApi';
 import ProblemSet from '../components/ProblemSet';
 import Leaderboard from './Leaderboard';
 import './Contest.css';
@@ -11,10 +12,25 @@ const Contest = () => {
     const navigate = useNavigate();
     const isDebugMode = id === '1234567890';
     
-    // 1시간 45분 30초 = 6330초 (임시 타이머)
-    const [remainingSeconds, setRemainingSeconds] = useState(6330);
     const [activeTab, setActiveTab] = useState('problems');
     const [problems, setProblems] = useState<Problem[]>([]);
+    const [contest, setContest] = useState<ContestType | null>(null);
+    const [timerText, setTimerText] = useState("Loading...");
+
+    // Fetch Contest Details
+    useEffect(() => {
+        if (id) {
+            const fetchContest = async () => {
+                try {
+                    const data = await contestApi.getContestDetail(id);
+                    setContest(data);
+                } catch (error) {
+                    console.error("Failed to fetch contest:", error);
+                }
+            };
+            fetchContest();
+        }
+    }, [id]);
 
     useEffect(() => {
         if (isDebugMode) {
@@ -22,12 +38,12 @@ const Contest = () => {
         }
     }, [isDebugMode]);
 
+    // Fetch Problems
     useEffect(() => {
         if (id) {
             const fetchProblems = async () => {
                 try {
                     const data = await problemApi.getProblemsByContest(id);
-                    // 인덱스 기준 정렬 (A, B, C, D...)
                     const sortedData = data.sort((a, b) => a.index.localeCompare(b.index));
                     setProblems(sortedData);
                 } catch (error) {
@@ -38,26 +54,48 @@ const Contest = () => {
         }
     }, [id]);
 
+    // Timer Logic
     useEffect(() => {
-        const timerInterval = setInterval(() => {
-            setRemainingSeconds(prev => {
-                if (prev <= 0) {
-                    clearInterval(timerInterval);
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
+        if (!contest) return;
 
-        return () => clearInterval(timerInterval);
-    }, []);
+        const updateTimer = () => {
+            const now = new Date();
+            const start = new Date(contest.start_time);
+            const end = new Date(contest.end_time);
+
+            if (now < start) {
+                // Before start: Show total duration
+                const durationSeconds = Math.floor((end.getTime() - start.getTime()) / 1000);
+                setTimerText(formatSeconds(durationSeconds));
+            } else if (now > end) {
+                // After end
+                setTimerText("대회가 종료되었습니다.");
+            } else {
+                // Ongoing: Show remaining time
+                const remaining = Math.floor((end.getTime() - now.getTime()) / 1000);
+                setTimerText(formatSeconds(remaining));
+            }
+        };
+
+        const formatSeconds = (sec: number) => {
+            if (sec < 0) return "00:00:00";
+            const h = Math.floor(sec / 3600);
+            const m = Math.floor((sec % 3600) / 60);
+            const s = sec % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        };
+
+        updateTimer(); // Initial call
+        const intervalId = setInterval(updateTimer, 1000);
+
+        return () => clearInterval(intervalId);
+    }, [contest]);
 
     const openProblem = (problemId: number) => {
         navigate(`/contest/${id}/${problemId}`);
     };
 
     const openLeaderboard = () => {
-        // navigate(`/leaderboard/${id}`);
         setActiveTab('standings');
     };
 
@@ -67,15 +105,9 @@ const Contest = () => {
             
             <main className="contest-main">
                 <header className="contest-header">
-                    <h1 className="contest-title">{`Contest #${id}`}</h1>
+                    <h1 className="contest-title">{contest ? contest.name : `Contest #${id}`}</h1>
                     <div className="contest-timer">
-                        {(() => {
-                            if (remainingSeconds <= 0) return "Contest Ended";
-                            const h = Math.floor(remainingSeconds / 3600);
-                            const m = Math.floor((remainingSeconds % 3600) / 60);
-                            const s = remainingSeconds % 60;
-                            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-                        })()}
+                        {timerText}
                     </div>
                 </header>
                 

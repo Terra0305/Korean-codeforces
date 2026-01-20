@@ -23,7 +23,7 @@ const ProblemSet = ({ problems, onProblemClick }: ProblemSetProps) => {
                             <td>{problem.index}</td>
                             <td>
                                 <div className="problem-link" onClick={() => onProblemClick(problem.id)}>
-                                    {problem.index}. {problem.description_kr || "No Description"}
+                                    {problem.name}
                                 </div>
                             </td>
                             <td>{problem.points ?? '-'}</td>

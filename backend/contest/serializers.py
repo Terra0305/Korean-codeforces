@@ -11,7 +11,7 @@ class ProblemSerializer(serializers.ModelSerializer):
     """문제 정보 시리얼라이저"""
     class Meta:
         model = Problem
-        fields = ['id', 'contest', 'index', 'points', 'rating', 'url', 'description_kr']
+        fields = ['id', 'contest', 'index', 'points', 'rating', 'url', 'description_kr', 'name']
 
 class ParticipantSerializer(serializers.ModelSerializer):
     """참가자 정보 시리얼라이저"""

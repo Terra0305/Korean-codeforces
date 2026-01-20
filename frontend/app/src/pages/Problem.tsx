@@ -1,10 +1,82 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './Problem.css';
 import { useNavigate, useParams } from 'react-router-dom';
+import { problemApi, Problem as ProblemType } from '../api/problemApi';
+import { contestApi, Contest as ContestType } from '../api/contestApi';
 
 const Problem = () => {
     const navigate = useNavigate();
-    const { contestId } = useParams();
+    const { contestId, problemId } = useParams();
+    const [problem, setProblem] = useState<ProblemType | null>(null);
+    const [contest, setContest] = useState<ContestType | null>(null);
+    const [timerText, setTimerText] = useState("Loading...");
+
+    // Fetch Problem
+    useEffect(() => {
+        if (contestId && problemId) {
+            const fetchProblem = async () => {
+                try {
+                    const data = await problemApi.getProblemDetail(contestId, problemId);
+                    setProblem(data);
+                } catch (error) {
+                    console.error("Failed to fetch problem:", error);
+                }
+            };
+            fetchProblem();
+        }
+    }, [contestId, problemId]);
+
+    // Fetch Contest
+    useEffect(() => {
+        if (contestId) {
+            const fetchContest = async () => {
+                try {
+                    const data = await contestApi.getContestDetail(contestId);
+                    setContest(data);
+                } catch (error) {
+                    console.error("Failed to fetch contest:", error);
+                }
+            };
+            fetchContest();
+        }
+    }, [contestId]);
+
+    // Timer Logic
+    useEffect(() => {
+        if (!contest) return;
+
+        const updateTimer = () => {
+            const now = new Date();
+            const start = new Date(contest.start_time);
+            const end = new Date(contest.end_time);
+
+            if (now < start) {
+                // Before start: Show total duration
+                const durationSeconds = Math.floor((end.getTime() - start.getTime()) / 1000);
+                setTimerText(formatSeconds(durationSeconds));
+            } else if (now > end) {
+                // After end
+                setTimerText("대회가 종료되었습니다.");
+            } else {
+                // Ongoing: Show remaining time
+                const remaining = Math.floor((end.getTime() - now.getTime()) / 1000);
+                setTimerText(formatSeconds(remaining));
+            }
+        };
+
+        const formatSeconds = (sec: number) => {
+            if (sec < 0) return "00:00:00";
+            const h = Math.floor(sec / 3600);
+            const m = Math.floor((sec % 3600) / 60);
+            const s = sec % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        };
+
+        updateTimer();
+        const intervalId = setInterval(updateTimer, 1000);
+
+        return () => clearInterval(intervalId);
+    }, [contest]);
 
     const openContest = () => {
         navigate(`/contest/${contestId}`);
@@ -15,60 +87,32 @@ const Problem = () => {
         // Canned response/action as requested
     };
 
+    if (!problem) {
+        return <div className="problem-page-body" style={{display: 'flex', justifyContent:'center', alignItems:'center'}}>Loading...</div>;
+    }
+
     return (
         <div className="problem-page-body">
             <header className="problem-header">
                 <a href="#" className="back-btn" onClick={openContest}>← 문제 목록으로 돌아가기</a>
-                <div className="problem-timer">01:32:15</div>
-                <div style={{fontWeight: 600}}>Codeforces Round #988 [KR]</div>
+                <div className="problem-timer">{timerText}</div>
+                <div style={{fontWeight: 600}}>{contest ? contest.name : "Loading..."}</div>
             </header>
 
             <div className="split-container">
                 <div className="left-panel">
-                    <h1>A. 최소 사각형 만들기</h1>
+                    <h1>{problem.index}. {problem.name}</h1>
                     <div className="problem-meta">
                         시간 제한: 1.0초 &nbsp;|&nbsp; 메모리 제한: 256MB &nbsp;|&nbsp; 입력: 표준 입력 &nbsp;|&nbsp; 출력: 표준 출력
                     </div>
 
-                    <h3>문제 설명</h3>
-                    <p>
-                        2차원 평면 위에 $N$개의 점이 주어집니다. 당신은 축에 평행한 직사각형 하나를 그려서 이 점들을 모두 포함하려고 합니다. 
-                        이때, 만들어지는 직사각형의 넓이를 최소화하는 것이 목표입니다.
-                    </p>
-                    <p>
-                        단, 당신은 주어진 점들 중 <strong>정확히 하나</strong>를 제거할 수 있습니다. 점 하나를 최적으로 제거했을 때, 남은 $N-1$개의 점을 모두 포함하는 최소 직사각형의 넓이를 구하세요.
-                    </p>
-
-                    <h3>입력</h3>
-                    <p>
-                        첫 번째 줄에 정수 $N$ ($3 \le N \le 100,000$)이 주어집니다.<br />
-                        두 번째 줄부터 $N$개의 줄에 걸쳐 각 점의 좌표 $x_i, y_i$가 주어집니다. ($0 \le x_i, y_i \le 10^9$)
-                    </p>
-
-                    <h3>출력</h3>
-                    <p>
-                        점 하나를 제거한 후 만들 수 있는 가장 작은 직사각형의 넓이를 출력합니다.
-                    </p>
-
-                    <h3>예제 입력 1</h3>
-                    <div className="sample-block">
-                        <div className="sample-header">Input <span style={{cursor:'pointer', color:'#3182ce'}} onClick={handleDummyClick}>Copy</span></div>
-                        <pre>{`4
-1 1
-10 10
-1 10
-10 1`}</pre>
-                    </div>
-
-                    <h3>예제 출력 1</h3>
-                    <div className="sample-block">
-                        <div className="sample-header">Output</div>
-                        <pre>0</pre>
+                    <div style={{whiteSpace: 'pre-wrap', lineHeight: '1.6', color: '#2d3748'}}>
+                        {problem.description_kr}
                     </div>
                     
                     <p style={{marginTop: '50px', color: '#718096', fontSize: '0.8rem'}}>
                         * 본 문제는 Codeforces의 문제를 학습 목적으로 번역한 것입니다. <br />
-                        Original Problem: <a href="#" style={{color:'#3182ce'}} onClick={handleDummyClick}>Codeforces 1234A</a>
+                        Original Problem: <a href="#" style={{color:'#3182ce'}} onClick={handleDummyClick}>Codeforces {problem.index}</a>
                     </p>
                 </div>
 
