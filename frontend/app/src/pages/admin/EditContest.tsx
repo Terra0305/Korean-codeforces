@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import ContestSelectionModal from '../../components/admin/ContestSelectionModal';
 import { problemApi, Problem } from '../../api/problemApi';
@@ -8,6 +8,7 @@ import './Admin.css';
 
 const EditContest = () => {
     const navigate = useNavigate();
+    const { id } = useParams(); // Get contest ID from URL
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedContest, setSelectedContest] = useState<{id: number, name: string} | null>(null);
     const [problems, setProblems] = useState<Problem[]>([]);
@@ -28,9 +29,36 @@ const EditContest = () => {
         }
     };
 
+    // Sync state with URL ID
+    useEffect(() => {
+        const loadContestData = async () => {
+            if (id) {
+                try {
+                    // Fetch contest details to set selectedContest
+                    const contestData = await contestApi.getContestDetail(id);
+                    setSelectedContest({ id: contestData.id, name: contestData.name });
+                    
+                    // Fetch problems
+                    await fetchProblems(id);
+                } catch (error) {
+                    console.error("Failed to load contest data:", error);
+                    // Handle invalid ID or error? Maybe redirect or show error
+                    setSelectedContest(null);
+                    setProblems([]);
+                }
+            } else {
+                // No ID in URL -> Reset
+                setSelectedContest(null);
+                setProblems([]);
+            }
+        };
+
+        loadContestData();
+    }, [id]);
+
     const handleContestSelect = (contestId: number, contestName: string) => {
-        setSelectedContest({ id: contestId, name: contestName });
-        fetchProblems(contestId.toString());
+        // Navigate to the specific contest edit page
+        navigate(`/admin/edit-contest/${contestId}`);
         setIsModalOpen(false);
     };
 
@@ -53,11 +81,10 @@ const EditContest = () => {
             await contestApi.deleteContest(selectedContest.id);
             
             alert('대회가 성공적으로 삭제되었습니다.');
-            // Reset state
-            setSelectedContest(null);
-            setProblems([]);
+            // Reset state & Navigate to base URL
             setIsDeleteModalOpen(false);
             setDeleteProblemsChecked(false);
+            navigate('/admin/edit-contest');
         } catch (error) {
             console.error("Failed to delete contest:", error);
             alert('대회 삭제에 실패했습니다.');
@@ -114,7 +141,7 @@ const EditContest = () => {
                                         {problems.map(problem => (
                                             <tr key={problem.id} style={{borderBottom: '1px solid #edf2f7'}}>
                                                 <td style={{padding: '12px'}}>{problem.index}</td>
-                                                <td style={{padding: '12px', fontWeight: 'bold'}}>{problem.index}. {problem.description_kr || "설명 없음"}</td>
+                                                <td style={{padding: '12px', fontWeight: 'bold'}}>{problem.name}</td>
                                                 <td style={{padding: '12px'}}>{problem.points}</td>
                                                 <td style={{padding: '12px'}}>
                                                     <button 
