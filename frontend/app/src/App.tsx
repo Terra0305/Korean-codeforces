@@ -30,7 +30,7 @@ function App() {
           <Route path="/admin/create-problem" element={<CreateProblem />} />
           <Route path="/admin/edit-contest" element={<EditContest />} />
           <Route path="/admin/edit-contest/:id" element={<EditContest />} />
-          <Route path="/admin/edit-problem/:problemId" element={<EditProblem />} />
+          <Route path="/admin/edit-problem/:id" element={<EditProblem />} />
           <Route path="/problem/:id" element={<Problem />} />
           <Route path="/leaderboard/:id" element={<Leaderboard />} />
         </Routes>
