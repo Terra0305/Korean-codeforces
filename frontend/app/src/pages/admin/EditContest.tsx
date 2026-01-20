@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import ContestSelectionModal from '../../components/admin/ContestSelectionModal';
 import { problemApi, Problem } from '../../api/problemApi';
+import { contestApi } from '../../api/contestApi';
 import './Admin.css';
 
 const EditContest = () => {
@@ -11,6 +12,9 @@ const EditContest = () => {
     const [selectedContest, setSelectedContest] = useState<{id: number, name: string} | null>(null);
     const [problems, setProblems] = useState<Problem[]>([]);
     
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deleteProblemsChecked, setDeleteProblemsChecked] = useState(false);
+
     // Function to fetch problems for a selected contest
     const fetchProblems = async (contestId: string) => {
         try {
@@ -34,10 +38,36 @@ const EditContest = () => {
         navigate(`/admin/edit-problem/${problemId}`);
     };
 
+    const handleDeleteContest = async () => {
+        if (!selectedContest) return;
+        
+        try {
+            if (deleteProblemsChecked) {
+                // Delete all problems sequentially
+                for (const problem of problems) {
+                    await problemApi.deleteProblem(problem.id);
+                }
+            }
+            
+            // Delete contest
+            await contestApi.deleteContest(selectedContest.id);
+            
+            alert('대회가 성공적으로 삭제되었습니다.');
+            // Reset state
+            setSelectedContest(null);
+            setProblems([]);
+            setIsDeleteModalOpen(false);
+            setDeleteProblemsChecked(false);
+        } catch (error) {
+            console.error("Failed to delete contest:", error);
+            alert('대회 삭제에 실패했습니다.');
+        }
+    };
+
     return (
         <div>
             <Navbar />
-            <div className="admin-page-container">
+            <div className={`admin-page-container ${isDeleteModalOpen ? 'blur-background' : ''}`}>
                 <div className="admin-card">
                     <h1 className="admin-header">대회 수정 (Admin)</h1>
                     
@@ -108,7 +138,14 @@ const EditContest = () => {
                                     </tbody>
                                 </table>
                             )}
-                            <div style={{marginTop: '20px', textAlign: 'right'}}>
+                            <div style={{marginTop: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                <button 
+                                    className="admin-btn" 
+                                    style={{backgroundColor: '#e53e3e'}}
+                                    onClick={() => setIsDeleteModalOpen(true)}
+                                >
+                                    대회 삭제
+                                </button>
                                 <button 
                                     className="admin-btn" 
                                     onClick={() => navigate('/admin/create-problem')}
@@ -129,6 +166,78 @@ const EditContest = () => {
                     onSelect={handleContestSelect}
                 />
             )}
+
+            {/* Delete Confirmation Modal */}
+            {isDeleteModalOpen && (
+                <div className="modal-overlay">
+                    <div className="modal-content" style={{maxWidth: '450px', textAlign: 'center'}}>
+                        <h2 style={{color: '#e53e3e', marginBottom: '15px'}}>대회 삭제</h2>
+                        <p style={{marginBottom: '20px', color: '#4a5568'}}>
+                            정말로 이 대회를 삭제하시겠습니까?<br/>
+                            삭제된 데이터는 복구할 수 없습니다.
+                        </p>
+                        
+                        <div style={{marginBottom: '25px', textAlign: 'left', backgroundColor: '#fff5f5', padding: '15px', borderRadius: '6px', border: '1px solid #feb2b2'}}>
+                            <label style={{display: 'flex', alignItems: 'center', cursor: 'pointer', color: '#c53030', fontWeight: 'bold'}}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={deleteProblemsChecked}
+                                    onChange={(e) => setDeleteProblemsChecked(e.target.checked)}
+                                    style={{marginRight: '10px', width: '18px', height: '18px'}}
+                                />
+                                종속된 문제들 제거 ({problems.length}개)
+                            </label>
+                            <p style={{marginTop: '5px', fontSize: '0.85rem', color: '#e53e3e'}}>
+                                * 체크 시, 대회에 속한 모든 문제가 함께 영구 삭제됩니다.
+                            </p>
+                        </div>
+
+                        <div style={{display: 'flex', justifyContent: 'center', gap: '15px'}}>
+                            <button 
+                                className="admin-btn" 
+                                style={{backgroundColor: '#e53e3e'}}
+                                onClick={handleDeleteContest}
+                            >
+                                예, 삭제합니다
+                            </button>
+                            <button 
+                                className="admin-btn" 
+                                style={{backgroundColor: '#718096'}}
+                                onClick={() => setIsDeleteModalOpen(false)}
+                            >
+                                아니오
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
+            <style>{`
+                .blur-background {
+                    filter: blur(5px);
+                    transition: filter 0.3s ease;
+                }
+                .modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                }
+                .modal-content {
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    width: 90%;
+                    max-width: 500px;
+                }
+            `}</style>
         </div>
     );
 };
