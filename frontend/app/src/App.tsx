@@ -23,6 +23,7 @@ function App() {
           } />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/contest/:id" element={<Contest />} />
+          <Route path="/contest/:contestId/:problemId" element={<Problem />} />
           <Route path="/admin/create-contest" element={<CreateContest />} />
           <Route path="/admin/create-problem" element={<CreateProblem />} />
           <Route path="/problem/:id" element={<Problem />} />
