@@ -64,7 +64,8 @@ def fetch_contest_data(contest_id):
                     'points': p_data.get('points', 0),
                     'rating': p_data.get('rating', 0),
                     'url': problem_url,
-                    'description_kr': p_data.get('name', ''), 
+                    'description_kr': p_data.get('name', ''),
+                    'name': p_data.get('name', ''), 
                 }
             )
         print(f"Problems for contest {contest_id} updated.")

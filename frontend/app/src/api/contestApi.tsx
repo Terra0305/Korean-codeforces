@@ -19,5 +19,8 @@ export const contestApi = {
         const response = await client.get<ContestListResponse>('/api/contests/contests/');
         return response.data.results;
     },
-    // Future contest related API calls can go here
+    getContestDetail: async (id: string | number) => {
+        const response = await client.get<Contest>(`/api/contests/contests/${id}/`);
+        return response.data;
+    }
 };

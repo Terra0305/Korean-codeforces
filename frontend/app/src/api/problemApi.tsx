@@ -8,6 +8,7 @@ export interface Problem {
     rating: number;
     url: string;
     description_kr: string;
+    name: string;
 }
 
 export const problemApi = {
@@ -25,6 +26,10 @@ export const problemApi = {
     },
     deleteProblem: async (id: string | number) => {
         const response = await client.delete(`/api/contests/admin/problems/${id}/`);
+        return response.data;
+    },
+    getProblemDetail: async (contestId: string | number, problemId: string | number) => {
+        const response = await client.get<Problem>(`/api/contests/problems/${contestId}/${problemId}/`);
         return response.data;
     }
 };
