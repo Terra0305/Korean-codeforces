@@ -22,5 +22,9 @@ export const problemApi = {
     updateProblem: async (id: string | number, data: Partial<Problem>) => {
         const response = await client.patch<Problem>(`/api/contests/admin/problems/${id}/`, data);
         return response.data;
+    },
+    deleteProblem: async (id: string | number) => {
+        const response = await client.delete(`/api/contests/admin/problems/${id}/`);
+        return response.data;
     }
 };

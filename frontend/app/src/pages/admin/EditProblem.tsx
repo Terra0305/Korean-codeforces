@@ -19,6 +19,8 @@ const EditProblem = () => {
         description_kr: ''
     });
 
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
     useEffect(() => {
         if (id) {
             const fetchProblem = async () => {
@@ -54,6 +56,18 @@ const EditProblem = () => {
         }));
     };
 
+    const handleDelete = async () => {
+        try {
+            await problemApi.deleteProblem(formData.id);
+            alert('문제가 성공적으로 삭제되었습니다.');
+            navigate('/admin/edit-contest');
+        } catch (error: any) {
+            console.error('Failed to delete problem:', error);
+            alert('문제 삭제에 실패했습니다.');
+            setIsDeleteModalOpen(false);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
@@ -87,7 +101,7 @@ const EditProblem = () => {
     return (
         <div>
             <Navbar />
-            <div className="admin-page-container">
+            <div className={`admin-page-container ${isDeleteModalOpen ? 'blur-background' : ''}`}>
                 <div className="admin-card">
                     <h1 className="admin-header">문제 수정 (Admin)</h1>
                     
@@ -158,17 +172,84 @@ const EditProblem = () => {
                             />
                         </div>
 
-                        <div style={{display: 'flex', justifyContent: 'flex-end', gap: '10px'}}>
-                            <button type="button" className="admin-btn" style={{backgroundColor: '#718096'}} onClick={() => navigate(-1)}>
-                                취소
+                        <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '30px'}}>
+                            <button 
+                                type="button" 
+                                className="admin-btn" 
+                                style={{backgroundColor: '#e53e3e'}} 
+                                onClick={() => setIsDeleteModalOpen(true)}
+                            >
+                                삭제
                             </button>
-                            <button type="submit" className="admin-btn">
-                                수정사항 저장
-                            </button>
+
+                            <div style={{display: 'flex', gap: '10px'}}>
+                                <button type="button" className="admin-btn" style={{backgroundColor: '#718096'}} onClick={() => navigate(-1)}>
+                                    취소
+                                </button>
+                                <button type="submit" className="admin-btn">
+                                    수정사항 저장
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
             </div>
+
+             {/* Delete Confirmation Modal */}
+             {isDeleteModalOpen && (
+                <div className="modal-overlay">
+                    <div className="modal-content" style={{maxWidth: '400px', textAlign: 'center'}}>
+                        <h2 style={{color: '#e53e3e', marginBottom: '15px'}}>문제 삭제</h2>
+                        <p style={{marginBottom: '20px', color: '#4a5568'}}>
+                            정말로 이 문제를 삭제하시겠습니까?<br/>
+                            삭제된 데이터는 복구할 수 없습니다.
+                        </p>
+                        <div style={{display: 'flex', justifyContent: 'center', gap: '15px'}}>
+                            <button 
+                                className="admin-btn" 
+                                style={{backgroundColor: '#e53e3e'}}
+                                onClick={handleDelete}
+                            >
+                                예, 삭제합니다
+                            </button>
+                            <button 
+                                className="admin-btn" 
+                                style={{backgroundColor: '#718096'}}
+                                onClick={() => setIsDeleteModalOpen(false)}
+                            >
+                                아니오
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            
+            <style>{`
+                .blur-background {
+                    filter: blur(5px);
+                    transition: filter 0.3s ease;
+                }
+                .modal-overlay {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: rgba(0, 0, 0, 0.5);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 1000;
+                }
+                .modal-content {
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                    width: 90%;
+                    max-width: 500px;
+                }
+            `}</style>
         </div>
     );
 };
