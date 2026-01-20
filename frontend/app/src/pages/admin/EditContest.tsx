@@ -56,7 +56,7 @@ const EditContest = () => {
         loadContestData();
     }, [id]);
 
-    const handleContestSelect = (contestId: number, contestName: string) => {
+    const handleContestSelect = (contestId: number) => {
         // Navigate to the specific contest edit page
         navigate(`/admin/edit-contest/${contestId}`);
         setIsModalOpen(false);
