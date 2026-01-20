@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import client from '../../api/client';
 import Navbar from '../../components/Navbar';
 import ContestSelectionModal from '../../components/admin/ContestSelectionModal';
 import { problemApi, Problem } from '../../api/problemApi';
