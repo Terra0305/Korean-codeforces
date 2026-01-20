@@ -1,8 +1,15 @@
 import React from 'react';
 import './Problem.css';
+import { useNavigate, useParams } from 'react-router-dom';
 
 const Problem = () => {
-    
+    const navigate = useNavigate();
+    const { contestId } = useParams();
+
+    const openContest = () => {
+        navigate(`/contest/${contestId}`);
+    }
+
     const handleDummyClick = (e: React.MouseEvent) => {
         e.preventDefault();
         // Canned response/action as requested
@@ -11,7 +18,7 @@ const Problem = () => {
     return (
         <div className="problem-page-body">
             <header className="problem-header">
-                <a href="#" className="back-btn" onClick={handleDummyClick}>← 문제 목록으로 돌아가기</a>
+                <a href="#" className="back-btn" onClick={openContest}>← 문제 목록으로 돌아가기</a>
                 <div className="problem-timer">01:32:15</div>
                 <div style={{fontWeight: 600}}>Codeforces Round #988 [KR]</div>
             </header>

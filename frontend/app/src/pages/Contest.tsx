@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { problemApi, Problem } from '../api/problemApi';
+import ProblemSet from '../components/ProblemSet';
+import Leaderboard from './Leaderboard';
 import './Contest.css';
 
 const Contest = () => {
@@ -51,28 +53,32 @@ const Contest = () => {
     }, []);
 
     const openProblem = (problemId: number) => {
-        navigate(`/problem/${problemId}`);
+        navigate(`/contest/${id}/${problemId}`);
+    };
+
+    const openLeaderboard = () => {
+        // navigate(`/leaderboard/${id}`);
+        setActiveTab('standings');
     };
 
     return (
         <div className="contest-page">
             <Navbar />
             
-            
-
             <main className="contest-main">
                 <header className="contest-header">
-                <h1 className="contest-title">{`Contest #${id}`}</h1>
-                <div className="contest-timer">
-                    {(() => {
-                        if (remainingSeconds <= 0) return "Contest Ended";
-                        const h = Math.floor(remainingSeconds / 3600);
-                        const m = Math.floor((remainingSeconds % 3600) / 60);
-                        const s = remainingSeconds % 60;
-                        return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-                    })()}
-                </div>
-            </header>
+                    <h1 className="contest-title">{`Contest #${id}`}</h1>
+                    <div className="contest-timer">
+                        {(() => {
+                            if (remainingSeconds <= 0) return "Contest Ended";
+                            const h = Math.floor(remainingSeconds / 3600);
+                            const m = Math.floor((remainingSeconds % 3600) / 60);
+                            const s = remainingSeconds % 60;
+                            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+                        })()}
+                    </div>
+                </header>
+                
                 <nav className="tabs">
                     <div 
                         className={`tab-item ${activeTab === 'problems' ? 'active' : ''}`}
@@ -82,7 +88,7 @@ const Contest = () => {
                     </div>
                     <div 
                         className={`tab-item ${activeTab === 'standings' ? 'active' : ''}`}
-                        onClick={() => alert('스코어보드(Standings) 페이지로 이동합니다. (구현 예정)')}
+                        onClick={() => openLeaderboard()}
                     >
                         스코어보드
                     </div>
@@ -94,38 +100,15 @@ const Contest = () => {
                     </div>
                 </nav>
 
-                <div className="problem-container">
-                    <table className="contest-table">
-                        <thead>
-                            <tr>
-                                <th style={{width: '10%'}}>#</th>
-                                <th style={{width: '60%'}}>문제명 (Problem Name)</th>
-                                <th style={{width: '15%'}}>점수 (Points)</th>
-                                <th style={{width: '15%'}}>상태 (Status)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {problems.map(problem => (
-                                <tr key={problem.id}>
-                                    <td>{problem.index}</td>
-                                    <td>
-                                        <div className="problem-link" onClick={() => openProblem(problem.id)}>
-                                            {problem.index}. {problem.description_kr || "No Description"}
-                                        </div>
-                                    </td>
-                                    <td>{problem.points ?? '-'}</td>
-                                    <td>
-                                        {/* Status column initially empty as requested */}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                {activeTab === 'problems' && (
+                    <ProblemSet problems={problems} onProblemClick={openProblem} />
+                )}
+                {activeTab === 'standings' && (
+                    <Leaderboard />
+                )}
             </main>
         </div>
     );
 };
-
 
 export default Contest;

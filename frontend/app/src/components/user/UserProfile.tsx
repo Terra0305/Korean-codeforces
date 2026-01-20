@@ -33,11 +33,11 @@ const UserProfile = () => {
             )}
             {isAdmin && (
                 <button 
-                    onClick={() => navigate('/admin/create-problem')} 
+                    onClick={() => navigate('/admin/edit-contest')} 
                     className="button"
                     style={{backgroundColor: '#e53e3e', color: 'white', border: 'none', marginRight: '10px'}}
                 >
-                    문제 생성
+                    대회 수정
                 </button>
             )}
             <div 
