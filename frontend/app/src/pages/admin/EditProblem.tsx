@@ -13,6 +13,7 @@ const EditProblem = () => {
         id: -1,
         contest: 0,
         index: '', // e.g. 'A', 'B'
+        name: '', // Problem Name
         points: 0,
         rating: 0,
         url: '', // Problem Link
@@ -31,6 +32,7 @@ const EditProblem = () => {
                         id: data.id,
                         contest: data.contest,
                         index: data.index,
+                        name: data.name,
                         points: data.points,
                         rating: data.rating,
                         url: data.url,
@@ -74,6 +76,7 @@ const EditProblem = () => {
         try {
             await problemApi.updateProblem(formData.id, {
                 index: formData.index,
+                name: formData.name,
                 points: Number(formData.points),
                 rating: Number(formData.rating),
                 url: formData.url,
@@ -119,6 +122,19 @@ const EditProblem = () => {
                                 onChange={handleChange}
                                 className="admin-form-input"
                                 placeholder="예: A, B, C..."
+                                required
+                            />
+                        </div>
+
+                        <div className="admin-form-group">
+                            <label className="admin-form-label">문제 이름 (Name)</label>
+                            <input 
+                                name="name"
+                                type="text"
+                                value={formData.name}
+                                onChange={handleChange}
+                                className="admin-form-input"
+                                placeholder="예: 최소 사각형 만들기"
                                 required
                             />
                         </div>

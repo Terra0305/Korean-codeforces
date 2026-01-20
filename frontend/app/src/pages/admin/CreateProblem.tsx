@@ -13,6 +13,7 @@ const CreateProblem = () => {
         contest: '', // Contest ID (FK)
         contestName: '', // For display purposes
         index: '', // e.g. 'A', 'B'
+        name: '', // Problem Name
         points: 0,
         rating: 0,
         url: '', // Problem Link
@@ -48,7 +49,7 @@ const CreateProblem = () => {
                 alert('문제가 성공적으로 생성되었습니다.');
                 // Optionally maintain state or clear
                 setFormData({
-                    contest: '', contestName: '', index: '', points: 0, rating: 0, url: '', description_kr: ''
+                    contest: '', contestName: '', index: '', name: '', points: 0, rating: 0, url: '', description_kr: ''
                 });
             }
         } catch (error: any) {
@@ -101,6 +102,19 @@ const CreateProblem = () => {
                                 onChange={handleChange}
                                 className="admin-form-input"
                                 placeholder="예: A, B, C..."
+                                required
+                            />
+                        </div>
+
+                        <div className="admin-form-group">
+                            <label className="admin-form-label">문제 이름 (Name)</label>
+                            <input 
+                                name="name"
+                                type="text"
+                                value={formData.name}
+                                onChange={handleChange}
+                                className="admin-form-input"
+                                placeholder="예: 최소 사각형 만들기"
                                 required
                             />
                         </div>
