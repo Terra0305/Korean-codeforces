@@ -8,6 +8,7 @@ import Contest from './pages/Contest.tsx';
 import CreateContest from './pages/admin/CreateContest.tsx';
 import CreateProblem from './pages/admin/CreateProblem.tsx';
 import Problem from './pages/Problem.tsx';
+import Leaderboard from './pages/Leaderboard.tsx';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="/admin/create-contest" element={<CreateContest />} />
           <Route path="/admin/create-problem" element={<CreateProblem />} />
           <Route path="/problem/:id" element={<Problem />} />
+          <Route path="/leaderboard/:id" element={<Leaderboard />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
