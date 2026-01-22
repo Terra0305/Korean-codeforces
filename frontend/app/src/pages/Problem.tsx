@@ -3,13 +3,16 @@ import './Problem.css';
 import { useNavigate, useParams } from 'react-router-dom';
 import { problemApi, Problem as ProblemType } from '../api/problemApi';
 import { contestApi, Contest as ContestType } from '../api/contestApi';
+import { useAuth } from '../context/AuthContext';
 
 const Problem = () => {
     const navigate = useNavigate();
     const { contestId, problemId } = useParams();
+    const { user } = useAuth();
     const [problem, setProblem] = useState<ProblemType | null>(null);
     const [contest, setContest] = useState<ContestType | null>(null);
     const [timerText, setTimerText] = useState("Loading...");
+    const [userStatus, setUserStatus] = useState<{ type: string, text: string } | null>(null);
 
     // Fetch Problem
     useEffect(() => {
@@ -41,6 +44,58 @@ const Problem = () => {
         }
     }, [contestId]);
 
+    // Fetch User Status
+    useEffect(() => {
+        if (!contestId || !problem || !user) return;
+
+        const fetchStatus = async () => {
+            try {
+                // Fetch participants to find current user
+                // Note: Real implementation might need a dedicated 'my-status' API to avoid fetching all participants.
+                // But following the user's request to use getParticipants:
+                const participants = await contestApi.getParticipants(contestId);
+                const me = participants.find((p: any) => p.user === user.username);
+                
+                if (!me) {
+                    setUserStatus(null);
+                    return;
+                }
+
+                // Fetch all problems to identify current problem's index
+                const problems = await problemApi.getProblemsByContest(contestId);
+                const sortedProblems = problems.sort((a, b) => a.index.localeCompare(b.index));
+                const myProblemIndex = sortedProblems.findIndex(p => p.index === problem.index);
+
+                if (myProblemIndex === -1) return;
+
+                // Parse status
+                const parts = me.problem_status.split(':');
+                if (myProblemIndex >= parts.length) return;
+                
+                const stat = parts[myProblemIndex];
+                if (!stat) {
+                    setUserStatus(null);
+                    return;
+                }
+
+                if (stat.startsWith('+')) {
+                    const tries = stat.length > 1 ? stat.substring(1) : "1"; 
+                    setUserStatus({ type: 'AC', text: `Accepted\n${tries}회 제출` });
+                } else if (stat.startsWith('-')) {
+                    const tries = stat.length > 1 ? stat.substring(1) : "1";
+                    setUserStatus({ type: 'WA', text: `Not Accepted\n${tries}회 제출` });
+                } else {
+                    setUserStatus(null);
+                }
+
+            } catch (error) {
+                console.error("Failed to fetch status:", error);
+            }
+        };
+
+        fetchStatus();
+    }, [contestId, problem, user]);
+
     // Timer Logic
     useEffect(() => {
         if (!contest) return;
@@ -51,14 +106,14 @@ const Problem = () => {
             const end = new Date(contest.end_time);
 
             if (now < start) {
-                // Before start: Show total duration
+                // Before start
                 const durationSeconds = Math.floor((end.getTime() - start.getTime()) / 1000);
                 setTimerText(formatSeconds(durationSeconds));
             } else if (now > end) {
                 // After end
                 setTimerText("대회가 종료되었습니다.");
             } else {
-                // Ongoing: Show remaining time
+                // Ongoing
                 const remaining = Math.floor((end.getTime() - now.getTime()) / 1000);
                 setTimerText(formatSeconds(remaining));
             }
@@ -85,6 +140,12 @@ const Problem = () => {
     const handleDummyClick = (e: React.MouseEvent) => {
         e.preventDefault();
         // Canned response/action as requested
+    };
+
+    const handleCodeforcesSubmit = () => {
+        if (contest) {
+            window.open(`https://codeforces.com/contest/${contest.id}/submit`, '_blank', 'noopener,noreferrer');
+        }
     };
 
     if (!problem) {
@@ -124,7 +185,7 @@ const Problem = () => {
                             이곳에서 답안을 제출하면 Codeforces Virtual Contest에 자동으로 반영됩니다.
                         </p>
                         
-                        <button className="btn-submit" onClick={handleDummyClick}>
+                        <button className="btn-submit" onClick={handleCodeforcesSubmit}>
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                                 <polyline points="15 3 21 3 21 9"></polyline>
@@ -140,11 +201,26 @@ const Problem = () => {
                             <span style={{fontSize:'0.8rem', background:'#edf2f7', padding:'2px 6px', borderRadius:'4px'}}>Auto-refreshing</span>
                         </div>
 
-                        <div className="status-box" id="status-container">
-                            <div style={{color:'#718096', textAlign:'center', padding: '20px'}}>
-                                아직 제출 이력이 없습니다.<br />
-                                위 버튼을 눌러 제출을 진행해주세요.
-                            </div>
+                        <div className="status-box" id="status-container" style={{
+                            backgroundColor: userStatus?.type === 'AC' ? '#c6f6d5' : userStatus?.type === 'WA' ? '#fed7d7' : '#f7fafc',
+                            color: userStatus?.type === 'AC' ? '#2f855a' : userStatus?.type === 'WA' ? '#c53030' : '#718096',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            minHeight: '100px',
+                            borderRadius: '8px',
+                            transition: 'all 0.3s ease'
+                        }}>
+                             {userStatus ? (
+                                <div style={{textAlign: 'center', whiteSpace: 'pre-wrap', fontWeight: 'bold', fontSize: '1.1rem'}}>
+                                    {userStatus.text}
+                                </div>
+                            ) : (
+                                <div style={{textAlign:'center', padding: '20px'}}>
+                                    아직 제출 이력이 없습니다.<br />
+                                    위 버튼을 눌러 제출을 진행해주세요.
+                                </div>
+                            )}
                         </div>
 
                         <div style={{marginTop:'20px', fontSize:'0.75rem', color:'#a0aec0', fontFamily:'monospace'}}>
