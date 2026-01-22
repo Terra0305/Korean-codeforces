@@ -26,11 +26,11 @@ function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/contest/:id" element={<Contest />} />
           <Route path="/contest/:contestId/:problemId" element={<Problem />} />
-          <Route path="/admin/create-contest" element={<CreateContest />} />
-          <Route path="/admin/create-problem" element={<CreateProblem />} />
-          <Route path="/admin/edit-contest" element={<EditContest />} />
-          <Route path="/admin/edit-contest/:id" element={<EditContest />} />
-          <Route path="/admin/edit-problem/:id" element={<EditProblem />} />
+          <Route path="/create-contest" element={<CreateContest />} />
+          <Route path="/create-problem" element={<CreateProblem />} />
+          <Route path="/edit-contest" element={<EditContest />} />
+          <Route path="/edit-contest/:id" element={<EditContest />} />
+          <Route path="/edit-problem/:id" element={<EditProblem />} />
           <Route path="/problem/:id" element={<Problem />} />
           <Route path="/leaderboard/:id" element={<Leaderboard />} />
         </Routes>

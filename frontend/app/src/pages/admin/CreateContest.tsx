@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import client from '../../api/client';
 import Navbar from '../../components/Navbar';
 import './Admin.css';
@@ -9,8 +11,8 @@ const CreateContest = () => {
     const [formData, setFormData] = useState({
         id: '',
         name: '',
-        start_time: '',
-        end_time: ''
+        start_time: null as Date | null,
+        end_time: null as Date | null
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,11 +23,24 @@ const CreateContest = () => {
         }));
     };
 
+    const handleDateChange = (name: string, date: Date | null) => {
+        setFormData(prev => ({
+            ...prev,
+            [name]: date
+        }));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
         try {
-            const response = await client.post('/api/contests/admin/contests/', formData);
+            const submitData = {
+                ...formData,
+                start_time: formData.start_time ? formData.start_time.toISOString() : null,
+                end_time: formData.end_time ? formData.end_time.toISOString() : null
+            };
+
+            const response = await client.post('/api/contests/admin/contests/', submitData);
             if (response.status === 201) {
                 alert('대회가 성공적으로 생성되었습니다.');
                 // Optionally navigate somewhere or clear form
@@ -78,24 +93,30 @@ const CreateContest = () => {
 
                         <div className="admin-form-group">
                             <label className="admin-form-label">시작 시간</label>
-                            <input 
-                                name="start_time"
-                                type="datetime-local"
-                                value={formData.start_time}
-                                onChange={handleChange}
+                            <DatePicker 
+                                selected={formData.start_time}
+                                onChange={(date: Date | null) => handleDateChange('start_time', date)}
+                                showTimeSelect
+                                timeFormat="HH:mm"
+                                timeIntervals={15}
+                                dateFormat="yyyy/MM/dd HH:mm"
                                 className="admin-form-input"
+                                placeholderText="시작 시간을 선택하세요"
                                 required
                             />
                         </div>
 
                         <div className="admin-form-group">
                             <label className="admin-form-label">종료 시간</label>
-                            <input 
-                                name="end_time"
-                                type="datetime-local"
-                                value={formData.end_time}
-                                onChange={handleChange}
+                            <DatePicker 
+                                selected={formData.end_time}
+                                onChange={(date: Date | null) => handleDateChange('end_time', date)}
+                                showTimeSelect
+                                timeFormat="HH:mm"
+                                timeIntervals={15}
+                                dateFormat="yyyy/MM/dd HH:mm"
                                 className="admin-form-input"
+                                placeholderText="종료 시간을 선택하세요"
                                 required
                             />
                         </div>

@@ -1,9 +1,68 @@
+import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { problemApi, Problem } from '../api/problemApi';
+import { contestApi } from '../api/contestApi';
 import './Leaderboard.css';
 
+interface Participant {
+    id: number;
+    user: string;
+    score: number;
+    penalty: number;
+    problem_status: string;
+}
+
 const Leaderboard = () => {
+    const { id } = useParams(); // Contest ID
+    const [problems, setProblems] = useState<Problem[]>([]);
+    const [participants, setParticipants] = useState<Participant[]>([]);
+
+    useEffect(() => {
+        if (id) {
+            const fetchData = async () => {
+                try {
+                    // Fetch Problems
+                    const problemsData = await problemApi.getProblemsByContest(id);
+                    const sortedProblems = problemsData.sort((a, b) => a.index.localeCompare(b.index));
+                    setProblems(sortedProblems);
+
+                    // Fetch Participants
+                    const participantsData = await contestApi.getParticipants(id);
+                    // Sort participants by rank (score desc, penalty asc)
+                    // Assuming API returns them or we sort here:
+                    const sortedParticipants = participantsData.sort((a: Participant, b: Participant) => {
+                        if (a.score !== b.score) return b.score - a.score;
+                        return a.penalty - b.penalty;
+                    });
+                    setParticipants(sortedParticipants);
+                } catch (error) {
+                    console.error("Failed to fetch leaderboard data:", error);
+                }
+            };
+            fetchData();
+        }
+    }, [id]);
     
     const handleDummyClick = (e: React.MouseEvent) => {
         e.preventDefault();
+    };
+
+    const getProblemResult = (statusString: string, index: number) => {
+        if (!statusString) return null;
+        const parts = statusString.split(':');
+        if (index >= parts.length) return null;
+        
+        const stat = parts[index];
+        if (!stat) return null;
+
+        if (stat.startsWith('+')) {
+            const tries = stat.length > 1 ? stat.substring(1) : "";
+            return { type: 'ac', text: tries ? `+${tries}` : '+' };
+        } else if (stat.startsWith('-')) {
+            const tries = stat.length > 1 ? stat.substring(1) : "1";
+            return { type: 'wa', text: `-${tries}` };
+        }
+        return null; // Empty or unknown
     };
 
     return (
@@ -15,80 +74,40 @@ const Leaderboard = () => {
                         <th>Who</th>
                         <th style={{width: '60px'}}>=</th>
                         <th style={{width: '80px'}}>Penalty</th>
-                        <th>A</th>
-                        <th>B</th>
-                        <th>C</th>
-                        <th>D</th>
-                        <th>E</th>
-                        <th>F</th>
+                        {problems.map(prob => (
+                            <th key={prob.id}>{prob.index}</th>
+                        ))}
                     </tr>
                 </thead>
                 <tbody>
-                    {/* Rank 1 */}
-                    <tr>
-                        <td className="rank-cell rank-1">1</td>
-                        <td className="user-cell"><span className="handle" onClick={handleDummyClick}>tourist</span></td>
-                        <td className="score-cell">6</td>
-                        <td>142</td>
-                        <td className="prob-cell ac">+<span className="time-mark">00:05</span></td>
-                        <td className="prob-cell ac">+<span className="time-mark">00:12</span></td>
-                        <td className="prob-cell ac">+1<span className="time-mark">00:25</span></td>
-                        <td className="prob-cell ac">+<span className="time-mark">00:41</span></td>
-                        <td className="prob-cell ac">+<span className="time-mark">00:54</span></td>
-                        <td className="prob-cell ac">+2<span className="time-mark">01:10</span></td>
-                    </tr>
-                    {/* Rank 2 */}
-                    <tr>
-                        <td className="rank-cell rank-2">2</td>
-                        <td className="user-cell"><span className="handle" onClick={handleDummyClick}>Benq</span></td>
-                        <td className="score-cell">5</td>
-                        <td>98</td>
-                        <td className="prob-cell ac">+<span className="time-mark">00:04</span></td>
-                        <td className="prob-cell ac">+<span className="time-mark">00:10</span></td>
-                        <td className="prob-cell ac">+<span className="time-mark">00:20</span></td>
-                        <td className="prob-cell ac">+1<span className="time-mark">00:35</span></td>
-                        <td className="prob-cell ac">+<span className="time-mark">01:30</span></td>
-                        <td className="prob-cell wa">-2</td>
-                    </tr>
-                    {/* Rank 3 */}
-                    <tr>
-                        <td className="rank-cell rank-3">3</td>
-                        <td className="user-cell"><span className="handle" onClick={handleDummyClick}>Um_nik</span></td>
-                        <td className="score-cell">4</td>
-                        <td>85</td>
-                        <td className="prob-cell ac">+<span className="time-mark">00:06</span></td>
-                        <td className="prob-cell ac">+<span className="time-mark">00:15</span></td>
-                        <td className="prob-cell pending">?1<span className="time-mark">01:31</span></td>
-                        <td className="prob-cell ac">+<span className="time-mark">00:50</span></td>
-                        <td className="prob-cell wa">-1</td>
-                        <td className="prob-cell ac">+<span className="time-mark">01:05</span></td>
-                    </tr>
-                    {/* Rank 4 */}
-                    <tr>
-                        <td className="rank-cell">4</td>
-                        <td className="user-cell"><span className="handle" onClick={handleDummyClick}>mnbv</span></td>
-                        <td className="score-cell">3</td>
-                        <td>45</td>
-                        <td className="prob-cell ac">+<span className="time-mark">00:08</span></td>
-                        <td className="prob-cell ac">+<span className="time-mark">00:22</span></td>
-                        <td className="prob-cell ac">+<span className="time-mark">00:45</span></td>
-                        <td className="prob-cell"></td>
-                        <td className="prob-cell"></td>
-                        <td className="prob-cell"></td>
-                    </tr>
-                    {/* Rank 5 */}
-                    <tr>
-                        <td className="rank-cell">5</td>
-                        <td className="user-cell"><span className="handle" onClick={handleDummyClick}>Myungwoo</span></td>
-                        <td className="score-cell">2</td>
-                        <td>30</td>
-                        <td className="prob-cell ac">+<span className="time-mark">00:10</span></td>
-                        <td className="prob-cell ac">+<span className="time-mark">00:40</span></td>
-                        <td className="prob-cell wa">-3</td>
-                        <td className="prob-cell"></td>
-                        <td className="prob-cell"></td>
-                        <td className="prob-cell"></td>
-                    </tr>
+                    {participants.map((p, rank) => (
+                        <tr key={p.id}>
+                            <td className={`rank-cell ${rank < 3 ? `rank-${rank + 1}` : ''}`}>
+                                {rank + 1}
+                            </td>
+                            <td className="user-cell">
+                                <span className="handle" onClick={handleDummyClick}>{p.user}</span>
+                            </td>
+                            <td className="score-cell">{p.score}</td>
+                            <td>{p.penalty}</td>
+                            
+                            {problems.map((prob, idx) => {
+                                const result = getProblemResult(p.problem_status, idx);
+                                return (
+                                    <td key={prob.id} className={`prob-cell ${result ? result.type : ''}`}>
+                                        {result ? result.text : ''}
+                                    </td>
+                                );
+                            })}
+                        </tr>
+                    ))}
+                    {participants.length === 0 && (
+                        <tr>
+                            <td colSpan={4 + problems.length} style={{textAlign: 'center', padding: '20px'}}>
+                                No participants found.
+                            </td>
+                        </tr>
+                    )}
                 </tbody>
             </table>
         </div>

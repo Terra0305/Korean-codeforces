@@ -56,6 +56,7 @@ export const AuthProvider = ({ children } : {children : ReactNode}) => {
             const response = await client.post<LoginResponse>("/api/users/login/", {username, password});
             if (response.status === 200) {
                 setUser(response.data.user);
+                client.defaults.headers.common['x-csrftoken'] = cookies.get('csrftoken');
                 return true;
             }
             return false;
