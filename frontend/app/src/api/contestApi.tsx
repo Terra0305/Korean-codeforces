@@ -26,5 +26,9 @@ export const contestApi = {
     deleteContest: async (id: string | number) => {
         const response = await client.delete(`/api/contests/admin/contests/${id}/`);
         return response.data;
+    },
+    getParticipants: async (contestId: string | number) => {
+        const response = await client.get(`/api/contests/admin/participants/?contest=${contestId}`);
+        return response.data.results;
     }
 };
