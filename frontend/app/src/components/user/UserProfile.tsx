@@ -24,7 +24,7 @@ const UserProfile = () => {
             <span style={{color:'var(--text-sub)'}}>Time (KST): <span className="clock-text">Loading...</span></span>
             {isAdmin && (
                 <button 
-                    onClick={() => navigate('/admin/create-contest')} 
+                    onClick={() => navigate('/create-contest')} 
                     className="button"
                     style={{backgroundColor: '#e53e3e', color: 'white', border: 'none', marginRight: '10px'}}
                 >
@@ -33,7 +33,7 @@ const UserProfile = () => {
             )}
             {isAdmin && (
                 <button 
-                    onClick={() => navigate('/admin/edit-contest')} 
+                    onClick={() => navigate('/edit-contest')} 
                     className="button"
                     style={{backgroundColor: '#e53e3e', color: 'white', border: 'none', marginRight: '10px'}}
                 >

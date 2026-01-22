@@ -62,7 +62,7 @@ const EditProblem = () => {
         try {
             await problemApi.deleteProblem(formData.id);
             alert('문제가 성공적으로 삭제되었습니다.');
-            navigate('/admin/edit-contest');
+            navigate('/edit-contest');
         } catch (error: any) {
             console.error('Failed to delete problem:', error);
             alert('문제 삭제에 실패했습니다.');

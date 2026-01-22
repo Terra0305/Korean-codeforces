@@ -58,12 +58,12 @@ const EditContest = () => {
 
     const handleContestSelect = (contestId: number) => {
         // Navigate to the specific contest edit page
-        navigate(`/admin/edit-contest/${contestId}`);
+        navigate(`/edit-contest/${contestId}`);
         setIsModalOpen(false);
     };
 
     const handleProblemClick = (problemId: number) => {
-        navigate(`/admin/edit-problem/${problemId}`);
+        navigate(`/edit-problem/${problemId}`);
     };
 
     const handleDeleteContest = async () => {
@@ -84,7 +84,7 @@ const EditContest = () => {
             // Reset state & Navigate to base URL
             setIsDeleteModalOpen(false);
             setDeleteProblemsChecked(false);
-            navigate('/admin/edit-contest');
+            navigate('/edit-contest');
         } catch (error) {
             console.error("Failed to delete contest:", error);
             alert('대회 삭제에 실패했습니다.');
@@ -175,7 +175,7 @@ const EditContest = () => {
                                 </button>
                                 <button 
                                     className="admin-btn" 
-                                    onClick={() => navigate('/admin/create-problem')}
+                                    onClick={() => navigate('/create-problem')}
                                     style={{fontSize: '0.9rem'}}
                                 >
                                     + 새 문제 추가
