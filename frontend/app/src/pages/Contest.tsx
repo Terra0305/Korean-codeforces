@@ -124,12 +124,6 @@ const Contest = () => {
                     >
                         스코어보드
                     </div>
-                    <div 
-                        className={`tab-item ${activeTab === 'status' ? 'active' : ''}`}
-                        onClick={() => alert('제출 현황(Submissions) 페이지로 이동합니다. (구현 예정)')}
-                    >
-                        제출 현황
-                    </div>
                 </nav>
 
                 {activeTab === 'problems' && (
