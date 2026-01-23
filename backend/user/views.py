@@ -158,16 +158,16 @@ class ProfileViewSet(viewsets.ViewSet):
 
     def search(self, request):
         """이름으로 사용자 검색"""
-        name = request.query_params.get('name', '')
-        if not name:
+        id = request.query_params.get('id', '')
+        if not id:
             return Response({
                 'error': '검색할 이름을 입력해주세요.'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        users = Profile.objects.filter(
-            real_name__icontains=name
+        users = Profile.objects.get(
+            user__username=id
         ).select_related('user')
-        serializer = ProfileSerializer(users, many=True)
+        serializer = ProfileSerializer(users)
         return Response(serializer.data)
 
 
@@ -227,6 +227,12 @@ class VerifyCodeforcesView(APIView):
         if not handle:
             return Response({
                 'error': 'Codeforces handle을 입력해주세요.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # 이미 등록된 핸들인지 확인
+        if Profile.objects.filter(codeforces_id__iexact=handle).exists():
+            return Response({
+                'error': '이미 가입된 Codeforces 핸들입니다.'
             }, status=status.HTTP_400_BAD_REQUEST)
 
         # Codeforces API 호출
