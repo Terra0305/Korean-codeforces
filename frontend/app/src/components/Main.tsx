@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { contestApi, Contest } from '../api/contestApi';
 import axios from 'axios';
+import JoinContestModal from './user/JoinContestModal';
 import './Main.css';
 
 const Main = () => {
@@ -10,6 +11,8 @@ const Main = () => {
     const [contests, setContests] = useState<Contest[]>([]);
     const [now, setNow] = useState(new Date());
     const [systemStatus, setSystemStatus] = useState<any>(null);
+    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+    const [registerContest, setRegisterContest] = useState<Contest | null>(null);
 
     useEffect(() => {
         const checkHealth = async () => {
@@ -113,6 +116,16 @@ const Main = () => {
         return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()}`;
     };
 
+    const handleRegisterClick = (contest: Contest) => {
+        setRegisterContest(contest);
+        setIsRegisterModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsRegisterModalOpen(false);
+        setRegisterContest(null);
+    };
+
     const getContestStatus = (contest: Contest) => {
         const start = new Date(contest.start_time);
         const end = new Date(contest.end_time);
@@ -123,7 +136,8 @@ const Main = () => {
     };
 
     return (
-        <main className="main-container">
+        <>
+            <main className={`main-container ${isRegisterModalOpen ? 'blur-background' : ''}`}>
             <section>
                 <div className="hero-banner">
                     {heroContest ? (
@@ -145,8 +159,8 @@ const Main = () => {
                                 <span id="countdown">{getTimerDisplay()}</span>
                             </div>
 
-                            <button className="btn-hero" onClick={handleDummyClick}>
-                                {heroStatus === 'running' ? '참가하기' : '참가 등록 대기중'}
+                            <button className="btn-hero" onClick={() => handleRegisterClick(heroContest!)}>
+                                {heroStatus === 'running' ? '참가하기' : '참가 등록'}
                             </button>
                         </>
                     ) : (
@@ -267,6 +281,14 @@ const Main = () => {
                 </div>
             </aside>
         </main>
+            {isRegisterModalOpen && registerContest && (
+                <JoinContestModal 
+                    isOpen={isRegisterModalOpen} 
+                    onClose={handleCloseModal} 
+                    contest={registerContest} 
+                />
+            )}
+        </>
     );
 };
 
