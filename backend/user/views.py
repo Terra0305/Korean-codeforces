@@ -108,8 +108,16 @@ class ProfileViewSet(viewsets.ViewSet):
     """
     permission_classes = [IsAuthenticated]
 
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
     def list(self, request):
         """현재 로그인한 사용자의 프로필 조회"""
+        if not request.user.is_authenticated:
+            return Response({'error': '로그인이 필요합니다.'}, status=status.HTTP_401_UNAUTHORIZED)
+
         try:
             profile = request.user.profile
         except Profile.DoesNotExist:
@@ -157,11 +165,11 @@ class ProfileViewSet(viewsets.ViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def search(self, request):
-        """이름으로 사용자 검색"""
+        """이름으로 사용저 id 검색"""
         id = request.query_params.get('id', '')
         if not id:
             return Response({
-                'error': '검색할 이름을 입력해주세요.'
+                'error': '검색할 아이디를 입력해주세요.'
             }, status=status.HTTP_400_BAD_REQUEST)
 
         users = Profile.objects.get(
