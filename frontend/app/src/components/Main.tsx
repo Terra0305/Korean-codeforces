@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import client from '../api/client';
 import { contestApi, Contest } from '../api/contestApi';
 import axios from 'axios';
 import './Main.css';
@@ -37,7 +36,6 @@ const Main = () => {
             try {
                 const results = await contestApi.getAllContests();
                 setContests(results);
-                console.log("Fetched contests:", results);
             } catch (error) {
                 console.error("Failed to fetch contests:", error);
             }
