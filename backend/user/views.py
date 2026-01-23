@@ -192,6 +192,19 @@ class ProfileViewSet(viewsets.ViewSet):
             return Response({
                 'error': '프로필이 존재하지 않습니다.'
             }, status=status.HTTP_404_NOT_FOUND)
+    
+    def check_id(self, request):
+        username = request.query_params.get('username')
+        
+        if not username:
+            return Response({'message': '아이디를 입력해주세요.'}, status=400)
+
+        is_taken = Profile.objects.filter(user__username=username).exists()
+        
+        return Response({
+            'available': not is_taken,
+            'message': '이미 사용 중인 아이디입니다.' if is_taken else '사용 가능한 아이디입니다.'
+        })
 
 
 class PasswordChangeView(APIView):
