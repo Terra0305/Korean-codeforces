@@ -183,7 +183,7 @@ class ProfileViewSet(viewsets.ViewSet):
                 'error': '검색할 아이디를 입력해주세요.'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        users = Profile.objects.get(
+        users = Profile.objects.filter(
             user__username=id
         )
         serializer = ProfileSerializer(users)
