@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import Navbar from '../../components/Navbar';
 import ContestSelectionModal from '../../components/admin/ContestSelectionModal';
 import { problemApi, Problem } from '../../api/problemApi';
@@ -13,6 +15,13 @@ const EditContest = () => {
     const [selectedContest, setSelectedContest] = useState<{id: number, name: string} | null>(null);
     const [problems, setProblems] = useState<Problem[]>([]);
     
+    // Contest Edit Form State
+    const [contestFormData, setContestFormData] = useState<{
+        name: string;
+        start_time: Date | null;
+        end_time: Date | null;
+    }>({ name: '', start_time: null, end_time: null });
+
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [deleteProblemsChecked, setDeleteProblemsChecked] = useState(false);
 
@@ -34,22 +43,28 @@ const EditContest = () => {
         const loadContestData = async () => {
             if (id) {
                 try {
-                    // Fetch contest details to set selectedContest
+                    // Fetch contest details
                     const contestData = await contestApi.getContestDetail(id);
                     setSelectedContest({ id: contestData.id, name: contestData.name });
                     
+                    // Set Form Data
+                    setContestFormData({
+                        name: contestData.name,
+                        start_time: new Date(contestData.start_time),
+                        end_time: new Date(contestData.end_time)
+                    });
+
                     // Fetch problems
                     await fetchProblems(id);
                 } catch (error) {
                     console.error("Failed to load contest data:", error);
-                    // Handle invalid ID or error? Maybe redirect or show error
                     setSelectedContest(null);
                     setProblems([]);
                 }
             } else {
-                // No ID in URL -> Reset
                 setSelectedContest(null);
                 setProblems([]);
+                setContestFormData({ name: '', start_time: null, end_time: null });
             }
         };
 
@@ -57,7 +72,6 @@ const EditContest = () => {
     }, [id]);
 
     const handleContestSelect = (contestId: number) => {
-        // Navigate to the specific contest edit page
         navigate(`/edit-contest/${contestId}`);
         setIsModalOpen(false);
     };
@@ -66,22 +80,62 @@ const EditContest = () => {
         navigate(`/edit-problem/${problemId}`);
     };
 
+    // Update Contest Handlers
+    const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setContestFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleDateChange = (name: string, date: Date | null) => {
+        setContestFormData(prev => ({
+            ...prev,
+            [name]: date
+        }));
+    };
+
+    const handleUpdateContest = async () => {
+        if (!selectedContest || !contestFormData.start_time || !contestFormData.end_time) return;
+
+        if (contestFormData.start_time > contestFormData.end_time) {
+            alert('시작 시간이 종료 시간보다 늦을 수 없습니다');
+            return;
+        }
+
+        try {
+            await contestApi.updateContest(selectedContest.id, {
+                name: contestFormData.name,
+                start_time: contestFormData.start_time.toISOString(),
+                end_time: contestFormData.end_time.toISOString()
+            });
+            alert("대회 정보가 수정되었습니다.");
+            
+            // Should refetch to ensure sync? Ideally yes, but local state matches update.
+            // But let's update selectedContest name just in case
+            setSelectedContest(prev => prev ? ({ ...prev, name: contestFormData.name }) : null);
+
+        } catch (error) {
+            console.error("Failed to update contest:", error);
+            alert("대회 정보 수정 실패");
+        }
+    };
+
+
     const handleDeleteContest = async () => {
         if (!selectedContest) return;
         
         try {
             if (deleteProblemsChecked) {
-                // Delete all problems sequentially
                 for (const problem of problems) {
                     await problemApi.deleteProblem(problem.id);
                 }
             }
             
-            // Delete contest
             await contestApi.deleteContest(selectedContest.id);
             
             alert('대회가 성공적으로 삭제되었습니다.');
-            // Reset state & Navigate to base URL
             setIsDeleteModalOpen(false);
             setDeleteProblemsChecked(false);
             navigate('/edit-contest');
@@ -122,6 +176,64 @@ const EditContest = () => {
 
                     {selectedContest && (
                         <div style={{marginTop: '30px'}}>
+                            {/* Contest Edit Section */}
+                            <div style={{marginBottom: '40px', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px', border: '1px solid #e2e8f0'}}>
+                                <h2 style={{fontSize: '1.2rem', color: '#2d3748', marginBottom: '20px', borderBottom: '1px solid #cbd5e0', paddingBottom: '10px'}}>
+                                    대회 정보 수정
+                                </h2>
+                                <div className="admin-form-group">
+                                    <label className="admin-form-label">대회명</label>
+                                    <input 
+                                        name="name"
+                                        type="text"
+                                        value={contestFormData.name}
+                                        onChange={handleFormChange}
+                                        className="admin-form-input"
+                                    />
+                                </div>
+                                <div style={{display: 'flex', gap: '20px'}}>
+                                    <div className="admin-form-group" style={{flex: 1}}>
+                                        <label className="admin-form-label">시작 시간</label>
+                                        <DatePicker 
+                                            selected={contestFormData.start_time}
+                                            onChange={(date: Date | null) => handleDateChange('start_time', date)}
+                                            showTimeSelect
+                                            showYearDropdown
+                                            showMonthDropdown
+                                            dropdownMode="select"
+                                            timeFormat="HH:mm"
+                                            timeIntervals={15}
+                                            dateFormat="yyyy/MM/dd HH:mm"
+                                            className="admin-form-input"
+                                        />
+                                    </div>
+                                    <div className="admin-form-group" style={{flex: 1}}>
+                                        <label className="admin-form-label">종료 시간</label>
+                                        <DatePicker 
+                                            selected={contestFormData.end_time}
+                                            onChange={(date: Date | null) => handleDateChange('end_time', date)}
+                                            showTimeSelect
+                                            showYearDropdown
+                                            showMonthDropdown
+                                            dropdownMode="select"
+                                            timeFormat="HH:mm"
+                                            timeIntervals={15}
+                                            dateFormat="yyyy/MM/dd HH:mm"
+                                            className="admin-form-input"
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{textAlign: 'right', marginTop: '10px'}}>
+                                    <button 
+                                        className="admin-btn"
+                                        style={{backgroundColor: '#38a169'}}
+                                        onClick={handleUpdateContest}
+                                    >
+                                        수정 사항 저장
+                                    </button>
+                                </div>
+                            </div>
+
                             <h2 style={{fontSize: '1.2rem', color: '#2d3748', marginBottom: '15px'}}>
                                 문제 목록 (Problems)
                             </h2>
