@@ -98,6 +98,12 @@ class LogoutView(APIView):
         }, status=status.HTTP_200_OK)
 
 
+from rest_framework.authentication import SessionAuthentication
+
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+    def enforce_csrf(self, request):
+        return
+
 class ProfileViewSet(viewsets.ViewSet):
     """
     프로필 관리 ViewSet
@@ -107,6 +113,11 @@ class ProfileViewSet(viewsets.ViewSet):
     - GET /api/users/profile/search/?name=xxx - 이름으로 검색
     """
     permission_classes = [IsAuthenticated]
+
+    def get_authenticators(self):
+        if self.request.method == 'GET':
+            return [CsrfExemptSessionAuthentication()]
+        return super().get_authenticators()
 
     def get_permissions(self):
         if self.request.method == 'GET':
