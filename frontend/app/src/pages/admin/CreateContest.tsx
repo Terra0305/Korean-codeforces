@@ -33,6 +33,11 @@ const CreateContest = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
+        if (formData.start_time && formData.end_time && formData.start_time > formData.end_time) {
+            alert('시작 시간이 종료 시간보다 늦을 수 없습니다');
+            return;
+        }
+
         try {
             const submitData = {
                 ...formData,
@@ -97,6 +102,9 @@ const CreateContest = () => {
                                 selected={formData.start_time}
                                 onChange={(date: Date | null) => handleDateChange('start_time', date)}
                                 showTimeSelect
+                                showYearDropdown
+                                showMonthDropdown
+                                dropdownMode="select"
                                 timeFormat="HH:mm"
                                 timeIntervals={15}
                                 dateFormat="yyyy/MM/dd HH:mm"
@@ -112,6 +120,9 @@ const CreateContest = () => {
                                 selected={formData.end_time}
                                 onChange={(date: Date | null) => handleDateChange('end_time', date)}
                                 showTimeSelect
+                                showYearDropdown
+                                showMonthDropdown
+                                dropdownMode="select"
                                 timeFormat="HH:mm"
                                 timeIntervals={15}
                                 dateFormat="yyyy/MM/dd HH:mm"

@@ -23,6 +23,10 @@ export const contestApi = {
         const response = await client.get<Contest>(`/api/contests/contests/${id}/`);
         return response.data;
     },
+    updateContest: async (id: string | number, data: Partial<Contest>) => {
+        const response = await client.patch(`/api/contests/admin/contests/${id}/`, data);
+        return response.data;
+    },
     deleteContest: async (id: string | number) => {
         const response = await client.delete(`/api/contests/admin/contests/${id}/`);
         return response.data;
