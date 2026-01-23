@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import client from '../api/client';
 import { contestApi, Contest } from '../api/contestApi';
+import axios from 'axios';
 import './Main.css';
 
 const Main = () => {
@@ -8,6 +10,27 @@ const Main = () => {
     // Timer Logic for Countdown
     const [contests, setContests] = useState<Contest[]>([]);
     const [now, setNow] = useState(new Date());
+    const [systemStatus, setSystemStatus] = useState<any>(null);
+
+    useEffect(() => {
+        const checkHealth = async () => {
+            try {
+                const response = await axios.get(import.meta.env.VITE_API_BASE_URL + '/api/health/', {
+                    headers: {
+                        'Accept': 'application/json',
+                    }
+                });
+                setSystemStatus(response.data);
+            } catch (error) {
+                console.error("Health check failed:", error);
+                // Keep previous status or set to specific error state if desired
+            }
+        };
+
+        checkHealth();
+        const interval = setInterval(checkHealth, 30000);
+        return () => clearInterval(interval);
+    }, []);
 
     useEffect(() => {
         const fetchContests = async () => {
@@ -227,9 +250,21 @@ const Main = () => {
                 <div className="sidebar-section">
                     <h3 style={{ marginTop: 0, fontSize: '1rem' }}>🖥 System Status</h3>
                     <div style={{ fontSize: '0.85rem', lineHeight: 1.8 }}>
-                        <div><span style={{ color: 'green' }}>●</span> API Gateway: <strong>Online</strong></div>
-                        <div><span style={{ color: 'green' }}>●</span> Crawler: <strong>Standby</strong></div>
-                        <div><span style={{ color: 'green' }}>●</span> DB Connection: <strong>Stable</strong></div>
+                        {systemStatus ? (
+                            Object.entries(systemStatus).map(([key, value]) => (
+                                <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+                                        <span style={{ color: value === 'working' ? 'green' : 'red', marginRight: '8px' }}>●</span>
+                                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }} title={key}>
+                                            {key}
+                                        </span>
+                                    </div>
+                                    <strong>{value === 'working' ? 'Online' : 'Error'}</strong>
+                                </div>
+                            ))
+                        ) : (
+                            <div style={{ color: '#718096', fontStyle: 'italic' }}>Checking status...</div>
+                        )}
                     </div>
                 </div>
             </aside>
