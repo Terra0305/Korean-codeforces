@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import viewsets
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Contest, Problem, Participant
@@ -87,6 +87,11 @@ class AdminParticipantViewSet(viewsets.ModelViewSet):
     queryset = Participant.objects.all().order_by('-total_score', 'penalty')
     serializer_class = ParticipantAdminSerializer
     permission_classes = [IsAdminUser]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAdminUser()]
 
     def get_queryset(self):
         queryset = super().get_queryset()
