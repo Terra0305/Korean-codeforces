@@ -17,6 +17,47 @@ const SignupPage = () => {
         real_name: '',
         codeforces_id: ''
     });
+    const [isUsernameVerified, setIsUsernameVerified] = useState(false);
+    const [isCodeforcesVerified, setIsCodeforcesVerified] = useState(false);
+
+    const handleVerifyId = async () => {
+        if (!formData.username) {
+            alert("아이디를 입력해주세요.");
+            return;
+        }
+        try {
+            const response = await client.get(`/api/users/profile/search/?id=${formData.username}`);
+            if (response.data && response.data.length > 0) {
+                alert("이미 존재하는 아이디입니다.");
+                setIsUsernameVerified(false);
+            } else {
+                alert("사용 가능한 아이디입니다.");
+                setIsUsernameVerified(true);
+            }
+        } catch (error) {
+            console.error("ID verify error:", error);
+            alert("중복 확인 중 오류가 발생했습니다.");
+            setIsUsernameVerified(false);
+        }
+    };
+
+    const handleVerifyCodeforces = async () => {
+        if (!formData.codeforces_id) {
+            alert("Codeforces Handle을 입력해주세요.");
+            return;
+        }
+        try {
+            const response = await client.get(`/api/users/verify-codeforces/?handle=${formData.codeforces_id}`);
+            if (response.status === 200) {
+                setIsCodeforcesVerified(true);
+            }
+        } catch (error: any) {
+            console.error("CF verify error:", error);
+            setIsCodeforcesVerified(false);
+            const msg = error.response?.data?.error || error.response?.data?.message || "Codeforces 검증에 실패했습니다.";
+            alert(msg);
+        }
+    };
 
     const handleSignup = async (e : React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -50,6 +91,8 @@ const SignupPage = () => {
             ...prev,
             [name]: value
         }));
+        if (name === 'username') setIsUsernameVerified(false);
+        if (name === 'codeforces_id') setIsCodeforcesVerified(false);
     };
 
     return (
@@ -63,15 +106,19 @@ const SignupPage = () => {
                 <form onSubmit={handleSignup}>
                     <div className="form-group">
                         <label className="form-label">아이디 (ID)</label>
-                        <input 
-                            name="username"
-                            value={formData.username}
-                            onChange={handleChange} 
-                            type="text" 
-                            className="form-input" 
-                            placeholder="아이디를 입력해주세요" 
-                            required
-                        />
+                        <div className="input-group">
+                            <input 
+                                name="username"
+                                value={formData.username}
+                                onChange={handleChange} 
+                                type="text" 
+                                className="form-input" 
+                                placeholder="아이디를 입력해주세요" 
+                                required
+                                style={{ backgroundColor: isUsernameVerified ? '#d4edda' : 'white' }}
+                            />
+                            <button type="button" className="btn-verify" onClick={handleVerifyId}>Check</button>
+                        </div>
                     </div>
 
                     <div className="form-group">
@@ -124,8 +171,9 @@ const SignupPage = () => {
                                 className="form-input" 
                                 placeholder="ex) tourist" 
                                 required
+                                style={{ backgroundColor: isCodeforcesVerified ? '#d4edda' : 'white' }}
                             />
-                            <button type="button" className="btn-verify" onClick={(e)=>(e.preventDefault())}>Check</button>
+                            <button type="button" className="btn-verify" onClick={handleVerifyCodeforces}>Check</button>
                         </div>
                     </div>
 
@@ -157,18 +205,15 @@ const SignupPage = () => {
 
                     <div className="form-group">
                         <label className="form-label">학번 (Student ID)</label>
-                        <div className="input-group">
-                            <input 
-                                name="student_id"
-                                value={formData.student_id}
-                                onChange={handleChange} 
-                                type="text" 
-                                className="form-input" 
-                                placeholder="학번을 입력해주세요" 
-                                required
-                            />
-                            <button type="button" className="btn-verify" onClick={(e)=>(e.preventDefault())}>Verify</button>
-                        </div>
+                        <input 
+                            name="student_id"
+                            value={formData.student_id}
+                            onChange={handleChange} 
+                            type="text" 
+                            className="form-input" 
+                            placeholder="학번을 입력해주세요" 
+                            required
+                        />
                     </div>
 
                     <button type="submit" className="btn-submit">회원가입 완료</button>
