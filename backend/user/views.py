@@ -185,7 +185,7 @@ class ProfileViewSet(viewsets.ViewSet):
 
         users = Profile.objects.get(
             user__username=id
-        ).select_related('user')
+        )
         serializer = ProfileSerializer(users)
         return Response(serializer.data)
 
