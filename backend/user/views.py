@@ -182,12 +182,16 @@ class ProfileViewSet(viewsets.ViewSet):
             return Response({
                 'error': '검색할 아이디를 입력해주세요.'
             }, status=status.HTTP_400_BAD_REQUEST)
-
-        users = Profile.objects.filter(
-            user__username=id
-        )
-        serializer = ProfileSerializer(users)
-        return Response(serializer.data)
+        try:
+            users = Profile.objects.get(
+                user__username=id
+            )
+            serializer = ProfileSerializer(users)
+            return Response(serializer.data)
+        except Profile.DoesNotExist:
+            return Response({
+                'error': '프로필이 존재하지 않습니다.'
+            }, status=status.HTTP_404_NOT_FOUND)
 
 
 class PasswordChangeView(APIView):
