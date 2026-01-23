@@ -26,7 +26,7 @@ const SignupPage = () => {
             return;
         }
         try {
-            const response = await client.get(`/api/users/profile/check_id/?username=${formData.username}`);
+            const response = await client.get(`/api/users/profile/check-id/?username=${formData.username}`);
             console.log(response.data);
             if (!response.data.available) {
                 alert("이미 존재하는 아이디입니다.");
