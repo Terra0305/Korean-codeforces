@@ -17,7 +17,7 @@ export const problemApi = {
         return response.data;
     },
     getProblem: async (id: string | number) => {
-        const response = await client.get<Problem>(`/api/contests/admin/problems/${id}/`);
+        const response = await client.get<Problem>(`/api/contests/problems/${id}/`);
         return response.data;
     },
     updateProblem: async (id: string | number, data: Partial<Problem>) => {
