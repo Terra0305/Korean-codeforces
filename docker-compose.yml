@@ -8,6 +8,7 @@ services:
       - DEBUG=0
     volumes:
       - ./backend/db.sqlite3:/app/db.sqlite3
+      - ./backend/logs:/app/logs
   frontend:
     build: ./frontend/app
     ports:
