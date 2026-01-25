@@ -1,25 +1,36 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { problemApi, Problem } from '../api/problemApi';
+import { contestApi, Contest as ContestType } from '../api/contestApi';
+import ProblemSet from '../components/ProblemSet';
+import Leaderboard from './Leaderboard';
 import './Contest.css';
-
-interface Problem {
-    id: string;
-    name: string;
-    points: number;
-    status: 'AC' | 'Attempt' | 'None';
-    attempts?: number;
-    timeLimit: string;
-    memoryLimit: string;
-}
 
 const Contest = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
     const isDebugMode = id === '1234567890';
     
-    // 1시간 45분 30초 = 6330초
-    const [remainingSeconds, setRemainingSeconds] = useState(6330);
     const [activeTab, setActiveTab] = useState('problems');
+    const [problems, setProblems] = useState<Problem[]>([]);
+    const [contest, setContest] = useState<ContestType | null>(null);
+    const [timerText, setTimerText] = useState("Loading...");
+
+    // Fetch Contest Details
+    useEffect(() => {
+        if (id) {
+            const fetchContest = async () => {
+                try {
+                    const data = await contestApi.getContestDetail(id);
+                    setContest(data);
+                } catch (error) {
+                    console.error("Failed to fetch contest:", error);
+                }
+            };
+            fetchContest();
+        }
+    }, [id]);
 
     useEffect(() => {
         if (isDebugMode) {
@@ -27,41 +38,79 @@ const Contest = () => {
         }
     }, [isDebugMode]);
 
+    // Fetch Problems
     useEffect(() => {
-        const timerInterval = setInterval(() => {
-            setRemainingSeconds(prev => {
-                if (prev <= 0) {
-                    clearInterval(timerInterval);
-                    return 0;
+        if (id) {
+            const fetchProblems = async () => {
+                try {
+                    const data = await problemApi.getProblemsByContest(id);
+                    const sortedData = data.sort((a, b) => a.index.localeCompare(b.index));
+                    setProblems(sortedData);
+                } catch (error) {
+                    console.error("Failed to fetch problems:", error);
                 }
-                return prev - 1;
-            });
-        }, 1000);
+            };
+            fetchProblems();
+        }
+    }, [id]);
 
-        return () => clearInterval(timerInterval);
-    }, []);
+    // Timer Logic
+    useEffect(() => {
+        if (!contest) return;
 
+        const updateTimer = () => {
+            const now = new Date();
+            const start = new Date(contest.start_time);
+            const end = new Date(contest.end_time);
 
+            if (now < start) {
+                // Before start: Show total duration
+                const durationSeconds = Math.floor((end.getTime() - start.getTime()) / 1000);
+                setTimerText(formatSeconds(durationSeconds));
+            } else if (now > end) {
+                // After end
+                setTimerText("대회가 종료되었습니다.");
+            } else {
+                // Ongoing: Show remaining time
+                const remaining = Math.floor((end.getTime() - now.getTime()) / 1000);
+                setTimerText(formatSeconds(remaining));
+            }
+        };
 
-    const openProblem = (problemId: string) => {
-        alert(`[문제 ${problemId} 번역본 보기]\n\n실제 구현 시 이 페이지에서 문제의 번역 전문을 보여줍니다.\n\n사용자는 번역본을 읽고 Codeforces Virtual Contest Submission 페이지로 이동하여 답안을 제출합니다.`);
+        const formatSeconds = (sec: number) => {
+            if (sec < 0) return "00:00:00";
+            const h = Math.floor(sec / 3600);
+            const m = Math.floor((sec % 3600) / 60);
+            const s = sec % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        };
+
+        updateTimer(); // Initial call
+        const intervalId = setInterval(updateTimer, 1000);
+
+        return () => clearInterval(intervalId);
+    }, [contest]);
+
+    const openProblem = (problemId: number) => {
+        navigate(`/contest/${id}/${problemId}`);
     };
 
-    const problems: Problem[] = [
-        { id: 'A', name: 'A. 최소 사각형 만들기 (Minimizing Rectangle)', points: 500, status: 'AC', timeLimit: '1.0s', memoryLimit: '256MB' },
-        { id: 'B', name: 'B. 문자열 균형 맞추기 (Balancing Strings)', points: 1000, status: 'Attempt', attempts: 3, timeLimit: '2.0s', memoryLimit: '512MB' },
-        { id: 'C', name: 'C. 가장 긴 팰린드롬 경로 (Longest Palindrome Path)', points: 1500, status: 'None', timeLimit: '1.5s', memoryLimit: '256MB' },
-        { id: 'D', name: 'D. 분할 정복 기반 수열 정렬 (Divide and Conquer Sort)', points: 2000, status: 'None', timeLimit: '3.0s', memoryLimit: '1024MB' },
-    ];
+    const openLeaderboard = () => {
+        setActiveTab('standings');
+    };
 
     return (
         <div className="contest-page">
-            <Navbar 
-                contestTitle="제 12회 정기 가상 대회" 
-                remainingTime={remainingSeconds} 
-            />
-
+            <Navbar />
+            
             <main className="contest-main">
+                <header className="contest-header">
+                    <h1 className="contest-title">{contest ? contest.name : `Contest #${id}`}</h1>
+                    <div className="contest-timer">
+                        {timerText}
+                    </div>
+                </header>
+                
                 <nav className="tabs">
                     <div 
                         className={`tab-item ${activeTab === 'problems' ? 'active' : ''}`}
@@ -71,59 +120,18 @@ const Contest = () => {
                     </div>
                     <div 
                         className={`tab-item ${activeTab === 'standings' ? 'active' : ''}`}
-                        onClick={() => alert('스코어보드(Standings) 페이지로 이동합니다. (구현 예정)')}
+                        onClick={() => openLeaderboard()}
                     >
                         스코어보드
                     </div>
-                    <div 
-                        className={`tab-item ${activeTab === 'status' ? 'active' : ''}`}
-                        onClick={() => alert('제출 현황(Submissions) 페이지로 이동합니다. (구현 예정)')}
-                    >
-                        제출 현황
-                    </div>
                 </nav>
 
-                <div className="problem-container">
-                    <table className="contest-table">
-                        <thead>
-                            <tr>
-                                <th style={{width: '5%'}}>#</th>
-                                <th style={{width: '45%'}}>문제명 (Problem Name)</th>
-                                <th style={{width: '15%'}}>점수 (Points)</th>
-                                <th style={{width: '15%'}}>상태 (Status)</th>
-                                <th style={{width: '20%'}}>제한 (Constraints)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {problems.map(problem => (
-                                <tr key={problem.id}>
-                                    <td>{problem.id}</td>
-                                    <td>
-                                        <div className="problem-link" onClick={() => openProblem(problem.id)}>
-                                            {problem.name}
-                                        </div>
-                                    </td>
-                                    <td>{problem.points}</td>
-                                    <td>
-                                        {problem.status === 'AC' && (
-                                            <span className="status status-ac">Accepted</span>
-                                        )}
-                                        {problem.status === 'Attempt' && (
-                                            <>
-                                                <span className="status status-attempt">Failed Attempts</span>
-                                                <span className="status-attempts-count">{problem.attempts} Attempts</span>
-                                            </>
-                                        )}
-                                        {problem.status === 'None' && (
-                                            <span className="status status-none">Not Attempted</span>
-                                        )}
-                                    </td>
-                                    <td>Time: {problem.timeLimit} / Memory: {problem.memoryLimit}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                {activeTab === 'problems' && (
+                    <ProblemSet problems={problems} onProblemClick={openProblem} />
+                )}
+                {activeTab === 'standings' && (
+                    <Leaderboard />
+                )}
             </main>
         </div>
     );

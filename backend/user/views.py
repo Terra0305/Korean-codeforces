@@ -98,6 +98,12 @@ class LogoutView(APIView):
         }, status=status.HTTP_200_OK)
 
 
+from rest_framework.authentication import SessionAuthentication
+
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+    def enforce_csrf(self, request):
+        return
+
 class ProfileViewSet(viewsets.ViewSet):
     """
     프로필 관리 ViewSet
@@ -108,8 +114,21 @@ class ProfileViewSet(viewsets.ViewSet):
     """
     permission_classes = [IsAuthenticated]
 
+    def get_authenticators(self):
+        if self.request.method == 'GET':
+            return [CsrfExemptSessionAuthentication()]
+        return super().get_authenticators()
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAuthenticated()]
+
     def list(self, request):
         """현재 로그인한 사용자의 프로필 조회"""
+        if not request.user.is_authenticated:
+            return Response({'error': '로그인이 필요합니다.'}, status=status.HTTP_401_UNAUTHORIZED)
+
         try:
             profile = request.user.profile
         except Profile.DoesNotExist:
@@ -157,18 +176,35 @@ class ProfileViewSet(viewsets.ViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def search(self, request):
-        """이름으로 사용자 검색"""
-        name = request.query_params.get('name', '')
-        if not name:
+        """이름으로 사용저 id 검색"""
+        id = request.query_params.get('id', '')
+        if not id:
             return Response({
-                'error': '검색할 이름을 입력해주세요.'
+                'error': '검색할 아이디를 입력해주세요.'
             }, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            users = Profile.objects.get(
+                user__username=id
+            )
+            serializer = ProfileSerializer(users)
+            return Response(serializer.data)
+        except Profile.DoesNotExist:
+            return Response({
+                'error': '프로필이 존재하지 않습니다.'
+            }, status=status.HTTP_404_NOT_FOUND)
+    
+    def check_id(self, request):
+        username = request.query_params.get('username')
+        
+        if not username:
+            return Response({'message': '아이디를 입력해주세요.'}, status=400)
 
-        users = Profile.objects.filter(
-            real_name__icontains=name
-        ).select_related('user')
-        serializer = ProfileSerializer(users, many=True)
-        return Response(serializer.data)
+        is_taken = Profile.objects.filter(user__username=username).exists()
+        
+        return Response({
+            'available': not is_taken,
+            'message': '이미 사용 중인 아이디입니다.' if is_taken else '사용 가능한 아이디입니다.'
+        })
 
 
 class PasswordChangeView(APIView):
@@ -227,6 +263,12 @@ class VerifyCodeforcesView(APIView):
         if not handle:
             return Response({
                 'error': 'Codeforces handle을 입력해주세요.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # 이미 등록된 핸들인지 확인
+        if Profile.objects.filter(codeforces_id__iexact=handle).exists():
+            return Response({
+                'error': '이미 가입된 Codeforces 핸들입니다.'
             }, status=status.HTTP_400_BAD_REQUEST)
 
         # Codeforces API 호출

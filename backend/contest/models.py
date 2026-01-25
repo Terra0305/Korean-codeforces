@@ -8,6 +8,9 @@ class Contest(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True, verbose_name="대회명")
     start_time = models.DateTimeField(null=True, blank=True, verbose_name="대회 시작시간")#시작시간
     end_time = models.DateTimeField(null=True, blank=True, verbose_name="대회 종료시간") #종료시간
+    
+    # ELO 레이팅 반영 여부 (중복 반영 방지)
+    is_rating_applied = models.BooleanField(default=False, verbose_name="레이팅 반영 여부")
 
     class Meta:
         verbose_name = "대회"
@@ -26,6 +29,7 @@ class Problem(models.Model):
     )
     # 문제 번호 ex) A번 문제 B번 문제 
     index = models.CharField(max_length=10, verbose_name="문제 번호") 
+    name = models.CharField(max_length=100, verbose_name="문제명")
     
     # ICPC 룰이라 점수가 없으면 기본값을 넣거나 null
     points = models.FloatField(default=0, verbose_name="배점")

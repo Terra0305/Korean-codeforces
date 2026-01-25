@@ -1,17 +1,20 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import AdminContestViewSet, AdminProblemViewSet, ContestViewSet, ProblemViewSet
+from .views import AdminContestViewSet, AdminProblemViewSet, ContestViewSet, ProblemViewSet, AdminParticipantViewSet
 
 app_name = 'contest'
 
 router = DefaultRouter()
 router.register(r'admin/contests', AdminContestViewSet, basename='admin-contest')
 router.register(r'admin/problems', AdminProblemViewSet, basename='admin-problem')
+router.register(r'admin/participants', AdminParticipantViewSet, basename='admin-participant')
 
 urlpatterns = [
     path('', include(router.urls)),
     path('contests/', ContestViewSet.as_view({'get': 'list'})),
     path('contests/<int:pk>/', ContestViewSet.as_view({'get': 'retrieve'})),
+    path('contests/<int:pk>/register/', ContestViewSet.as_view({'post': 'register'})),
+    path('contests/<int:pk>/unregister/', ContestViewSet.as_view({'delete': 'unregister'})),
     path('problems/', ProblemViewSet.as_view({'get': 'list'})),
     path('problems/<int:contest_id>/', ProblemViewSet.as_view({'get': 'list_by_contest'})),
     path('problems/<int:contest_id>/<int:pk>/', ProblemViewSet.as_view({'get': 'retrieve_by_contest'})),
@@ -26,6 +29,8 @@ urlpatterns = [
 # PUT    /admin/contests/{pk}/     : 특정 대회 전체 수정 (Update)
 # PATCH  /admin/contests/{pk}/     : 특정 대회 일부 수정 (Partial Update)
 # DELETE /admin/contests/{pk}/     : 특정 대회 삭제 (Destroy)
+# POST   /admin/contests/{pk}/sync_codeforces/ : Codeforces 데이터 수동 동기화
+# POST   /admin/contests/{pk}/apply_rating/    : ELO 레이팅 반영 (관리자 전용)
 
 
 # 2. 문제 관리 (AdminProblemViewSet)
@@ -46,6 +51,16 @@ urlpatterns = [
 # -------------------------------------------------------------
 # GET    /api/contests/contests/          : 대회 전체 목록 조회 (List)
 # GET    /api/contests/contests/{pk}/     : 특정 대회 상세 조회 (Retrieve)
+# POST   /api/contests/contests/{pk}/register/ : 대회 참가 신청
+# DELETE /api/contests/contests/{pk}/unregister/ : 대회 참가 취소
+
+# 4. 관리자 참가자 관리 (AdminParticipantViewSet)
+# Base URL: admin/participants/
+# -------------------------------------------------------------
+# GET    /admin/participants/          : 참가자 전체 목록 조회 (List)
+#        ?contest={id}                 : 특정 대회의 참가자 목록 조회
+# PUT/PATCH /admin/participants/{pk}/  : 참가자 정보 수정 (점수 등)
+# DELETE /admin/participants/{pk}/     : 참가자 삭제 (강제 취소)
 
 
 # 4. 문제 공개 API (ProblemViewSet)

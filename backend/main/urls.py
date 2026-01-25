@@ -22,5 +22,5 @@ urlpatterns = [
     path('api/users/', include('user.urls')),
     path('api/contests/', include('contest.urls')),  # contest 앱 URL 추가
     path('api-auth/', include('rest_framework.urls')),  # API 문서에서 로그인 가능하도록 추가 테스트용
-    path('health/', include('health_check.urls')),  # Health Check 엔드포인트
+    path('api/health/', include('health_check.urls')),  # Health Check 엔드포인트
 ]

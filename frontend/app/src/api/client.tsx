@@ -10,4 +10,15 @@ const client = axios.create({
     },
 });
 
+client.interceptors.response.use(
+    response => response,
+    error => {
+        if (error.response && error.response.status === 401) {
+            alert("세션이 만료되었습니다.");
+            window.location.replace('/login');
+        }
+        return Promise.reject(error);
+    }
+)
+
 export default client;

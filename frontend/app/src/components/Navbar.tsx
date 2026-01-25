@@ -6,12 +6,7 @@ import LoginButton from './user/LoginButton';
 import AuthModal from './user/AuthModal';
 import { useNavigate } from 'react-router-dom';
 
-interface NavbarProps {
-    contestTitle?: string;
-    remainingTime?: number;
-}
-
-const Navbar = ({ contestTitle, remainingTime }: NavbarProps) => {
+const Navbar = () => {
     const {isLoggedin, isLoading} = useAuth();
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
     const navigate = useNavigate();
@@ -19,14 +14,6 @@ const Navbar = ({ contestTitle, remainingTime }: NavbarProps) => {
     const handleAuthClick = () => {
         setIsAuthModalOpen(true);
     }
-
-    const formatTime = (seconds: number) => {
-        if (seconds <= 0) return "Contest Ended";
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const secs = seconds % 60;
-        return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    };
 
     return (
         <>
@@ -44,28 +31,9 @@ const Navbar = ({ contestTitle, remainingTime }: NavbarProps) => {
                     </svg>
                     Korean <span>Codeforces</span>
                 </div>
-                {contestTitle && (
-                    <div className="contest-info" style={{fontWeight: 'bold', fontSize: '1.2rem', color: '#2c5282'}}>
-                        {contestTitle}
-                    </div>
-                )}
             </div>
 
             <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
-                {remainingTime !== undefined && (
-                    <div className="navbar-timer" style={{
-                        color: '#e53e3e', 
-                        fontWeight: '800', 
-                        fontFamily: 'monospace', 
-                        fontSize: '1.5rem',
-                        border: '2px solid #e53e3e',
-                        padding: '2px 10px',
-                        borderRadius: '4px'
-                    }}>
-                        {formatTime(remainingTime)}
-                    </div>
-                )}
-
                 {isLoggedin ? (
                 <UserProfile />
                 ) : (

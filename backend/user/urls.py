@@ -25,6 +25,10 @@ profile_search = ProfileViewSet.as_view({
     'get': 'search'
 })
 
+profile_check_id = ProfileViewSet.as_view({
+    'get': 'check_id'
+})
+
 urlpatterns = [
     # 인증 관련
     path('register/', UserRegistrationView.as_view(), name='register'),
@@ -39,6 +43,7 @@ urlpatterns = [
     # 프로필 관련
     path('profile/', profile_list, name='profile'),
     path('profile/search/', profile_search, name='profile-search'),
+    path('profile/check-id/', profile_check_id, name='profile-check-id'),
 
     # 관리자 전용
     path('admin/users/', AdminUserListView.as_view(), name='admin-user-list'),
