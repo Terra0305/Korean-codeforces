@@ -62,6 +62,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',  # 정적 파일 서빙을 위해 추가
     'corsheaders.middleware.CorsMiddleware',  # CORS 미들웨어
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'main.middleware.RequestLogMiddleware',  # [NEW] 로깅 미들웨어 추가
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -223,3 +224,39 @@ SESSION_COOKIE_AGE = 86400  # 24시간
 
 # 비밀번호 검증 강화 (이미 설정되어 있음)
 # AUTH_PASSWORD_VALIDATORS는 위에 이미 정의되어 있음
+
+# Logging Configuration
+# 로그 저장 폴더 생성 (없으면 생성)
+LOG_DIR = BASE_DIR / 'logs'
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S'
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': LOG_DIR / 'requests.log',
+            'formatter': 'verbose',
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
