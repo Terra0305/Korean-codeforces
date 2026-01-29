@@ -32,15 +32,14 @@ def update_single_contest_task(contest):
     if not participants.exists():
         return "No participants"
 
-    # 1. Fetch recent 1000 submissions
-    # Celery 워커 내부이므로 time.sleep 사용해도 메인 스레드 블로킹 없음
+    # 1. 최근 100개의 제출 내역을 가져옴
     time.sleep(API_COOLDOWN)
     all_submissions = fetch_contest_latest_submissions(contest.id)
     
     if not all_submissions:
          return "No submissions fetched"
          
-    # 2. Filter and group by handle
+    # 2. 핸들별로 필터링 및 그룹화
     participant_handles = set(p.user.profile.codeforces_id for p in participants)
     submissions_by_handle = defaultdict(list)
     
@@ -51,7 +50,7 @@ def update_single_contest_task(contest):
                  if handle in participant_handles:
                      submissions_by_handle[handle].append(sub)
     
-    # 3. Get problems
+    # 3. 문제 가져오기
     problems = contest.problems.all().order_by('index')
     if not problems:
          return "No problems found"
