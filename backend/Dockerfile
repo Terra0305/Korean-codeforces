@@ -3,9 +3,6 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Redis alpine 의존성 추가
-RUN apk add --no-cache libc6-compat
-
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
