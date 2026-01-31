@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { contestApi, Contest } from '../api/contestApi';
 import axios from 'axios';
+import client from '../api/client';
 import JoinContestModal from './user/JoinContestModal';
 import './Main.css';
 
@@ -13,6 +14,28 @@ const Main = () => {
     const [systemStatus, setSystemStatus] = useState<any>(null);
     const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
     const [registerContest, setRegisterContest] = useState<Contest | null>(null);
+    const [topRankers, setTopRankers] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchRankers = async () => {
+            try {
+                // Fetch profiles directly using axios based on USER request
+                const response = await client.get('/api/users/profile/');
+                const profiles = response.data.results || response.data; // Handle pagination if present or direct list
+                
+                // Ensure profile has necessary fields and sort by elo_rating
+                const sorted = profiles
+                    .filter((p: any) => p.user_username) // Ensure username exists
+                    .sort((a: any, b: any) => b.elo_rating - a.elo_rating)
+                    .slice(0, 4);
+                
+                setTopRankers(sorted);
+            } catch (error) {
+                console.error("Failed to fetch rankers:", error);
+            }
+        };
+        fetchRankers();
+    }, []);
 
     useEffect(() => {
         const checkHealth = async () => {
@@ -238,25 +261,19 @@ const Main = () => {
                 </div>
             </section>
 
-            <aside>
+                <aside>
                 <div className="sidebar-section">
                     <h3 style={{ marginTop: 0 }}>🏆 Top Rankers</h3>
-                    <div className="rank-item">
-                        <span>1. <strong>Genius_Park</strong></span>
-                        <span className="rank-high">1850</span>
-                    </div>
-                    <div className="rank-item">
-                        <span>2. <strong>Algorithm_King</strong></span>
-                        <span className="rank-high">1720</span>
-                    </div>
-                    <div className="rank-item">
-                        <span>3. <strong>Django_Master</strong></span>
-                        <span>1605</span>
-                    </div>
-                    <div className="rank-item" style={{ background: '#ebf8ff', margin: '5px -10px', padding: '10px' }}>
-                        <span>12. <strong>Me (Taegeon)</strong></span>
-                        <span>1400</span>
-                    </div>
+                    {topRankers.length > 0 ? (
+                        topRankers.map((ranker, index) => (
+                            <div key={ranker.id || index} className="rank-item" style={index === 0 ? { borderBottom: '2px solid #ecc94b' } : {}}>
+                                <span>{index + 1}. <strong>{ranker.user_username}</strong></span>
+                                <span className={index < 3 ? "rank-high" : ""}>{ranker.elo_rating}</span>
+                            </div>
+                        ))
+                    ) : (
+                        <div style={{color: '#a0aec0', fontSize: '0.9rem'}}>No ranking data</div>
+                    )}
                 </div>
 
                 <div className="sidebar-section">
