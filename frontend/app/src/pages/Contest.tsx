@@ -81,6 +81,8 @@ const Contest = () => {
                         }
                     });
                     setStatusMap(newStatusMap);
+                    console.log(me);
+                    console.log(newStatusMap);
                 }
             } catch (error) {
                 console.error("Failed to fetch user status:", error);
