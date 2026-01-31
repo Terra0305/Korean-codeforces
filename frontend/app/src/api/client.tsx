@@ -15,7 +15,7 @@ client.interceptors.response.use(
     error => {
         if (error.response && error.response.status === 401) {
             alert("세션이 만료되었습니다.");
-            window.location.replace('/login');
+            window.location.replace('');
         }
         return Promise.reject(error);
     }
