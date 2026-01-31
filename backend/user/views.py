@@ -107,12 +107,12 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
 class ProfileViewSet(viewsets.ViewSet):
     """
     프로필 관리 ViewSet
-    - GET /api/users/profile/ - 현재 사용자 프로필 조회
-    - PUT /api/users/profile/ - 프로필 전체 수정
-    - PATCH /api/users/profile/ - 프로필 부분 수정
+    - GET /api/users/profile/ - 전체 사용자 프로필 목록 조회 (랭킹용, 퍼블릭)
+    - PUT /api/users/profile/ - 내 프로필 전체 수정 (로그인 필요)
+    - PATCH /api/users/profile/ - 내 프로필 부분 수정 (로그인 필요)
     - GET /api/users/profile/search/?name=xxx - 이름으로 검색
     """
-    permission_classes = [IsAuthenticated]
+    # permission_classes 제거 (get_permissions에서 제어)
 
     def get_authenticators(self):
         if self.request.method == 'GET':
@@ -125,18 +125,13 @@ class ProfileViewSet(viewsets.ViewSet):
         return [IsAuthenticated()]
 
     def list(self, request):
-        """현재 로그인한 사용자의 프로필 조회"""
-        if not request.user.is_authenticated:
-            return Response({'error': '로그인이 필요합니다.'}, status=status.HTTP_401_UNAUTHORIZED)
-
-        try:
-            profile = request.user.profile
-        except Profile.DoesNotExist:
-            return Response({
-                'error': '프로필이 존재하지 않습니다.'
-            }, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = ProfileSerializer(profile)
+        """
+        전체 사용자 프로필 목록 조회 (Public)
+        - Main 페이지 Top Rankers용
+        - 로그인 여부와 상관없이 조회 가능
+        """
+        queryset = Profile.objects.all().order_by('-elo_rating')
+        serializer = ProfileSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def update(self, request):
