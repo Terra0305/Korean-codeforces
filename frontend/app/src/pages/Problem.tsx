@@ -59,7 +59,7 @@ const Problem = () => {
                 // Note: Real implementation might need a dedicated 'my-status' API to avoid fetching all participants.
                 // But following the user's request to use getParticipants:
                 const participants = await contestApi.getParticipants(contestId);
-                const me = participants.find((p: any) => p.user === user.username);
+                const me = participants.find((p: any) => p.user_username === user.username);
                 
                 if (!me) {
                     setUserStatus(null);
