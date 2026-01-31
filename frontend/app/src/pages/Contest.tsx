@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import { problemApi, Problem } from '../api/problemApi';
 import { contestApi, Contest as ContestType } from '../api/contestApi';
+import { useAuth } from '../context/AuthContext';
 import ProblemSet from '../components/ProblemSet';
 import Leaderboard from './Leaderboard';
 import './Contest.css';
@@ -10,12 +11,14 @@ import './Contest.css';
 const Contest = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const isDebugMode = id === '1234567890';
     
     const [activeTab, setActiveTab] = useState('problems');
     const [problems, setProblems] = useState<Problem[]>([]);
     const [contest, setContest] = useState<ContestType | null>(null);
     const [timerText, setTimerText] = useState("Loading...");
+    const [statusMap, setStatusMap] = useState<Record<string, string>>({});
 
     // Fetch Contest Details
     useEffect(() => {
@@ -53,6 +56,38 @@ const Contest = () => {
             fetchProblems();
         }
     }, [id]);
+    // Fetch User Status
+    useEffect(() => {
+        if (!id || !user || problems.length === 0) return;
+
+        const fetchStatus = async () => {
+            try {
+                // Warning: fetching all participants is not efficient for large contests
+                const participants = await contestApi.getParticipants(id);
+                const me = participants.find((p: any) => p.user === user.username);
+                
+                if (me) {
+                    const newStatusMap: Record<string, string> = {};
+                    const parts = me.problem_status.split(':');
+                    
+                    problems.forEach((prob, idx) => {
+                        if (idx < parts.length) {
+                             const stat = parts[idx];
+                             if (stat.startsWith('+')) {
+                                 newStatusMap[prob.index] = 'AC';
+                             } else if (stat.startsWith('-')) {
+                                 newStatusMap[prob.index] = 'WA';
+                             }
+                        }
+                    });
+                    setStatusMap(newStatusMap);
+                }
+            } catch (error) {
+                console.error("Failed to fetch user status:", error);
+            }
+        };
+        fetchStatus();
+    }, [id, user, problems]);
 
     // Timer Logic
     useEffect(() => {
@@ -127,7 +162,7 @@ const Contest = () => {
                 </nav>
 
                 {activeTab === 'problems' && (
-                    <ProblemSet problems={problems} onProblemClick={openProblem} />
+                    <ProblemSet problems={problems} onProblemClick={openProblem} statusMap={statusMap} />
                 )}
                 {activeTab === 'standings' && (
                     <Leaderboard />

@@ -4,6 +4,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { problemApi, Problem as ProblemType } from '../api/problemApi';
 import { contestApi, Contest as ContestType } from '../api/contestApi';
 import { useAuth } from '../context/AuthContext';
+import ReactMarkdown from 'react-markdown';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import remarkGfm from 'remark-gfm';
+import 'katex/dist/katex.min.css';
 
 const Problem = () => {
     const navigate = useNavigate();
@@ -167,8 +172,51 @@ const Problem = () => {
                         시간 제한: 1.0초 &nbsp;|&nbsp; 메모리 제한: 256MB &nbsp;|&nbsp; 입력: 표준 입력 &nbsp;|&nbsp; 출력: 표준 출력
                     </div>
 
-                    <div style={{whiteSpace: 'pre-wrap', lineHeight: '1.6', color: '#2d3748'}}>
-                        {problem.description_kr}
+                    <div className="markdown-body" style={{lineHeight: '1.6', color: '#2d3748'}}>
+                        <ReactMarkdown 
+                            remarkPlugins={[remarkMath, remarkGfm]}
+                            rehypePlugins={[rehypeKatex]}
+                            components={{
+                                code({node, inline, className, children, ...props}: any) {
+                                    return !inline ? (
+                                        <div style={{
+                                            backgroundColor: '#f7fafc',
+                                            border: '1px solid #e2e8f0',
+                                            borderRadius: '4px',
+                                            padding: '1rem',
+                                            margin: '1rem 0',
+                                            fontFamily: 'monospace',
+                                            whiteSpace: 'pre-wrap'
+                                        }}>
+                                            {children}
+                                        </div>
+                                    ) : (
+                                        <code className={className} {...props} style={{
+                                            backgroundColor: '#edf2f7',
+                                            padding: '0.2em 0.4em',
+                                            borderRadius: '4px',
+                                            fontFamily: 'monospace'
+                                        }}>
+                                            {children}
+                                        </code>
+                                    )
+                                },
+                                table({children}: any) {
+                                    return <table style={{borderCollapse: 'collapse', width: '100%', marginBottom: '1rem'}}>{children}</table>
+                                },
+                                th({children}: any) {
+                                    return <th style={{border: '1px solid #cbd5e0', padding: '8px', backgroundColor: '#f7fafc'}}>{children}</th>
+                                },
+                                td({children}: any) {
+                                    return <td style={{border: '1px solid #cbd5e0', padding: '8px'}}>{children}</td>
+                                },
+                                blockquote({children}: any) {
+                                    return <blockquote style={{borderLeft: '4px solid #3182ce', paddingLeft: '1rem', margin: '1rem 0', color: '#718096'}}>{children}</blockquote>
+                                }
+                            }}
+                        >
+                            {problem.description_kr}
+                        </ReactMarkdown>
                     </div>
                     
                     <p style={{marginTop: '50px', color: '#718096', fontSize: '0.8rem'}}>
