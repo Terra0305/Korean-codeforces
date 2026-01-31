@@ -6,6 +6,8 @@ services:
     environment:
       - ALLOWED_HOSTS=localhost,127.0.0.1,backend,4.230.40.102
       - DEBUG=0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     volumes:
       - ./backend/db.sqlite3:/app/db.sqlite3
       - ./backend/logs:/app/logs
@@ -21,3 +23,31 @@ services:
     ports:
       - "6379:6379"
     restart: always
+
+  celery_worker:
+    build: ./backend
+    command: celery -A main worker -l info
+    volumes:
+      - ./backend:/app
+      - ./backend/logs:/app/logs
+    environment:
+      - DEBUG=0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - backend
+      - redis
+
+  celery_beat:
+    build: ./backend
+    command: celery -A main beat -l info
+    volumes:
+      - ./backend:/app
+      - ./backend/logs:/app/logs
+    environment:
+      - DEBUG=0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - backend
+      - redis
