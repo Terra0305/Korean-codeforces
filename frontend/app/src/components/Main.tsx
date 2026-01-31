@@ -30,8 +30,10 @@ const Main = () => {
                     .slice(0, 4);
                 
                 setTopRankers(sorted);
-            } catch (error) {
-                console.error("Failed to fetch rankers:", error);
+            } catch (error : any) {
+                if(error.response && error.response.status !== 401){
+                    console.error("Failed to fetch rankers:", error);
+                }
             }
         };
         fetchRankers();

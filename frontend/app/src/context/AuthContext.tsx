@@ -38,11 +38,13 @@ export const AuthProvider = ({ children } : {children : ReactNode}) => {
                     setUser(userData); 
                     client.defaults.headers.common['x-csrftoken'] = cookies.get('csrftoken');
                 }
-            } catch (error) {
-                if(user){
-                    alert("세션이 만료되었습니다.");
-                }
+            } catch (error: any) {
+                // Silent fail for 401 (Not logged in) or other errors during initial check
                 setUser(null);
+                // Ensure local storage is synced if verify fails (e.g. cookie expired but localStorage says logged in)
+                if (localStorage.getItem('isLoggedin')) {
+                     localStorage.removeItem('isLoggedin');
+                }
             } finally {
                 setIsLoading(false);
             }
@@ -57,6 +59,7 @@ export const AuthProvider = ({ children } : {children : ReactNode}) => {
             if (response.status === 200) {
                 setUser(response.data.user);
                 client.defaults.headers.common['x-csrftoken'] = cookies.get('csrftoken');
+                localStorage.setItem('isLoggedin', 'true');
                 return true;
             }
             return false;
@@ -75,6 +78,7 @@ export const AuthProvider = ({ children } : {children : ReactNode}) => {
              console.error("Logout failed", error);
         }
         setUser(null);
+        localStorage.removeItem('isLoggedin');
     };
 
     return (
