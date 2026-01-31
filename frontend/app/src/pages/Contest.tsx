@@ -64,7 +64,7 @@ const Contest = () => {
             try {
                 // Warning: fetching all participants is not efficient for large contests
                 const participants = await contestApi.getParticipants(id);
-                const me = participants.find((p: any) => p.user === user.username);
+                const me = participants.find((p: any) => p.user_username === user.username);
                 
                 if (me) {
                     const newStatusMap: Record<string, string> = {};
