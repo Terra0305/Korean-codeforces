@@ -7,7 +7,7 @@ import './Leaderboard.css';
 interface Participant {
     id: number;
     user: string;
-    score: number;
+    total_score: number;
     penalty: number;
     problem_status: string;
 }
@@ -31,10 +31,11 @@ const Leaderboard = () => {
                     // Sort participants by rank (score desc, penalty asc)
                     // Assuming API returns them or we sort here:
                     const sortedParticipants = participantsData.sort((a: Participant, b: Participant) => {
-                        if (a.score !== b.score) return b.score - a.score;
+                        if (a.total_score !== b.total_score) return b.total_score - a.total_score;
                         return a.penalty - b.penalty;
                     });
                     setParticipants(sortedParticipants);
+                    console.log(sortedParticipants);
                 } catch (error) {
                     console.error("Failed to fetch leaderboard data:", error);
                 }
@@ -88,7 +89,7 @@ const Leaderboard = () => {
                             <td className="user-cell">
                                 <span className="handle" onClick={handleDummyClick}>{p.user}</span>
                             </td>
-                            <td className="score-cell">{p.score}</td>
+                            <td className="score-cell">{p.total_score}</td>
                             <td>{p.penalty}</td>
                             
                             {problems.map((prob, idx) => {

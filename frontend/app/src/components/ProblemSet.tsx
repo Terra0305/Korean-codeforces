@@ -3,9 +3,10 @@ import { Problem } from "../api/problemApi";
 interface ProblemSetProps {
     problems: Problem[];
     onProblemClick: (problemId: number) => void;
+    statusMap: Record<string, string>; // e.g. { 'A': 'AC', 'B': 'WA' }
 }
 
-const ProblemSet = ({ problems, onProblemClick }: ProblemSetProps) => {
+const ProblemSet = ({ problems, onProblemClick, statusMap }: ProblemSetProps) => {
     return (
         <div className="problem-container">
             <table className="contest-table">
@@ -28,7 +29,13 @@ const ProblemSet = ({ problems, onProblemClick }: ProblemSetProps) => {
                             </td>
                             <td>{problem.points ?? '-'}</td>
                             <td>
-                                {/* Status column initially empty as requested */}
+                                {statusMap[problem.index] === 'AC' ? (
+                                    <span style={{color: 'green', fontWeight: 'bold'}}>성공</span>
+                                ) : statusMap[problem.index] === 'WA' ? (
+                                    <span style={{color: 'red', fontWeight: 'bold'}}>실패</span>
+                                ) : (
+                                    <span></span>
+                                )}
                             </td>
                         </tr>
                     ))}
