@@ -20,14 +20,24 @@ class ContestSerializer(serializers.ModelSerializer):
         return data
 
 class ProblemSerializer(serializers.ModelSerializer):
-    """문제 정보 시리얼라이저"""
+    """문제 정보 시리얼라이저 (관리자용 - ID 사용)"""
+    class Meta:
+        model = Problem
+        fields = ['id', 'contest', 'index', 'points', 'rating', 'url', 'description_kr', 'name']
+
+class PublicProblemSerializer(serializers.ModelSerializer):
+    """문제 정보 시리얼라이저 (공개용 - virtual_id 사용)"""
+    contest = serializers.SlugRelatedField(read_only=True, slug_field='virtual_id')
+
     class Meta:
         model = Problem
         fields = ['id', 'contest', 'index', 'points', 'rating', 'url', 'description_kr', 'name']
 
 class ParticipantSerializer(serializers.ModelSerializer):
-    """참가자 정보 시리얼라이저"""
+    """참가자 정보 시리얼라이저 (공개용 - virtual_id 사용)"""
     user_username = serializers.ReadOnlyField(source='user.username')
+    # 대회 정보는 virtual_id로 노출
+    contest = serializers.SlugRelatedField(read_only=True, slug_field='virtual_id')
 
     class Meta:
         model = Participant
@@ -35,8 +45,9 @@ class ParticipantSerializer(serializers.ModelSerializer):
         read_only_fields = ['user', 'total_score', 'penalty', 'problem_status']
 
 class ParticipantAdminSerializer(serializers.ModelSerializer):
-    """관리자용 참가자 정보 시리얼라이저 (수정 가능)"""
+    """관리자용 참가자 정보 시리얼라이저 (수정 가능 - ID 사용 가능)"""
     user_username = serializers.ReadOnlyField(source='user.username')
+    # 관리자는 ID/virtual_id 모두 편하게 사용 (기본 PK)
 
     class Meta:
         model = Participant

@@ -102,6 +102,10 @@ class PublicApiTests(APITestCase):
         # list_by_contest returns serializer.data, which is a list.
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['index'], 'A')
+        # Check that 'contest' field is virtual_id (UUID string or object), not integer ID
+        contest_val = response.data[0]['contest']
+        self.assertEqual(str(contest_val), str(self.contest.virtual_id))
+        self.assertTrue(isinstance(contest_val, (str, uuid.UUID)))
 
     def test_list_problems_future_security(self):
         """Pre-contest security: Problems should be inaccessible."""

@@ -62,3 +62,27 @@
 [2026-02-02 01:28:22] 127.0.0.1 GET /api/contests/contests/257140fb-e8a4-4487-a875-4d3521480326/ (User: Anonymous) - 200 (0.00s)
 [2026-02-02 01:28:22] 127.0.0.1 GET /api/contests/problems/91dd2071-69d4-44a6-aed7-a1a9ac4a6e74/2/ (User: Anonymous) - 403 (0.00s)
 [2026-02-02 01:28:22] Forbidden: /api/contests/problems/91dd2071-69d4-44a6-aed7-a1a9ac4a6e74/2/
+[2026-02-02 01:35:59] 127.0.0.1 GET /api/contests/contests/ (User: Anonymous) - 200 (0.00s)
+[2026-02-02 01:35:59] 127.0.0.1 GET /api/contests/problems/c1bf3f57-69ae-457b-9847-a8104ebb84ca/ (User: Anonymous) - 200 (0.00s)
+[2026-02-02 01:35:59] 127.0.0.1 GET /api/contests/problems/f5ee834a-f06e-4429-8796-edc88ddb9bbb/ (User: Anonymous) - 403 (0.00s)
+[2026-02-02 01:35:59] Forbidden: /api/contests/problems/f5ee834a-f06e-4429-8796-edc88ddb9bbb/
+[2026-02-02 01:35:59] 127.0.0.1 GET /api/contests/contests/2c345dcb-c67c-4ba0-ae7b-01b8f6a49eff/ (User: Anonymous) - 200 (0.00s)
+[2026-02-02 01:35:59] 127.0.0.1 GET /api/contests/contests/610457c5-c02f-4ce5-b9c2-a7c6705892f8/ (User: Anonymous) - 200 (0.00s)
+[2026-02-02 01:35:59] 127.0.0.1 GET /api/contests/problems/112e6201-aca9-4f52-9761-7976c19def58/2/ (User: Anonymous) - 403 (0.00s)
+[2026-02-02 01:35:59] Forbidden: /api/contests/problems/112e6201-aca9-4f52-9761-7976c19def58/2/
+[2026-02-02 01:36:18] 127.0.0.1 GET /api/contests/contests/ (User: Anonymous) - 200 (0.00s)
+[2026-02-02 01:36:18] 127.0.0.1 GET /api/contests/problems/c36defef-cb67-4035-a149-612e3b67db68/ (User: Anonymous) - 200 (0.00s)
+[2026-02-02 01:36:18] 127.0.0.1 GET /api/contests/problems/6cc8822f-d2af-478a-a813-60247d363bb6/ (User: Anonymous) - 403 (0.00s)
+[2026-02-02 01:36:18] Forbidden: /api/contests/problems/6cc8822f-d2af-478a-a813-60247d363bb6/
+[2026-02-02 01:36:18] 127.0.0.1 GET /api/contests/contests/0d7bf009-92cf-4519-97dd-40f1f88ef7ae/ (User: Anonymous) - 200 (0.00s)
+[2026-02-02 01:36:18] 127.0.0.1 GET /api/contests/contests/cbe5be8c-28f4-4cfd-b0af-fcd6baef6cd3/ (User: Anonymous) - 200 (0.00s)
+[2026-02-02 01:36:18] 127.0.0.1 GET /api/contests/problems/f575e445-fe16-4441-a601-f64b4c3696a3/2/ (User: Anonymous) - 403 (0.00s)
+[2026-02-02 01:36:18] Forbidden: /api/contests/problems/f575e445-fe16-4441-a601-f64b4c3696a3/2/
+[2026-02-02 01:36:41] 127.0.0.1 GET /api/contests/contests/ (User: Anonymous) - 200 (0.00s)
+[2026-02-02 01:36:41] 127.0.0.1 GET /api/contests/problems/4b28134c-c046-4079-bafc-33ab8f5287a6/ (User: Anonymous) - 200 (0.00s)
+[2026-02-02 01:36:41] 127.0.0.1 GET /api/contests/problems/a23baaec-6f18-42c2-ac18-0255b726889d/ (User: Anonymous) - 403 (0.00s)
+[2026-02-02 01:36:41] Forbidden: /api/contests/problems/a23baaec-6f18-42c2-ac18-0255b726889d/
+[2026-02-02 01:36:41] 127.0.0.1 GET /api/contests/contests/03bca070-bbbc-455b-a389-ffa865ed65c2/ (User: Anonymous) - 200 (0.00s)
+[2026-02-02 01:36:41] 127.0.0.1 GET /api/contests/contests/7c372f07-d991-4b3b-932e-76221a40eea4/ (User: Anonymous) - 200 (0.00s)
+[2026-02-02 01:36:41] 127.0.0.1 GET /api/contests/problems/43825e0f-1d7d-468f-b8dc-806d705bb478/2/ (User: Anonymous) - 403 (0.00s)
+[2026-02-02 01:36:41] Forbidden: /api/contests/problems/43825e0f-1d7d-468f-b8dc-806d705bb478/2/
