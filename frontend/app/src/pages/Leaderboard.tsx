@@ -6,7 +6,7 @@ import './Leaderboard.css';
 
 interface Participant {
     id: number;
-    user: string;
+    user_username: string;
     total_score: number;
     penalty: number;
     problem_status: string;
@@ -87,7 +87,7 @@ const Leaderboard = () => {
                                 {rank + 1}
                             </td>
                             <td className="user-cell">
-                                <span className="handle" onClick={handleDummyClick}>{p.user}</span>
+                                <span className="handle" onClick={handleDummyClick}>{p.user_username}</span>
                             </td>
                             <td className="score-cell">{p.total_score}</td>
                             <td>{p.penalty}</td>
