@@ -32,11 +32,13 @@ export const AuthProvider = ({ children } : {children : ReactNode}) => {
     useEffect(() => {
         const checkSession = async () => {
             try {
-                const response = await client.get('/api/users/me/');
-                if (response.status === 200) {
-                    const userData = response.data;
-                    setUser(userData); 
-                    client.defaults.headers.common['x-csrftoken'] = cookies.get('csrftoken');
+                if(localStorage.getItem('isLoggedin') === 'true'){
+                    const response = await client.get('/api/users/me/');
+                    if (response.status === 200) {
+                        const userData = response.data;
+                        setUser(userData); 
+                        client.defaults.headers.common['x-csrftoken'] = cookies.get('csrftoken');
+                    }
                 }
             } catch (error: any) {
                 // Silent fail for 401 (Not logged in) or other errors during initial check
