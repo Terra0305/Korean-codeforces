@@ -12,12 +12,12 @@ router.register(r'admin/participants', AdminParticipantViewSet, basename='admin-
 urlpatterns = [
     path('', include(router.urls)),
     path('contests/', ContestViewSet.as_view({'get': 'list'})),
-    path('contests/<int:pk>/', ContestViewSet.as_view({'get': 'retrieve'})),
-    path('contests/<int:pk>/register/', ContestViewSet.as_view({'post': 'register'})),
-    path('contests/<int:pk>/unregister/', ContestViewSet.as_view({'delete': 'unregister'})),
+    path('contests/<uuid:virtual_id>/', ContestViewSet.as_view({'get': 'retrieve'})),
+    path('contests/<uuid:virtual_id>/register/', ContestViewSet.as_view({'post': 'register'})),
+    path('contests/<uuid:virtual_id>/unregister/', ContestViewSet.as_view({'delete': 'unregister'})),
     path('problems/', ProblemViewSet.as_view({'get': 'list'})),
-    path('problems/<int:contest_id>/', ProblemViewSet.as_view({'get': 'list_by_contest'})),
-    path('problems/<int:contest_id>/<int:pk>/', ProblemViewSet.as_view({'get': 'retrieve_by_contest'})),
+    path('problems/<uuid:contest_id>/', ProblemViewSet.as_view({'get': 'list_by_contest'})),
+    path('problems/<uuid:contest_id>/<int:pk>/', ProblemViewSet.as_view({'get': 'retrieve_by_contest'})),
 ]
 # 1. 대회 관리 (AdminContestViewSet)
 # Base URL: admin/contests/

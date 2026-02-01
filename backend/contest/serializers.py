@@ -1,11 +1,23 @@
 from rest_framework import serializers
 from .models import Contest, Problem, Participant
 
+from django.utils import timezone
+
 class ContestSerializer(serializers.ModelSerializer):
     """대회 정보 시리얼라이저"""
     class Meta:
         model = Contest
-        fields = ['id', 'name', 'start_time', 'end_time']
+        fields = ['id', 'virtual_id', 'name', 'start_time', 'end_time']
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # 대회 시작 전에는 실제 ID (Codeforces ID) 비공개 (관리자는 제외)
+        user = self.context.get('request').user if self.context.get('request') else None
+        is_admin = user and (user.is_staff or user.is_superuser)
+        
+        if not is_admin and instance.start_time and timezone.now() < instance.start_time:
+             data.pop('id', None)
+        return data
 
 class ProblemSerializer(serializers.ModelSerializer):
     """문제 정보 시리얼라이저"""
