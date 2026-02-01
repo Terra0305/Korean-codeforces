@@ -231,9 +231,15 @@ const Main = () => {
                                                 <button 
                                                     className="btn-outline btn" 
                                                     style={{ padding: '4px 10px', fontSize: '0.8rem' }} 
-                                                    onClick={() => navigate(`/contest/${contest.id}`)}
+                                                    onClick={() => {
+                                                        if (status.text === '예정') {
+                                                            navigate(`/contest/${contest.id}/waiting`);
+                                                        } else {
+                                                            navigate(`/contest/${contest.id}`);
+                                                        }
+                                                    }}
                                                 >
-                                                    대회 이동
+                                                    {status.text === '예정' ? '대회 대기실' : '대회 이동'}
                                                 </button>
                                             </td>
                                         </>

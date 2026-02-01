@@ -12,6 +12,8 @@ import EditContest from './pages/admin/EditContest.tsx';
 import EditProblem from './pages/admin/EditProblem.tsx';
 import Leaderboard from './pages/Leaderboard.tsx';
 
+import ContestWaitingRoom from './pages/ContestWaitingRoom.tsx';
+
 function App() {
   return (
     <AuthProvider>
@@ -25,6 +27,7 @@ function App() {
           } />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/contest/:id" element={<Contest />} />
+          <Route path="/contest/:id/waiting" element={<ContestWaitingRoom />} />
           <Route path="/contest/:contestId/:problemId" element={<Problem />} />
           <Route path="/create-contest" element={<CreateContest />} />
           <Route path="/create-problem" element={<CreateProblem />} />
