@@ -35,7 +35,6 @@ const Leaderboard = () => {
                         return a.penalty - b.penalty;
                     });
                     setParticipants(sortedParticipants);
-                    console.log(sortedParticipants);
                 } catch (error) {
                     console.error("Failed to fetch leaderboard data:", error);
                 }
