@@ -4,9 +4,20 @@ interface ProblemSetProps {
     problems: Problem[];
     onProblemClick: (problemId: number) => void;
     statusMap: Record<string, string>; // e.g. { 'A': 'AC', 'B': 'WA' }
+    startTime?: string;
 }
 
-const ProblemSet = ({ problems, onProblemClick, statusMap }: ProblemSetProps) => {
+const ProblemSet = ({ problems, onProblemClick, statusMap, startTime }: ProblemSetProps) => {
+    const isStarted = !startTime || new Date() >= new Date(startTime);
+
+    if (!isStarted) {
+        return (
+            <div className="problem-container" style={{textAlign: 'center', padding: '50px', color: '#718096', fontSize: '1.2rem', fontWeight: 600}}>
+                대회 시작 전입니다.
+            </div>
+        );
+    }
+
     return (
         <div className="problem-container">
             <table className="contest-table">

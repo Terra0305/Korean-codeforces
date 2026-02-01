@@ -164,7 +164,7 @@ const Contest = () => {
                 </nav>
 
                 {activeTab === 'problems' && (
-                    <ProblemSet problems={problems} onProblemClick={openProblem} statusMap={statusMap} />
+                    <ProblemSet problems={problems} onProblemClick={openProblem} statusMap={statusMap} startTime={contest?.start_time} />
                 )}
                 {activeTab === 'standings' && (
                     <Leaderboard />
