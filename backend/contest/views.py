@@ -96,10 +96,10 @@ class AdminParticipantViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        contest = self.request.query_params.get('contest')
+        virtual_id = self.request.query_params.get('virtual_id')
         
-        if contest:
-            queryset = queryset.filter(contest=contest)
+        if virtual_id:
+            queryset = queryset.filter(contest__virtual_id=virtual_id)
             
         return queryset
 

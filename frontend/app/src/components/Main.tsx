@@ -216,7 +216,7 @@ const Main = () => {
                             {tableRows.map((contest, index) => {
                                 const status = contest ? getContestStatus(contest) : null;
                                 return (
-                                <tr key={contest ? contest.id : `empty-${index}`}>
+                                <tr key={contest ? contest.virtual_id : `empty-${index}`}>
                                     {contest && status ? (
                                         <>
                                             <td><strong>{contest.name}</strong></td>
@@ -233,9 +233,9 @@ const Main = () => {
                                                     style={{ padding: '4px 10px', fontSize: '0.8rem' }} 
                                                     onClick={() => {
                                                         if (status.text === '예정') {
-                                                            navigate(`/contest/${contest.id}/waiting`);
+                                                            navigate(`/contest/${contest.virtual_id}/waiting`);
                                                         } else {
-                                                            navigate(`/contest/${contest.id}`);
+                                                            navigate(`/contest/${contest.virtual_id}`);
                                                         }
                                                     }}
                                                 >

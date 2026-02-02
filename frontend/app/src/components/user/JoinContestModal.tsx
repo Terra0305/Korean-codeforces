@@ -18,7 +18,7 @@ const JoinContestModal = ({ isOpen, onClose, contest }: JoinContestModalProps) =
     const handleConfirmRegistration = async () => {
         setIsLoading(true);
         try {
-            await client.post(`/api/contests/contests/${contest.id}/register/`);
+            await client.post(`/api/contests/contests/${contest.virtual_id}/register/`);
             alert("대회 참가 신청이 완료되었습니다.");
             onClose();
         } catch (error: any) {

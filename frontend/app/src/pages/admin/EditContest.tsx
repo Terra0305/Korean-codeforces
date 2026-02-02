@@ -12,7 +12,7 @@ const EditContest = () => {
     const navigate = useNavigate();
     const { id } = useParams(); // Get contest ID from URL
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedContest, setSelectedContest] = useState<{id: number, name: string} | null>(null);
+    const [selectedContest, setSelectedContest] = useState<{virtual_id: string | null, name: string} | null>(null);
     const [problems, setProblems] = useState<Problem[]>([]);
     
     // Contest Edit Form State
@@ -45,7 +45,7 @@ const EditContest = () => {
                 try {
                     // Fetch contest details
                     const contestData = await contestApi.getContestDetail(id);
-                    setSelectedContest({ id: contestData.id, name: contestData.name });
+                    setSelectedContest({ virtual_id: contestData.virtual_id, name: contestData.name });
                     
                     // Set Form Data
                     setContestFormData({
@@ -71,7 +71,7 @@ const EditContest = () => {
         loadContestData();
     }, [id]);
 
-    const handleContestSelect = (contestId: number) => {
+    const handleContestSelect = (contestId: string | null) => {
         navigate(`/edit-contest/${contestId}`);
         setIsModalOpen(false);
     };
@@ -105,7 +105,7 @@ const EditContest = () => {
         }
 
         try {
-            await contestApi.updateContest(selectedContest.id, {
+            await contestApi.updateContest(selectedContest.virtual_id, {
                 name: contestFormData.name,
                 start_time: contestFormData.start_time.toISOString(),
                 end_time: contestFormData.end_time.toISOString()
@@ -133,7 +133,7 @@ const EditContest = () => {
                 }
             }
             
-            await contestApi.deleteContest(selectedContest.id);
+            await contestApi.deleteContest(selectedContest.virtual_id);
             
             alert('대회가 성공적으로 삭제되었습니다.');
             setIsDeleteModalOpen(false);
@@ -157,7 +157,7 @@ const EditContest = () => {
                         <div style={{display: 'flex', gap: '10px'}}>
                             <input 
                                 type="text"
-                                value={selectedContest ? `${selectedContest.name} (ID: ${selectedContest.id})` : ''}
+                                value={selectedContest ? `${selectedContest.name} (ID: ${selectedContest.virtual_id})` : ''}
                                 placeholder="대회를 선택해주세요"
                                 className="admin-form-input"
                                 readOnly

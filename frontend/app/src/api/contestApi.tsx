@@ -1,7 +1,8 @@
 import client from '../api/client';
 
 export interface Contest {
-    id: number;
+    id: number | null;
+    virtual_id: string | null;
     name: string;
     start_time: string;
     end_time: string;
@@ -19,20 +20,20 @@ export const contestApi = {
         const response = await client.get<ContestListResponse>('/api/contests/contests/');
         return response.data.results;
     },
-    getContestDetail: async (id: string | number) => {
-        const response = await client.get<Contest>(`/api/contests/contests/${id}/`);
+    getContestDetail: async (virtual_id: string | number) => {
+        const response = await client.get<Contest>(`/api/contests/contests/${virtual_id}/`);
         return response.data;
     },
-    updateContest: async (id: string | number, data: Partial<Contest>) => {
-        const response = await client.patch(`/api/contests/admin/contests/${id}/`, data);
+    updateContest: async (virtual_id: string | null, data: Partial<Contest>) => {
+        const response = await client.patch(`/api/contests/admin/contests/${virtual_id}/`, data);
         return response.data;
     },
-    deleteContest: async (id: string | number) => {
-        const response = await client.delete(`/api/contests/admin/contests/${id}/`);
+    deleteContest: async (virtual_id: string | null) => {
+        const response = await client.delete(`/api/contests/admin/contests/${virtual_id}/`);
         return response.data;
     },
-    getParticipants: async (contestId: string | number) => {
-        const response = await client.get(`/api/contests/admin/participants/?contest=${contestId}`);
+    getParticipants: async (virtual_id: string | null) => {
+        const response = await client.get(`/api/contests/admin/participants/?contest=${virtual_id}`);
         return response.data.results;
     }
 };
