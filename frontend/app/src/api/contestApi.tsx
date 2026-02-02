@@ -24,12 +24,12 @@ export const contestApi = {
         const response = await client.get<Contest>(`/api/contests/contests/${virtual_id}/`);
         return response.data;
     },
-    updateContest: async (virtual_id: string | null, data: Partial<Contest>) => {
-        const response = await client.patch(`/api/contests/admin/contests/${virtual_id}/`, data);
+    updateContest: async (id: string | null, data: Partial<Contest>) => {
+        const response = await client.patch(`/api/contests/admin/contests/${id}/`, data);
         return response.data;
     },
-    deleteContest: async (virtual_id: string | null) => {
-        const response = await client.delete(`/api/contests/admin/contests/${virtual_id}/`);
+    deleteContest: async (id: string | null) => {
+        const response = await client.delete(`/api/contests/admin/contests/${id}/`);
         return response.data;
     },
     getParticipants: async (virtual_id: string | null) => {
