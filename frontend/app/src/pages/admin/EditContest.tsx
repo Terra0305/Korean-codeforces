@@ -12,7 +12,7 @@ const EditContest = () => {
     const navigate = useNavigate();
     const { id } = useParams(); // Get contest ID from URL
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedContest, setSelectedContest] = useState<{virtual_id: string | null, name: string} | null>(null);
+    const [selectedContest, setSelectedContest] = useState<{id: number | null, virtual_id: string | null, name: string} | null>(null);
     const [problems, setProblems] = useState<Problem[]>([]);
     
     // Contest Edit Form State
@@ -45,7 +45,7 @@ const EditContest = () => {
                 try {
                     // Fetch contest details
                     const contestData = await contestApi.getContestDetail(id);
-                    setSelectedContest({ virtual_id: contestData.virtual_id, name: contestData.name });
+                    setSelectedContest({ virtual_id: contestData.virtual_id, name: contestData.name , id: contestData.id});
                     
                     // Set Form Data
                     setContestFormData({
@@ -105,7 +105,7 @@ const EditContest = () => {
         }
 
         try {
-            await contestApi.updateContest(selectedContest.virtual_id, {
+            await contestApi.updateContest(selectedContest.id, {
                 name: contestFormData.name,
                 start_time: contestFormData.start_time.toISOString(),
                 end_time: contestFormData.end_time.toISOString()
@@ -133,7 +133,7 @@ const EditContest = () => {
                 }
             }
             
-            await contestApi.deleteContest(selectedContest.virtual_id);
+            await contestApi.deleteContest(selectedContest.id);
             
             alert('대회가 성공적으로 삭제되었습니다.');
             setIsDeleteModalOpen(false);
