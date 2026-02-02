@@ -89,7 +89,8 @@ class AdminApiTests(APITestCase):
             'points': 500,
             'rating': 800,
             'url': 'http://example.com/A',
-            'description_kr': '쉬운 문제'
+            'description_kr': '쉬운 문제',
+            'name': 'Test Problem'
         }
         response = self.client.post(self.problem_list_url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -151,3 +152,20 @@ class AdminApiTests(APITestCase):
         # 문자열 인코딩 문제 등을 고려하여 status 코드 위주로 체크하거나, 응답 메시지 간단 확인
         self.assertEqual(response.data['status'], '동기화 성공')
         mock_fetch.assert_called_once_with(contest.id)
+
+    def test_admin_retrieve_future_contest_sees_id(self):
+        """관리자는 미래의 대회라도 ID를 볼 수 있어야 한다."""
+        future_contest = Contest.objects.create(
+            id=5000,
+            name='Future Admin Contest',
+            start_time=timezone.now() + timedelta(days=1),
+            end_time=timezone.now() + timedelta(days=1, hours=2)
+        )
+        url = reverse('contest:admin-contest-detail', args=[future_contest.id])
+        
+        self.client.force_authenticate(user=self.admin_user)
+        response = self.client.get(url)
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('id', response.data)
+        self.assertEqual(response.data['id'], 5000)
