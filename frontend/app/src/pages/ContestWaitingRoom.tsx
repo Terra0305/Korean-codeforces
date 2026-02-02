@@ -36,9 +36,7 @@ const ContestWaitingRoom = () => {
             fetchContest();
             fetchParticipants();
             
-            // Poll participant count every 10 seconds? Or just once for now. Let's do polling interval
-            const pInterval = setInterval(fetchParticipants, 10000);
-            return () => clearInterval(pInterval);
+            return;
         }
     }, [virtual_id]);
 
