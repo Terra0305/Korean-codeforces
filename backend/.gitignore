@@ -24,7 +24,3 @@ db.sqlite3
 db.sqlite3-journal
 
 .env
-
-# 로그 파일
-logs/
-*.log

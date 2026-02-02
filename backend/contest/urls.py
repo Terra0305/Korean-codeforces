@@ -12,12 +12,12 @@ router.register(r'admin/participants', AdminParticipantViewSet, basename='admin-
 urlpatterns = [
     path('', include(router.urls)),
     path('contests/', ContestViewSet.as_view({'get': 'list'})),
-    path('contests/<uuid:virtual_id>/', ContestViewSet.as_view({'get': 'retrieve'})),
-    path('contests/<uuid:virtual_id>/register/', ContestViewSet.as_view({'post': 'register'})),
-    path('contests/<uuid:virtual_id>/unregister/', ContestViewSet.as_view({'delete': 'unregister'})),
+    path('contests/<int:pk>/', ContestViewSet.as_view({'get': 'retrieve'})),
+    path('contests/<int:pk>/register/', ContestViewSet.as_view({'post': 'register'})),
+    path('contests/<int:pk>/unregister/', ContestViewSet.as_view({'delete': 'unregister'})),
     path('problems/', ProblemViewSet.as_view({'get': 'list'})),
-    path('problems/<uuid:virtual_id>/', ProblemViewSet.as_view({'get': 'list_by_contest'})),
-    path('problems/<uuid:virtual_id>/<int:pk>/', ProblemViewSet.as_view({'get': 'retrieve_by_contest'})),
+    path('problems/<int:contest_id>/', ProblemViewSet.as_view({'get': 'list_by_contest'})),
+    path('problems/<int:contest_id>/<int:pk>/', ProblemViewSet.as_view({'get': 'retrieve_by_contest'})),
 ]
 # 1. 대회 관리 (AdminContestViewSet)
 # Base URL: admin/contests/
@@ -49,10 +49,10 @@ urlpatterns = [
 # 3. 대회 공개 API (ContestViewSet)
 # Base URL: api/contests/contests/
 # -------------------------------------------------------------
-# GET    /api/contests/contests/              : 대회 전체 목록 조회 (List)
-# GET    /api/contests/contests/{virtual_id}/ : 특정 대회 상세 조회 (Retrieve)
-# POST   /api/contests/contests/{virtual_id}/register/ : 대회 참가 신청
-# DELETE /api/contests/contests/{virtual_id}/unregister/ : 대회 참가 취소
+# GET    /api/contests/contests/          : 대회 전체 목록 조회 (List)
+# GET    /api/contests/contests/{pk}/     : 특정 대회 상세 조회 (Retrieve)
+# POST   /api/contests/contests/{pk}/register/ : 대회 참가 신청
+# DELETE /api/contests/contests/{pk}/unregister/ : 대회 참가 취소
 
 # 4. 관리자 참가자 관리 (AdminParticipantViewSet)
 # Base URL: admin/participants/
@@ -67,5 +67,5 @@ urlpatterns = [
 # Base URL: api/contests/problems/
 # -------------------------------------------------------------
 # GET    /api/contests/problems/               : 문제 전체 목록 조회 (List)
-# GET    /api/contests/problems/{virtual_id}/  : 특정 대회의 문제 목록 조회 (List by Contest)
-# GET    /api/contests/problems/{virtual_id}/{pk}/ : 특정 대회의 특정 문제 상세 조회 (Retrieve by Contest)
+# GET    /api/contests/problems/{contest_id}/  : 특정 대회의 문제 목록 조회 (List by Contest)
+# GET    /api/contests/problems/{contest_id}/{pk}/ : 특정 대회의 특정 문제 상세 조회 (Retrieve by Contest)
