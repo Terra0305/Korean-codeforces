@@ -28,10 +28,11 @@ const CreateProblem = () => {
         }));
     };
 
-    const handleContestSelect = (contestId: number, contestName: string) => {
+    const handleContestSelect = (contestId: string | null, contestName: string) => {
+        if (contestId === null) return;
         setFormData(prev => ({
             ...prev,
-            contest: contestId.toString(),
+            contest: contestId,
             contestName: contestName
         }));
         setIsModalOpen(false);
