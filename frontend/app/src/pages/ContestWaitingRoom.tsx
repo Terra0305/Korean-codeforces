@@ -5,7 +5,7 @@ import { contestApi, Contest } from '../api/contestApi';
 import './ContestWaitingRoom.css';
 
 const ContestWaitingRoom = () => {
-    const { id } = useParams();
+    const { virtual_id } = useParams();
     const navigate = useNavigate();
     const [contest, setContest] = useState<Contest | null>(null);
     const [timerText, setTimerText] = useState("Loading...");
@@ -13,10 +13,10 @@ const ContestWaitingRoom = () => {
     const [isStarted, setIsStarted] = useState(false);
 
     useEffect(() => {
-        if (id) {
+        if (virtual_id) {
             const fetchContest = async () => {
                 try {
-                    const data = await contestApi.getContestDetail(id);
+                    const data = await contestApi.getContestDetail(virtual_id);
                     setContest(data);
                 } catch (error) {
                     console.error("Failed to fetch contest:", error);
@@ -26,7 +26,7 @@ const ContestWaitingRoom = () => {
             const fetchParticipants = async () => {
                 try {
                    // Using getParticipants API. Note: ideally should have a count-only API for performance
-                   const participants = await contestApi.getParticipants(id);
+                   const participants = await contestApi.getParticipants(virtual_id);
                    setParticipantCount(participants.length); 
                 } catch (error) {
                     console.error("Failed to fetch participants:", error);
@@ -40,7 +40,7 @@ const ContestWaitingRoom = () => {
             const pInterval = setInterval(fetchParticipants, 10000);
             return () => clearInterval(pInterval);
         }
-    }, [id]);
+    }, [virtual_id]);
 
     useEffect(() => {
         if (!contest) return;
@@ -69,7 +69,7 @@ const ContestWaitingRoom = () => {
     }, [contest]);
 
     const handleEnterContest = () => {
-        navigate(`/contest/${id}`);
+        navigate(`/contest/${virtual_id}`);
     };
 
     return (
