@@ -4,7 +4,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,4.230.40.102
+      - ALLOWED_HOSTS=localhost,127.0.0.1,backend,4.230.40.102,csforces.koreacentral.cloudapp.azure.com
       - DEBUG=0
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
