@@ -96,15 +96,18 @@ def fetch_contest_latest_submissions(contest_id):
         print(f"Exception fetching submissions for contest {contest_id}: {e}")
         return []
 
-def calculate_participant_stats(submissions, problems):
+def calculate_participant_stats(submissions, problems, contest_start_time):
     """
     제출 기록과 문제 정보를 바탕으로 풀이 현황, 총점, 패널티를 계산합니다.
+    contest_start_time: datetime 객체 (대회 시작 시간)
     """
     # 문제별 상태 추적용 딕셔너리
     problem_stats = { p.index: { "solved": False, "attempts": 0, "penalty_time": 0 } for p in problems }
     
     # 제출 기록은 최신순(내림차순)으로 오므로, 역순(시간순)으로 뒤집어서 처리
     submissions = sorted(submissions, key=lambda x: x['creationTimeSeconds'])
+    
+    contest_start_timestamp = contest_start_time.timestamp()
     
     for sub in submissions:
         problem_index = sub['problem']['index']
@@ -121,7 +124,14 @@ def calculate_participant_stats(submissions, problems):
         
         if verdict == 'OK':
             stats["solved"] = True
-            relative_seconds = sub.get('relativeTimeSeconds', 0)
+            
+            # Codeforces의 relativeTimeSeconds 대신 우리 대회 시작 시간 기준 계산
+            submission_time = sub['creationTimeSeconds']
+            relative_seconds = submission_time - contest_start_timestamp
+            
+            # 음수일 경우 0 처리 (대회 시작 전 제출 등)
+            relative_seconds = max(0, relative_seconds)
+            
             stats["penalty_time"] = int(relative_seconds / 60)
         elif verdict != 'OK':
             stats["attempts"] += 1
@@ -186,7 +196,7 @@ def fetch_participant_status(contest_id, handle):
             return None
 
         # 공통 계산 로직 사용
-        return calculate_participant_stats(submissions, problems)
+        return calculate_participant_stats(submissions, problems, contest.start_time)
         
     except Exception as e:
         print(f"Exception fetching status for {handle}: {e}")
