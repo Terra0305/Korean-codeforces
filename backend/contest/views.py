@@ -161,7 +161,7 @@ class ProblemViewSet(viewsets.ReadOnlyModelViewSet):
         contest = get_object_or_404(Contest, virtual_id=virtual_id)
 
         # Check start time
-        if contest.start_time and timezone.now() < contest.start_time:
+        if not request.user.is_staff and contest.start_time and timezone.now() < contest.start_time:
             return Response({'error': '대회가 시작되지 않았습니다.'}, status=403)
 
         queryset = self.queryset.filter(contest=contest)
