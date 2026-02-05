@@ -4,6 +4,7 @@ from .models import Contest, Participant
 from .utils import fetch_contest_latest_submissions, calculate_participant_stats, API_COOLDOWN
 import time
 from collections import defaultdict
+from datetime import timedelta
 
 @shared_task
 def update_active_contests_task():
