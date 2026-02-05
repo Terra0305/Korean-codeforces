@@ -23,9 +23,10 @@ const Main = () => {
                 const response = await client.get('/api/users/profile/');
                 const profiles = response.data.results || response.data; // Handle pagination if present or direct list
                 
+                console.log(profiles);
                 // Ensure profile has necessary fields and sort by elo_rating
                 const sorted = profiles
-                    .filter((p: any) => p.user_username) // Ensure username exists
+                    .filter((p: any) => p.username) // Ensure username exists
                     .sort((a: any, b: any) => b.elo_rating - a.elo_rating)
                     .slice(0, 4);
                 
@@ -275,7 +276,7 @@ const Main = () => {
                     {topRankers.length > 0 ? (
                         topRankers.map((ranker, index) => (
                             <div key={ranker.id || index} className="rank-item" style={index === 0 ? { borderBottom: '2px solid #ecc94b' } : {}}>
-                                <span>{index + 1}. <strong>{ranker.user_username}</strong></span>
+                                <span>{index + 1}. <strong>{ranker.username}</strong></span>
                                 <span className={index < 3 ? "rank-high" : ""}>{ranker.elo_rating}</span>
                             </div>
                         ))
