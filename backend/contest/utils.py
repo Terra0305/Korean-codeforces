@@ -129,6 +129,10 @@ def calculate_participant_stats(submissions, problems, contest_start_time):
         # 대회 시작 전 제출은 무시
         if(relative_seconds < 0):
             continue
+
+        # 대회 종료 후 제출 무시
+        if(submission_time > contest_end_time.timestamp()):
+            continue
         
         if verdict == 'OK':
             stats["solved"] = True

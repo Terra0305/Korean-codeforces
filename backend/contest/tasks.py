@@ -11,7 +11,7 @@ def update_active_contests_task():
     진행 중인 대회를 찾아 업데이트하는 주기적 태스크
     """
     now = timezone.now()
-    active_contests = Contest.objects.filter(start_time__lte=now, end_time__gte=now)
+    active_contests = Contest.objects.filter(start_time__lte=now, end_time__gte=now - timedelta(minutes=5))
     
     if not active_contests.exists():
         return "No active contests"
