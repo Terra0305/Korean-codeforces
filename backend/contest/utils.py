@@ -123,11 +123,14 @@ def calculate_participant_stats(submissions, problems, contest_start_time):
         verdict = sub.get('verdict')
         
         if verdict == 'OK':
-            stats["solved"] = True
-            
             # Codeforces의 relativeTimeSeconds 대신 우리 대회 시작 시간 기준 계산
             submission_time = sub['creationTimeSeconds']
             relative_seconds = submission_time - contest_start_timestamp
+
+            # 대회 시작 전 제출은 무시
+            if(relative_seconds < 0):
+                continue
+            stats["solved"] = True
             
             # 음수일 경우 0 처리 (대회 시작 전 제출 등)
             relative_seconds = max(0, relative_seconds)
