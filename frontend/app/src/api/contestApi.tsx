@@ -33,7 +33,7 @@ export const contestApi = {
         return response.data;
     },
     getParticipants: async (virtual_id: string | null) => {
-        const response = await client.get(`/api/contests/admin/participants/?contest=${virtual_id}`);
+        const response = await client.get(`/api/contests/admin/participants/?virtual_id=${virtual_id}`);
         return response.data.results;
     }
 };
