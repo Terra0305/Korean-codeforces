@@ -19,16 +19,7 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ user, isOpen, onClose, onBack
         student_id: ''
     });
     const [isLoading, setIsLoading] = useState(false);
-    
-    // 비밀번호 변경 관련 상태
-    const [isPasswordSectionOpen, setIsPasswordSectionOpen] = useState(false);
-    const [passwordData, setPasswordData] = useState({
-        old_password: '',
-        new_password: '',
-        new_password_confirm: ''
-    });
-    const [isPasswordLoading, setIsPasswordLoading] = useState(false);
-
+    const [isStudentIdVerified, setIsStudentIdVerified] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -62,14 +53,6 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ user, isOpen, onClose, onBack
         }));
     };
 
-    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setPasswordData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -95,48 +78,31 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ user, isOpen, onClose, onBack
         }
     };
 
-    const handlePasswordSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (passwordData.new_password !== passwordData.new_password_confirm) {
-            alert("새 비밀번호와 확인 비밀번호가 일치하지 않습니다.");
+    const handleVerifyStudentId = async () => {
+        if (!formData.student_id) {
+            alert("학번을 입력해주세요.");
             return;
         }
-
-        setIsPasswordLoading(true);
         try {
-            await client.post('/api/users/change-password/', {
-                old_password: passwordData.old_password,
-                new_password: passwordData.new_password,
-                new_password_confirm: passwordData.new_password_confirm
-            });
-            alert("비밀번호가 성공적으로 변경되었습니다.");
-            // 초기화 및 닫기
-            setPasswordData({
-                old_password: '',
-                new_password: '',
-                new_password_confirm: ''
-            });
-            setIsPasswordSectionOpen(false);
-        } catch (error: any) {
-            console.error("Password change failed:", error);
-            if (error.response?.data) {
-                // Handle dict based errors (e.g., old_password mismatch, weak password)
-                const data = error.response.data;
-                let errorMsg = "";
-                if (typeof data === 'object') {
-                   // Flatten unexpected nested objects or arrays if necessary, but simple join usually works for DRF
-                   Object.entries(data).forEach(([key, value]) => {
-                       errorMsg += `${value}\n`;
-                   });
-                } else {
-                    errorMsg = String(data);
-                }
-                alert(`비밀번호 변경 실패:\n${errorMsg}`);
+            const response = await client.get(`/api/users/check-whitelist/?student_id=${formData.student_id}`);   
+            if (response.status === 200) {
+                alert("사용 가능한 학번입니다.");
+                setIsStudentIdVerified(true);
             } else {
-                alert("비밀번호 변경 중 오류가 발생했습니다.");
+                alert("알 수 없는 오류가 발생했습니다.");
+                setIsStudentIdVerified(false);
             }
-        } finally {
-            setIsPasswordLoading(false);
+        } catch (error: any) {
+            if(error.status === 403) {
+                alert("가입이 허용되지 않은 학번입니다.");
+                setIsStudentIdVerified(false);
+            } else if (error.status === 400) {
+                alert("이미 등록된 학번입니다.");
+                setIsStudentIdVerified(false);
+            } else {
+                alert("알 수 없는 오류가 발생했습니다.");
+                setIsStudentIdVerified(false);
+            }
         }
     };
 
@@ -204,14 +170,18 @@ const ProfileEdit: React.FC<ProfileEditProps> = ({ user, isOpen, onClose, onBack
 
                         <div className="form-group">
                             <label className="form-label">학번</label>
-                            <input 
-                                type="text" 
-                                name="student_id" 
-                                className="form-input" 
-                                value={formData.student_id} 
-                                onChange={handleChange}
-                                required
-                            />
+                            <div className='form-input-group'>
+                                <input 
+                                    type="text" 
+                                    name="student_id" 
+                                    className="form-input" 
+                                    value={formData.student_id} 
+                                    onChange={handleChange}
+                                    style={{ backgroundColor: isStudentIdVerified ? '#d4edda' : 'white' }}
+                                    required
+                                />
+                                <button type="button" className="btn-verify" onClick={handleVerifyStudentId}>Check</button>
+                            </div>
                         </div>
 
                         <div className="btn-group">

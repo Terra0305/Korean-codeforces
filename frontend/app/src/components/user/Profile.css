@@ -210,6 +210,13 @@
 /* Form Styles managed generically here */
 .form-group {
     margin-bottom: 20px;
+    
+}
+
+.form-input-group {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
 }
 
 .form-label {
