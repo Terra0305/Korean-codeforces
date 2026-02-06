@@ -5,10 +5,37 @@ from django.utils import timezone
 
 class ContestSerializer(serializers.ModelSerializer):
     """대회 정보 시리얼라이저"""
+    status = serializers.SerializerMethodField()
+    remaining_seconds = serializers.SerializerMethodField()
+
     class Meta:
         model = Contest
-        fields = ['id', 'virtual_id', 'name', 'start_time', 'end_time']
+        fields = ['id', 'virtual_id', 'name', 'start_time', 'end_time', 'status', 'remaining_seconds']
     
+    def get_status(self, obj):
+        if not obj.start_time or not obj.end_time:
+            return 'UPCOMING'
+            
+        now = timezone.now()
+        if obj.start_time > now:
+            return 'UPCOMING'
+        elif obj.start_time <= now < obj.end_time:
+            return 'RUNNING'
+        else:
+            return 'FINISHED'
+
+    def get_remaining_seconds(self, obj):
+        if not obj.start_time or not obj.end_time:
+            return 0
+            
+        now = timezone.now()
+        if obj.start_time > now:
+            return int((obj.start_time - now).total_seconds())
+        elif obj.start_time <= now < obj.end_time:
+            return int((obj.end_time - now).total_seconds())
+        else:
+            return 0
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         # 대회 시작 전에는 실제 ID (Codeforces ID) 비공개 (관리자는 제외)
