@@ -19,6 +19,7 @@ const SignupPage = () => {
     });
     const [isUsernameVerified, setIsUsernameVerified] = useState(false);
     const [isCodeforcesVerified, setIsCodeforcesVerified] = useState(false);
+    const [isStudentIdVerified, setIsStudentIdVerified] = useState(false);
 
     const handleVerifyId = async () => {
         if (!formData.username) {
@@ -56,6 +57,27 @@ const SignupPage = () => {
             setIsCodeforcesVerified(false);
             const msg = error.response?.data?.error || error.response?.data?.message || "Codeforces 검증에 실패했습니다.";
             alert(msg);
+        }
+    };
+
+    const handleVerifyStudentId = async () => {
+        if (!formData.student_id) {
+            alert("학번을 입력해주세요.");
+            return;
+        }
+        try {
+            const response = await client.get(`/api/users/check-whitelist/?student_id=${formData.student_id}`);   
+            if (!response.data.available) {
+                alert("이미 등록된 학번입니다.");
+                setIsStudentIdVerified(false);
+            } else {
+                alert("사용 가능한 학번입니다.");
+                setIsStudentIdVerified(true);
+            }
+        } catch (error) {
+            console.error("Student ID verify error:", error);
+            alert("중복 확인 중 오류가 발생했습니다.");
+            setIsStudentIdVerified(false);
         }
     };
 
@@ -205,15 +227,19 @@ const SignupPage = () => {
 
                     <div className="form-group">
                         <label className="form-label">학번 (Student ID)</label>
-                        <input 
-                            name="student_id"
-                            value={formData.student_id}
-                            onChange={handleChange} 
-                            type="text" 
-                            className="form-input" 
-                            placeholder="학번을 입력해주세요" 
-                            required
-                        />
+                        <div className="input-group">
+                            <input 
+                                name="student_id"
+                                value={formData.student_id}
+                                onChange={handleChange} 
+                                type="text" 
+                                className="form-input" 
+                                placeholder="ex) 2023123456" 
+                                required
+                                style={{ backgroundColor: isStudentIdVerified ? '#d4edda' : 'white' }}
+                            />
+                            <button type="button" className="btn-verify" onClick={handleVerifyStudentId}>Check</button>
+                        </div>
                     </div>
 
                     <button type="submit" className="btn-submit">회원가입 완료</button>

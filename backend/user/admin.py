@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Profile
+from .models import Profile, Whitelist
 
 
 @admin.register(Profile)
@@ -54,3 +54,11 @@ class ProfileAdmin(admin.ModelAdmin):
         """쿼리셋 최적화"""
         qs = super().get_queryset(request)
         return qs.select_related('user')
+
+
+@admin.register(Whitelist)
+class WhitelistAdmin(admin.ModelAdmin):
+    """가입 허용 리스트 관리 인터페이스"""
+    list_display = ['student_id', 'created_at']
+    search_fields = ['student_id']
+    ordering = ['-created_at']

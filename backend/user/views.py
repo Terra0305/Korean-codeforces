@@ -7,7 +7,7 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth import get_user_model
 import requests
 
-from .models import Profile
+from .models import Profile, Whitelist
 from .serializers import (
     UserRegistrationSerializer,
     ProfileSerializer,
@@ -39,6 +39,31 @@ class UserRegistrationView(APIView):
                 }
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CheckWhitelistView(APIView):
+    """
+    학번 화이트리스트 확인 API
+    GET /api/users/check-whitelist/?student_id=xxx
+    """
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        student_id = request.query_params.get('student_id')
+        if not student_id:
+            return Response({'message': '학번을 입력해주세요.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        whitelist = Whitelist.objects.filter(student_id=student_id).first()
+        if not whitelist:
+            return Response({'message': '가입이 허용되지 않은 학번입니다.'}, status=status.HTTP_403_FORBIDDEN)
+        
+        if whitelist.is_registered:
+            return Response({'message': '이미 가입된 학번입니다.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            'allowed': True,
+            'message': '가입이 허용된 학번입니다.'
+        })
 
 
 class LoginView(APIView):
@@ -418,5 +443,3 @@ class AdminStatsView(APIView):
             },
             'top_schools': list(school_stats)
         })
-
-

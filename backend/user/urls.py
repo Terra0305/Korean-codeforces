@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import (
     UserRegistrationView,
+    CheckWhitelistView,
     LoginView,
     LogoutView,
     ProfileViewSet,
@@ -32,6 +33,7 @@ profile_check_id = ProfileViewSet.as_view({
 urlpatterns = [
     # 인증 관련
     path('register/', UserRegistrationView.as_view(), name='register'),
+    path('check-whitelist/', CheckWhitelistView.as_view(), name='check-whitelist'),
     path('login/', LoginView.as_view(), name='login'),
     path('logout/', LogoutView.as_view(), name='logout'),
     path('me/', CurrentUserView.as_view(), name='current-user'),

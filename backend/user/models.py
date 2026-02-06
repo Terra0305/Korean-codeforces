@@ -65,3 +65,27 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.real_name} ({self.codeforces_id})"
+
+
+class Whitelist(models.Model):
+    """
+    회원가입 허용 위시리스트 모델
+    """
+    student_id = models.CharField(
+        max_length=20,
+        verbose_name='학번',
+        unique=True
+    )
+    is_registered = models.BooleanField(
+        default=False,
+        verbose_name='가입 여부'
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='등록일')
+
+    class Meta:
+        verbose_name = '가입 허용 리스트'
+        verbose_name_plural = '가입 허용 리스트'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.student_id
