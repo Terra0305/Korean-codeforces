@@ -67,17 +67,24 @@ const SignupPage = () => {
         }
         try {
             const response = await client.get(`/api/users/check-whitelist/?student_id=${formData.student_id}`);   
-            if (!response.data.available) {
+            if (response.status === 200) {
+                alert("사용 가능한 학번입니다.");
+                setIsStudentIdVerified(true);
+            } else {
+                alert("알 수 없는 오류가 발생했습니다.");
+                setIsStudentIdVerified(false);
+            }
+        } catch (error: any) {
+            if(error.status === 403) {
+                alert("가입이 허용되지 않은 학번입니다.");
+                setIsStudentIdVerified(false);
+            } else if (error.status === 400) {
                 alert("이미 등록된 학번입니다.");
                 setIsStudentIdVerified(false);
             } else {
-                alert("사용 가능한 학번입니다.");
-                setIsStudentIdVerified(true);
+                alert("알 수 없는 오류가 발생했습니다.");
+                setIsStudentIdVerified(false);
             }
-        } catch (error) {
-            console.error("Student ID verify error:", error);
-            alert("중복 확인 중 오류가 발생했습니다.");
-            setIsStudentIdVerified(false);
         }
     };
 

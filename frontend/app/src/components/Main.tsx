@@ -23,7 +23,6 @@ const Main = () => {
                 const response = await client.get('/api/users/profile/');
                 const profiles = response.data.results || response.data; // Handle pagination if present or direct list
                 
-                console.log(profiles);
                 // Ensure profile has necessary fields and sort by elo_rating
                 const sorted = profiles
                     .filter((p: any) => p.username) // Ensure username exists
