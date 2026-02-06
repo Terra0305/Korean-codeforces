@@ -1,0 +1,352 @@
+/* 🎨 기본 스타일 설정 (Modal Overlay) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.3); /* 반투명 배경 */
+    backdrop-filter: blur(8px); /* 블러 처리 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* 🪪 프로필 카드 컨테이너 */
+.profile-card {
+    background: white;
+    width: 90%;
+    max-width: 450px;
+    max-height: 80vh;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* 붕 뜬 느낌의 그림자 */
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid #e5e7eb;
+    position: relative;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.profile-card::-webkit-scrollbar {
+    width: 8px;
+}
+
+.profile-card::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 20px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.profile-card::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 20px;
+}
+
+.profile-card::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 🔥 강조 영역 (Header): Username, Handle, Rating */
+.profile-header {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); /* 고급진 어두운 배경 */
+    color: white;
+    padding: 30px 20px;
+    text-align: center;
+    position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    z-index: 10;
+}
+
+.close-btn:hover {
+    color: white;
+}
+
+.username {
+    font-size: 28px;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.5px;
+    color: white;
+}
+
+.handle-box {
+    margin-top: 8px;
+    font-size: 16px;
+    color: #94a3b8; /* 살짝 연한 회색 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+}
+
+.handle-link {
+    color: #38bdf8; /* Codeforces 느낌의 하늘색 */
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.rating-badge {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 8px 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50px;
+    font-size: 24px;
+    font-weight: 900;
+    color: #fbbf24; /* 골드 색상 (Elo 강조) */
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.rating-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 2px;
+    color: #cbd5e1;
+    font-weight: normal;
+}
+
+/* 📋 상세 정보 영역 (Body): 실명, 학교, 전공, 학번 */
+.profile-body {
+    padding: 30px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: #64748b;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.info-value {
+    color: #334155;
+    font-weight: 700;
+    font-size: 16px;
+    text-align: right;
+}
+
+/* 버튼 영역 스타일 */
+.action-area {
+    padding: 0 30px 30px 30px; /* 위쪽 패딩은 0, 아래 좌우 30 */
+}
+
+.btn-edit {
+    display: block;
+    width: 100%;
+    padding: 15px 0;
+    background-color: #3b82f6; /* 시원한 파란색 */
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 12px;
+    transition: background-color 0.2s;
+    border: none;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+.btn-edit:hover {
+    background-color: #2563eb; /* 호버 시 진해짐 */
+}
+
+/* ✏️ 수정 페이지 스타일 (Profile.css 확장) */
+.edit-header {
+    background: white;
+    padding: 25px 30px;
+    border-bottom: 1px solid #f1f5f9;
+    /* .profile-header overrides this if mixed, but we use structure */
+}
+
+.edit-title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+.edit-form {
+    padding: 30px;
+}
+
+/* Form Styles managed generically here */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 8px;
+    text-align: left; /* Ensure left alignment */
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 15px;
+    font-size: 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    color: #334155;
+    transition: border-color 0.2s;
+    box-sizing: border-box; 
+    background-color: white;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+}
+
+.form-input:disabled {
+    background-color: #f8fafc;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+.btn-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.btn-save {
+    flex: 2;
+    padding: 15px;
+    background-color: #10b981; 
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-save:hover {
+    background-color: #059669;
+}
+
+.btn-cancel {
+    flex: 1;
+    padding: 15px;
+    background-color: #e2e8f0;
+    color: #475569;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.btn-cancel:hover {
+    background-color: #cbd5e1;
+}
+.btn-toggle-password {
+    background-color: #3b82f6;
+    border: none;
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-radius: 12px;
+    padding: 12px 15px;
+    width: 100%;
+}
+
+.btn-toggle-password:hover {
+    text-decoration: underline;
+}
+
+.password-form {
+    margin-top: 20px;
+    background-color: #f8fafc;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    animation: slideDown 0.3s ease-out;
+}
+
+.password-section {
+    margin-top: 30px;
+    margin-bottom: 50px;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.btn-change-password {
+    width: 100%;
+    padding: 12px;
+    background-color: #f59e0b; /* 주황색 */
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.2s;
+}
+
+.btn-change-password:hover {
+    background-color: #d97706;
+}
