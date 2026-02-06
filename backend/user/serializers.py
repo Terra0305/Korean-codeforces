@@ -41,10 +41,19 @@ def validate_codeforces_id(codeforces_id):
         )
 
 
-def validate_student_id(student_id):
-    """학번 형식 검증"""
-    if len(student_id) > 20:
-        raise DjangoValidationError('학번은 20자를 초과할 수 없습니다.')
+def validate_student_id(value):
+    """학번 중복 및 화이트리스트 검증"""
+
+    whitelist = Whitelist.objects.filter(student_id=value).first()
+    if whitelist and whitelist.is_registered:
+        raise serializers.ValidationError('이미 등록된 학번입니다.')
+    
+    # 화이트리스트 검증
+    if not whitelist:
+        raise serializers.ValidationError('가입이 허용되지 않은 학번입니다. 관리자에게 문의하세요.')
+        
+    return value
+    
 
 
 def validate_username(username):
@@ -125,6 +134,7 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
         """학번 검증"""
         validate_student_id(value)
         return value
+        
 
 
 class UserRegistrationSerializer(serializers.Serializer):
@@ -224,14 +234,7 @@ class UserRegistrationSerializer(serializers.Serializer):
 
     def validate_student_id(self, value):
         """학번 중복 및 화이트리스트 검증"""
-
-        whitelist = Whitelist.objects.filter(student_id=value).first()
-        if whitelist and whitelist.is_registered:
-            raise serializers.ValidationError('이미 등록된 학번입니다.')
-        
-        # 화이트리스트 검증
-        if not whitelist:
-            raise serializers.ValidationError('가입이 허용되지 않은 학번입니다. 관리자에게 문의하세요.')
+        validate_student_id(value)
             
         return value
 

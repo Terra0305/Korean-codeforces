@@ -13,6 +13,8 @@ import EditProblem from './pages/admin/EditProblem.tsx';
 import Leaderboard from './pages/Leaderboard.tsx';
 
 import ContestWaitingRoom from './pages/ContestWaitingRoom.tsx';
+import UserInfoPage from './pages/UserInfoPage.tsx';
+import UserInfoEditPage from './pages/UserInfoEditPage.tsx';
 
 function App() {
   return (
@@ -36,6 +38,8 @@ function App() {
           <Route path="/edit-problem/:id" element={<EditProblem />} />
           <Route path="/problem/:id" element={<Problem />} />
           <Route path="/leaderboard/:id" element={<Leaderboard />} />
+          <Route path="/user/info" element={<UserInfoPage />} />
+          <Route path="/user/edit" element={<UserInfoEditPage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

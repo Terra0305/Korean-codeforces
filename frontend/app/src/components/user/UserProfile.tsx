@@ -1,6 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import client from '../../api/client';
+import { useState } from 'react';
+import ProfileEdit from './ProfileEdit';
+import Profile from './Profile';
+import ProfileChangePassword from './ProfileChangePassword';
 
 const UserProfile = () => {
     const {user, logout} = useAuth();
@@ -9,14 +12,28 @@ const UserProfile = () => {
     // Admin check
     const isAdmin = user?.is_staff;
 
-    const handleUserInfoClick = async () => {
-        try {
-            const response = await client.get('/api/users/me/');
-            console.log("User Info Response:", response.data);
-            alert("User info logged to console");
-        } catch (error) {
-            console.error("Failed to fetch user info:", error);
-        }
+    const [modalMode, setModalMode] = useState<'none' | 'view' | 'edit' | 'password'>('none');
+
+    const handleUserInfoClick = () => {
+        setModalMode('view');
+    };
+
+    const handleEditClick = () => {
+        setModalMode('edit');
+    };
+
+    const handlePasswordClick = () => {
+        setModalMode('password');
+    }
+
+    const handleClose = () => {
+        setModalMode('none');
+    };
+
+    const handleRefresh = () => {
+        // Option to refresh user data if necessary
+        // refreshUser(); // If provided by AuthContext
+        window.location.reload(); // Simple refresh to reflect changes
     };
 
     return (
@@ -48,6 +65,33 @@ const UserProfile = () => {
             </div>
             <button className="user-name-btn" onClick={handleUserInfoClick}>{user?.profile.real_name}</button>
             <button onClick={logout} className="button">Logout</button>
+            
+            <Profile 
+                user={user as any} 
+                isOpen={modalMode === 'view'} 
+                onClose={handleClose}
+                onEdit={handleEditClick}
+                onChangePassword={handlePasswordClick}
+            />
+            
+            {modalMode === 'edit' && (
+                <ProfileEdit 
+                    user={user as any}
+                    isOpen={modalMode === 'edit'}
+                    onClose={handleClose}
+                    onBack={() => setModalMode('view')}
+                    onUpdate={handleRefresh}
+                />
+            )}
+
+            {modalMode === 'password' && (
+                <ProfileChangePassword 
+                    user={user as any}
+                    isOpen={modalMode === 'password'}
+                    onClose={handleClose}
+                    onBack={() => setModalMode('view')}
+                />
+            )}
           </div>
     );
 }
