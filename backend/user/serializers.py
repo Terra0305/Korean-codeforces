@@ -3,7 +3,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password as django_validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
-from .models import Profile
+from .models import Profile, Whitelist
 
 User = get_user_model()
 
@@ -223,9 +223,16 @@ class UserRegistrationSerializer(serializers.Serializer):
             )
 
     def validate_student_id(self, value):
-        """학번 중복 검증"""
-        if Profile.objects.filter(student_id=value).exists():
+        """학번 중복 및 화이트리스트 검증"""
+
+        whitelist = Whitelist.objects.filter(student_id=value).first()
+        if whitelist and whitelist.is_registered:
             raise serializers.ValidationError('이미 등록된 학번입니다.')
+        
+        # 화이트리스트 검증
+        if not whitelist:
+            raise serializers.ValidationError('가입이 허용되지 않은 학번입니다. 관리자에게 문의하세요.')
+            
         return value
 
     def validate(self, attrs):
