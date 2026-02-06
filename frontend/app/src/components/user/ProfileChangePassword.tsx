@@ -61,7 +61,7 @@ const ProfileChangePassword: React.FC<ProfileChangePasswordProps> = ({ user, isO
                 const data = error.response.data;
                 let errorMsg = "";
                 if (typeof data === 'object') {
-                   Object.entries(data).forEach(([key, value]) => {
+                   Object.entries(data).forEach(([ _ , value]) => {
                        errorMsg += `${value}\n`;
                    });
                 } else {
