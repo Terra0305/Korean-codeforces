@@ -15,6 +15,7 @@ const Main = () => {
     const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
     const [registerContest, setRegisterContest] = useState<Contest | null>(null);
     const [topRankers, setTopRankers] = useState<any[]>([]);
+    const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
 
     useEffect(() => {
         const fetchRankers = async () => {
@@ -74,9 +75,23 @@ const Main = () => {
     useEffect(() => {
         const timer = setInterval(() => {
             setNow(new Date());
+            let runningContest = contests.find(c => c.status === 'RUNNING') || contests.find(c => c.status === 'UPCOMING');
+            
+            if (runningContest) {
+                setRemainingSeconds((prev) => {
+                    if (prev === null) {
+                        return runningContest.remaining_seconds;
+                    }
+                    else if(prev === 0){
+                        clearInterval(timer);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }
         }, 1000);
         return () => clearInterval(timer);
-    }, []);
+    }, [contests]);
 
     // Logic for Hero Banner
     let heroContest: Contest | null = null;
@@ -84,14 +99,12 @@ const Main = () => {
 
     // 1. Check for running contests
     const runningContest = contests.find(c => {
-        const start = new Date(c.start_time);
-        const end = new Date(c.end_time);
-        return now >= start && now < end;
+        return c.status === 'RUNNING';
     });
 
     // 2. Check for upcoming contests
     const upcomingContests = contests
-        .filter(c => new Date(c.start_time) > now)
+        .filter(c => c.status === 'UPCOMING')
         .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
     
     if (runningContest) {
@@ -105,12 +118,8 @@ const Main = () => {
     // Timer Display Logic
     const getTimerDisplay = () => {
         if (!heroContest) return "00:00:00";
-        
-        const target = heroStatus === 'running' 
-            ? new Date(heroContest.end_time) 
-            : new Date(heroContest.start_time);
             
-        const diff = Math.floor((target.getTime() - now.getTime()) / 1000);
+        const diff = remainingSeconds || 0;
         
         if (diff < 0) return "00:00:00";
 
