@@ -17,6 +17,7 @@ const Contest = () => {
     const [activeTab, setActiveTab] = useState('problems');
     const [problems, setProblems] = useState<Problem[]>([]);
     const [contest, setContest] = useState<ContestType | null>(null);
+    const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
     const [timerText, setTimerText] = useState("Loading...");
     const [statusMap, setStatusMap] = useState<Record<string, string>>({});
 
@@ -94,24 +95,20 @@ const Contest = () => {
         if (!contest) return;
 
         const updateTimer = () => {
-            const now = new Date();
-            const start = new Date(contest.start_time);
-            const end = new Date(contest.end_time);
-
-            if (now < start) {
-                // Before start: Show total duration
-                const durationSeconds = Math.floor((end.getTime() - start.getTime()) / 1000);
-                setTimerText(formatSeconds(durationSeconds));
-            } else if (now > end) {
-                // After end
-                setTimerText("대회가 종료되었습니다.");
-            } else {
-                // Ongoing: Show remaining time
-                const remaining = Math.floor((end.getTime() - now.getTime()) / 1000);
-                setTimerText(formatSeconds(remaining));
-            }
+            setRemainingSeconds((prev) => {
+                if (prev === null) return contest.remaining_seconds;
+                return prev - 1;
+            });
+            
         };
 
+        updateTimer(); // Initial call
+        const intervalId = setInterval(updateTimer, 1000);
+
+        return () => clearInterval(intervalId);
+    }, [contest]);
+
+    useEffect(() => {
         const formatSeconds = (sec: number) => {
             if (sec < 0) return "00:00:00";
             const h = Math.floor(sec / 3600);
@@ -120,11 +117,19 @@ const Contest = () => {
             return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
         };
 
-        updateTimer(); // Initial call
-        const intervalId = setInterval(updateTimer, 1000);
+        const now = remainingSeconds;
 
-        return () => clearInterval(intervalId);
-    }, [contest]);
+        if (now === null) {
+            // Before start: Show total duration
+            setTimerText("대회 진행 정보를 불러올 수 없습니다.");
+        } else if (now === 0) {
+            // After end
+            setTimerText("대회가 종료되었습니다.");
+        } else {
+            // Ongoing: Show remaining time
+            setTimerText(formatSeconds(now));
+        }
+    }, [remainingSeconds]);
 
     const openProblem = (problemId: number) => {
         navigate(`/contest/${id}/${problemId}`);
