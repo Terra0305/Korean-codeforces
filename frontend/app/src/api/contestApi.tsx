@@ -6,6 +6,8 @@ export interface Contest {
     name: string;
     start_time: string;
     end_time: string;
+    status: string;
+    remaining_seconds: number;
 }
 
 interface ContestListResponse {
