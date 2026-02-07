@@ -122,7 +122,7 @@ const Contest = () => {
         if (now === null) {
             // Before start: Show total duration
             setTimerText("대회 진행 정보를 불러올 수 없습니다.");
-        } else if (now === 0) {
+        } else if (now <= 0) {
             // After end
             setTimerText("대회가 종료되었습니다.");
         } else {
