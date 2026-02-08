@@ -1,5 +1,5 @@
 from django.db import transaction
-from .models import Contest, Participant
+from .models import Contest, Participant, RatingHistory
 from user.models import Profile
 
 def calculate_elo_changes(participants):
@@ -80,6 +80,14 @@ def apply_contest_rating(contest_id):
                 
             profile.elo_rating = new_rating
             updated_profiles.append(profile)
+            
+            # 레이팅 히스토리 생성
+            RatingHistory.objects.create(
+                user=profile.user,
+                contest=contest,
+                rating=new_rating,
+                rating_change=delta
+            )
             
             # (옵션) 로그 남기기
             # print(f"User {profile.user.username}: {old_rating} -> {new_rating} ({delta:+.2f})")
