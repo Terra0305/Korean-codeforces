@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Contest, Problem, Participant
+from .models import Contest, Problem, Participant, RatingHistory
 
 from django.utils import timezone
 
@@ -80,3 +80,12 @@ class ParticipantAdminSerializer(serializers.ModelSerializer):
         model = Participant
         fields = ['id', 'user', 'user_username', 'contest', 'problem_status', 'total_score', 'penalty']
         read_only_fields = ['user']
+
+class RatingHistorySerializer(serializers.ModelSerializer):
+    """레이팅 변동 기록 시리얼라이저"""
+    contest_name = serializers.ReadOnlyField(source='contest.name')
+    contest_date = serializers.ReadOnlyField(source='contest.end_time')
+
+    class Meta:
+        model = RatingHistory
+        fields = ['id', 'contest', 'contest_name', 'contest_date', 'rating', 'rating_change', 'created_at']

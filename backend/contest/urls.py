@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import AdminContestViewSet, AdminProblemViewSet, ContestViewSet, ProblemViewSet, AdminParticipantViewSet
+from .views import AdminContestViewSet, AdminProblemViewSet, ContestViewSet, ProblemViewSet, AdminParticipantViewSet, RatingHistoryViewSet
 
 app_name = 'contest'
 
@@ -18,6 +18,7 @@ urlpatterns = [
     path('problems/', ProblemViewSet.as_view({'get': 'list'})),
     path('problems/<uuid:virtual_id>/', ProblemViewSet.as_view({'get': 'list_by_contest'})),
     path('problems/<uuid:virtual_id>/<int:pk>/', ProblemViewSet.as_view({'get': 'retrieve_by_contest'})),
+    path('rating-history/', RatingHistoryViewSet.as_view({'get': 'list'})),
 ]
 # 1. 대회 관리 (AdminContestViewSet)
 # Base URL: admin/contests/
@@ -63,9 +64,16 @@ urlpatterns = [
 # DELETE /admin/participants/{pk}/     : 참가자 삭제 (강제 취소)
 
 
-# 4. 문제 공개 API (ProblemViewSet)
+# 5. 문제 공개 API (ProblemViewSet)
 # Base URL: api/contests/problems/
 # -------------------------------------------------------------
 # GET    /api/contests/problems/               : 문제 전체 목록 조회 (List)
 # GET    /api/contests/problems/{virtual_id}/  : 특정 대회의 문제 목록 조회 (List by Contest)
 # GET    /api/contests/problems/{virtual_id}/{pk}/ : 특정 대회의 특정 문제 상세 조회 (Retrieve by Contest)
+
+
+# 6. 레이팅 변동 기록 (RatingHistoryViewSet)
+# Base URL: api/contests/rating-history/
+# -------------------------------------------------------------
+# GET    /api/contests/rating-history/         : 레이팅 변동 기록 전체 조회 (List)
+#        ?user_id={id}                         : 특정 유저의 기록만 필터링
