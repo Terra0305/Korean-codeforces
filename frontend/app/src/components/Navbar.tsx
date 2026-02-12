@@ -26,10 +26,8 @@ const Navbar = () => {
         <nav className="navbar">
             <div style={{display: 'flex', alignItems: 'center', gap: '2rem'}}>
                 <div className="navbar-logo" onClick={() => navigate('/')} style={{cursor: 'pointer'}}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
-                    </svg>
-                    Korean <span>Codeforces</span>
+                    <img src="/logo.png" alt="Logo" width="24" height="24" />
+                    CS <span>Forces</span>
                 </div>
             </div>
 
