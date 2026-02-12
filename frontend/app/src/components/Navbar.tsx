@@ -26,8 +26,8 @@ const Navbar = () => {
         <nav className="navbar">
             <div style={{display: 'flex', alignItems: 'center', gap: '2rem'}}>
                 <div className="navbar-logo" onClick={() => navigate('/')} style={{cursor: 'pointer'}}>
-                    <img src="/logo.png" alt="Logo" width="24" height="24" />
-                    CS <span>Forces</span>
+                    <img src="/logo.png" alt="Logo" width="48" height="48" />
+                    ChoSun <span>codeForces</span>
                 </div>
             </div>
 
