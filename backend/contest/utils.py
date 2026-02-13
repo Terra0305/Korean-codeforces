@@ -96,7 +96,7 @@ def fetch_contest_latest_submissions(contest_id):
         print(f"Exception fetching submissions for contest {contest_id}: {e}")
         return []
 
-def calculate_participant_stats(submissions, problems, contest_start_time):
+def calculate_participant_stats(submissions, problems, contest_start_time, contest_end_time):
     """
     제출 기록과 문제 정보를 바탕으로 풀이 현황, 총점, 패널티를 계산합니다.
     contest_start_time: datetime 객체 (대회 시작 시간)
@@ -108,6 +108,7 @@ def calculate_participant_stats(submissions, problems, contest_start_time):
     submissions = sorted(submissions, key=lambda x: x['creationTimeSeconds'])
     
     contest_start_timestamp = contest_start_time.timestamp()
+    
     
     for sub in submissions:
         problem_index = sub['problem']['index']
@@ -204,7 +205,7 @@ def fetch_participant_status(contest_id, handle):
             return None
 
         # 공통 계산 로직 사용
-        return calculate_participant_stats(submissions, problems, contest.start_time)
+        return calculate_participant_stats(submissions, problems, contest.start_time, contest.end_time)
         
     except Exception as e:
         print(f"Exception fetching status for {handle}: {e}")

@@ -63,7 +63,7 @@ def update_single_contest_task(contest):
         
         if handle in submissions_by_handle:
             user_subs = submissions_by_handle[handle]
-            result = calculate_participant_stats(user_subs, problems, contest.start_time)
+            result = calculate_participant_stats(user_subs, problems, contest.start_time, contest.end_time)
             
             if result:
                 participant.problem_status = result['problem_status']

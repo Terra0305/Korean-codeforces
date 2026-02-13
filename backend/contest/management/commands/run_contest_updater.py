@@ -90,7 +90,7 @@ class Command(BaseCommand):
                 user_subs = submissions_by_handle[handle]
                 
                 # 공통 계산 로직 사용(utils.py)
-                result = calculate_participant_stats(user_subs, problems, contest.start_time)
+                result = calculate_participant_stats(user_subs, problems, contest.start_time, contest.end_time)
                 
                 if result:
                     participant.problem_status = result['problem_status']
