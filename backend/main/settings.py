@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-sc&%-5w7xk6x+dteu$qq1olf2*_$-)&-k(kug-#kq=ultq0i1*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 ALLOWED_HOSTS.append("korean-codeforces-awg8bxaacyb0hahv.koreacentral-01.azurewebsites.net")
@@ -153,7 +153,6 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
     ],
     'DEFAULT_PARSER_CLASSES': [
         'rest_framework.parsers.JSONParser',
@@ -172,6 +171,9 @@ REST_FRAMEWORK = {
         'user': '1000/minute', # 로그인 유저: 분당 1000회
     }
 }
+
+if DEBUG:
+    REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'].append('rest_framework.renderers.BrowsableAPIRenderer')
 
 # CORS 설정 (프론트엔드 연동을 위한 설정)
 CORS_ALLOWED_ORIGINS = [
