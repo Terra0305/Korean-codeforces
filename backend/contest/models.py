@@ -92,3 +92,33 @@ class Participant(models.Model):
     def __str__(self):
         # 예: "Codeforces Round #900 - 윤태건" 형식으로 출력
         return f"{self.contest.name} - {self.user}"
+
+class RatingHistory(models.Model):
+    """
+    사용자의 ELO Rating 변동 기록을 저장하는 모델
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='rating_history',
+        verbose_name="사용자"
+    )
+    contest = models.ForeignKey(
+        Contest,
+        on_delete=models.CASCADE,
+        related_name='rating_history',
+        verbose_name="관련 대회"
+    )
+    # 변동 후 레이팅 
+    rating = models.IntegerField(verbose_name="변동 후 Rating")
+    rating_change = models.IntegerField(verbose_name="Rating 변동량")
+    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="생성일")
+
+    class Meta:
+        verbose_name = "레이팅 변동 기록"
+        verbose_name_plural = "레이팅 변동 기록"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user} - {self.contest.name} ({self.rating_change:+d})"

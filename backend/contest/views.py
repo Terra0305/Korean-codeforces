@@ -3,8 +3,8 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Contest, Problem, Participant
-from .serializers import ContestSerializer, ProblemSerializer, ParticipantSerializer, ParticipantAdminSerializer, PublicProblemSerializer
+from .models import Contest, Problem, Participant, RatingHistory
+from .serializers import ContestSerializer, ProblemSerializer, ParticipantSerializer, ParticipantAdminSerializer, PublicProblemSerializer, RatingHistorySerializer
 from .utils import fetch_contest_data
 from django.utils import timezone
 
@@ -182,3 +182,22 @@ class ProblemViewSet(viewsets.ReadOnlyModelViewSet):
             return Response(serializer.data)
         except Problem.DoesNotExist:
             return Response({'error': '문제를 찾을 수 없습니다.'}, status=404)
+
+
+class RatingHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    레이팅 변동 기록 조회 ViewSet
+    GET /api/contests/rating-history/?user_id=xxx
+    """
+    queryset = RatingHistory.objects.all().order_by('-created_at')
+    serializer_class = RatingHistorySerializer
+    permission_classes = [AllowAny] # 누구나 조회 가능 (Codeforces 방식)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user_id = self.request.query_params.get('user_id')
+        
+        if user_id:
+            queryset = queryset.filter(user_id=user_id)
+            
+        return queryset
