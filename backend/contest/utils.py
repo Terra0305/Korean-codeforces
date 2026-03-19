@@ -1,9 +1,39 @@
 import requests
 from django.utils import timezone
-from datetime import datetime, timezone as datetime_timezone
+from datetime import datetime, timezone as datetime_timezone, timedelta
 from .models import Contest, Problem, Participant
 
 API_COOLDOWN = 0.5  # API 호출 간 대기 시간 (초)
+
+
+def is_contest_in_freeze(contest):
+    """대회가 프리즈 상태인지 판단"""
+    if not contest.end_time or not contest.start_time:
+        return False
+    now = timezone.now()
+    freeze_time = contest.end_time - timedelta(minutes=contest.freeze_minutes)
+    return freeze_time <= now < contest.end_time
+
+
+def freeze_scoreboard(contest):
+    """프리즈 시점에 현재 스코어를 스냅샷으로 저장 (최초 1회만)"""
+    if contest.is_frozen:
+        return  # 이미 프리즈됨
+
+    participants = list(Participant.objects.filter(contest=contest))
+    for p in participants:
+        p.frozen_problem_status = p.problem_status
+        p.frozen_total_score = p.total_score
+        p.frozen_penalty = p.penalty
+
+    if participants:
+        Participant.objects.bulk_update(
+            participants,
+            ['frozen_problem_status', 'frozen_total_score', 'frozen_penalty']
+        )
+
+    contest.is_frozen = True
+    contest.save(update_fields=['is_frozen'])
 
 def fetch_contest_data(contest_id):
     
@@ -75,9 +105,7 @@ def fetch_contest_data(contest_id):
         print(f"Exception fetching contest {contest_id}: {e}")
         return False
 
-    except Exception as e:
-        print(f"Exception fetching contest {contest_id}: {e}")
-        return False
+    
 
 def fetch_contest_latest_submissions(contest_id):
     """

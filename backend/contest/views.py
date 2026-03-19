@@ -4,8 +4,8 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Contest, Problem, Participant, RatingHistory
-from .serializers import ContestSerializer, ProblemSerializer, ParticipantSerializer, ParticipantAdminSerializer, PublicProblemSerializer, RatingHistorySerializer
-from .utils import fetch_contest_data
+from .serializers import ContestSerializer, ProblemSerializer, ParticipantSerializer, ParticipantAdminSerializer, PublicProblemSerializer, RatingHistorySerializer, ScoreboardParticipantSerializer
+from .utils import fetch_contest_data, is_contest_in_freeze
 from django.utils import timezone
 
 # Create your views here.
@@ -137,6 +137,34 @@ class ContestViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({'message': '대회 참가 신청이 취소되었습니다.'}, status=200)
         except Participant.DoesNotExist:
              return Response({'error': '신청하지 않은 대회입니다.'}, status=404)
+
+    @action(detail=True, methods=['get'])
+    def scoreboard(self, request, virtual_id=None):
+        """스코어보드 조회 (프리즈 상태 반영)"""
+        contest = self.get_object()
+        now = timezone.now()
+
+        # 대회 시작 전에는 스코어보드 비공개
+        if not request.user.is_staff and contest.start_time and now < contest.start_time:
+            return Response({'error': '대회가 시작되지 않았습니다.'}, status=403)
+
+        participants = Participant.objects.filter(contest=contest).order_by('-total_score', 'penalty')
+
+        # 프리즈 상태 판단: 대회 진행 중 + 프리즈 구간 + 스냅샷 저장 완료
+        show_frozen = contest.is_frozen and is_contest_in_freeze(contest)
+
+        serializer = ScoreboardParticipantSerializer(
+            participants,
+            many=True,
+            context={'request': request, 'show_frozen': show_frozen}
+        )
+
+        return Response({
+            'contest': str(contest.virtual_id),
+            'contest_name': contest.name,
+            'is_frozen': show_frozen,
+            'participants': serializer.data
+        })
 
 
 class ProblemViewSet(viewsets.ReadOnlyModelViewSet):

@@ -14,6 +14,10 @@ class Contest(models.Model):
     end_time = models.DateTimeField(null=True, blank=True, verbose_name="대회 종료시간") #종료시간
     
 
+    # 스코어보드 프리즈 설정
+    freeze_minutes = models.IntegerField(default=30, verbose_name="프리즈 시간(분)")  # 종료 30분 전부터 프리즈
+    is_frozen = models.BooleanField(default=False, verbose_name="프리즈 상태")  # 스냅샷 저장 완료 여부
+
     # ELO 레이팅 반영 여부 (중복 반영 방지)
     is_rating_applied = models.BooleanField(default=False, verbose_name="레이팅 반영 여부")
 
@@ -81,6 +85,11 @@ class Participant(models.Model):
     # 계산식: (각 문제 풀이 시간) + (틀린 횟수 * 20분) 의 총합
     # 계산식은 임의로 정의하였으므로 추후 논의 필요
     penalty = models.IntegerField(default=0, verbose_name="패널티")
+
+    # 스코어보드 프리즈 스냅샷 (프리즈 시점의 데이터 보존)
+    frozen_problem_status = models.CharField(max_length=100, default="", blank=True, verbose_name="프리즈 시점 풀이 현황")
+    frozen_total_score = models.FloatField(default=0, verbose_name="프리즈 시점 총점")
+    frozen_penalty = models.IntegerField(default=0, verbose_name="프리즈 시점 패널티")
 
     class Meta:
         # 한 유저는 한 대회에 한 번만 참가 등록이 가능해야 함 (중복 방지)
