@@ -15,6 +15,7 @@ class Contest(models.Model):
     
 
     # 스코어보드 프리즈 설정
+    allow_freeze = models.BooleanField(default=True, verbose_name="프리즈 허용 여부")  # 프리즈 기능 사용 여부
     freeze_minutes = models.IntegerField(default=30, verbose_name="프리즈 시간(분)")  # 종료 30분 전부터 프리즈
     is_frozen = models.BooleanField(default=False, verbose_name="프리즈 상태")  # 스냅샷 저장 완료 여부
 

@@ -10,7 +10,7 @@ class ContestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Contest
-        fields = ['id', 'virtual_id', 'name', 'start_time', 'end_time', 'status', 'remaining_seconds', 'is_frozen', 'freeze_minutes']
+        fields = ['id', 'virtual_id', 'name', 'start_time', 'end_time', 'status', 'remaining_seconds', 'is_frozen', 'freeze_minutes', 'allow_freeze']
     
     def get_status(self, obj):
         if not obj.start_time or not obj.end_time:

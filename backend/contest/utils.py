@@ -8,6 +8,8 @@ API_COOLDOWN = 0.5  # API 호출 간 대기 시간 (초)
 
 def is_contest_in_freeze(contest):
     """대회가 프리즈 상태인지 판단"""
+    if getattr(contest, 'allow_freeze', False) is False:
+        return False
     if not contest.end_time or not contest.start_time:
         return False
     now = timezone.now()

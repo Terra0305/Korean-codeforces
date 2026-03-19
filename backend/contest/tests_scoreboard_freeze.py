@@ -55,10 +55,15 @@ class ScoreboardFreezeTests(APITestCase):
         self.assertFalse(is_contest_in_freeze(self.contest))
 
     def test_is_contest_in_freeze_during_freeze(self):
-        """프리즈 구간에서는 True"""
+        """프리즈 구간에서는 True (단, allow_freeze=True일 때만)"""
         self.contest.end_time = timezone.now() + timedelta(minutes=10)
         self.contest.save()
         self.assertTrue(is_contest_in_freeze(self.contest))
+
+        # allow_freeze=False이면 동작하지 않음
+        self.contest.allow_freeze = False
+        self.assertTrue(getattr(self.contest, 'allow_freeze', False) is False)
+        self.assertFalse(is_contest_in_freeze(self.contest))
 
     def test_is_contest_in_freeze_after_contest(self):
         """대회 종료 후에는 False"""
@@ -142,6 +147,29 @@ class ScoreboardFreezeTests(APITestCase):
         self.assertEqual(participant_data['total_score'], 500)
         self.assertEqual(participant_data['problem_status'], '+:0')
         self.assertEqual(participant_data['penalty'], 30)
+
+    def test_scoreboard_during_freeze_allow_freeze_false(self):
+        """프리즈 구간이지만 allow_freeze=False이면 실시간 데이터 반환"""
+        self.contest.end_time = timezone.now() + timedelta(minutes=10)
+        self.contest.allow_freeze = False
+        self.contest.save()
+
+        # 원본 데이터 변경
+        self.participant.problem_status = '+:+'
+        self.participant.total_score = 1000
+        self.participant.penalty = 60
+        self.participant.save()
+
+        self.client.force_authenticate(user=self.normal_user)
+        response = self.client.get(self.scoreboard_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data['is_frozen'])  # 프론트에 프리즈 안 된 것으로 전달
+
+        participant_data = response.data['participants'][0]
+        # 실시간 데이터가 반환되어야 함
+        self.assertEqual(participant_data['total_score'], 1000)
+        self.assertEqual(participant_data['problem_status'], '+:+')
 
     def test_scoreboard_during_freeze_admin_user(self):
         """프리즈 중 (관리자) → 실시간 데이터 반환"""
