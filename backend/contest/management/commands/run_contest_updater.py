@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from contest.models import Contest, Participant
-from contest.utils import fetch_contest_latest_submissions, calculate_participant_stats, API_COOLDOWN
+from contest.utils import fetch_contest_latest_submissions, calculate_participant_stats, API_COOLDOWN, is_contest_in_freeze, freeze_scoreboard
 import time
 from collections import defaultdict
 
@@ -103,4 +103,9 @@ class Command(BaseCommand):
             Participant.objects.bulk_update(updated_participants, ['problem_status', 'total_score', 'penalty'])
             self.stdout.write(f"   -> Successfully updated {len(updated_participants)} participants (Batch Process).")
         else:
-            self.stdout.write(f"   -> No updates needed.") 
+            self.stdout.write(f"   -> No updates needed.")
+
+        # 프리즈 체크: 프리즈 시점이면 스냅샷 저장
+        if not contest.is_frozen and is_contest_in_freeze(contest):
+            freeze_scoreboard(contest)
+            self.stdout.write(self.style.WARNING(f"   -> Scoreboard frozen for {contest.name}"))

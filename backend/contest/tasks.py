@@ -1,7 +1,7 @@
 from celery import shared_task
 from django.utils import timezone
 from .models import Contest, Participant
-from .utils import fetch_contest_latest_submissions, calculate_participant_stats, API_COOLDOWN
+from .utils import fetch_contest_latest_submissions, calculate_participant_stats, API_COOLDOWN, is_contest_in_freeze, freeze_scoreboard
 import time
 from collections import defaultdict
 from datetime import timedelta
@@ -74,6 +74,12 @@ def update_single_contest_task(contest):
     # DB 저장
     if updated_participants:
         Participant.objects.bulk_update(updated_participants, ['problem_status', 'total_score', 'penalty'])
+
+        # 프리즈 체크: 프리즈 시점이면 스냅샷 저장
+        if not contest.is_frozen and is_contest_in_freeze(contest):
+            freeze_scoreboard(contest)
+            return f"Updated {len(updated_participants)} participants (Scoreboard frozen)"
+
         return f"Updated {len(updated_participants)} participants"
     else:
         return "No updates needed"

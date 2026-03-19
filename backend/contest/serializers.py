@@ -10,7 +10,7 @@ class ContestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Contest
-        fields = ['id', 'virtual_id', 'name', 'start_time', 'end_time', 'status', 'remaining_seconds']
+        fields = ['id', 'virtual_id', 'name', 'start_time', 'end_time', 'status', 'remaining_seconds', 'is_frozen', 'freeze_minutes', 'allow_freeze']
     
     def get_status(self, obj):
         if not obj.start_time or not obj.end_time:
@@ -89,3 +89,33 @@ class RatingHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = RatingHistory
         fields = ['id', 'contest', 'contest_name', 'contest_date', 'rating', 'rating_change', 'created_at']
+
+
+class ScoreboardParticipantSerializer(serializers.ModelSerializer):
+    """
+    스코어보드 전용 시리얼라이저
+    - 프리즈 상태 & 일반 유저 → frozen_* 데이터 반환
+    - 프리즈 상태 & 관리자 → 실시간 데이터 반환
+    - 프리즈 아닌 경우 / 대회 종료 후 → 실시간 데이터 반환
+    """
+    user_username = serializers.ReadOnlyField(source='user.username')
+    contest = serializers.SlugRelatedField(read_only=True, slug_field='virtual_id')
+
+    class Meta:
+        model = Participant
+        fields = ['id', 'user', 'user_username', 'contest', 'problem_status', 'total_score', 'penalty']
+        read_only_fields = ['user', 'total_score', 'penalty', 'problem_status']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get('request')
+        is_admin = request and request.user and (request.user.is_staff or request.user.is_superuser)
+        show_frozen = self.context.get('show_frozen', False)
+
+        # 프리즈 상태이고 관리자가 아닌 경우 → frozen 데이터로 교체
+        if show_frozen and not is_admin:
+            data['problem_status'] = instance.frozen_problem_status
+            data['total_score'] = instance.frozen_total_score
+            data['penalty'] = instance.frozen_penalty
+
+        return data

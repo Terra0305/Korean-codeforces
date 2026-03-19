@@ -15,6 +15,7 @@ urlpatterns = [
     path('contests/<uuid:virtual_id>/', ContestViewSet.as_view({'get': 'retrieve'})),
     path('contests/<uuid:virtual_id>/register/', ContestViewSet.as_view({'post': 'register'})),
     path('contests/<uuid:virtual_id>/unregister/', ContestViewSet.as_view({'delete': 'unregister'})),
+    path('contests/<uuid:virtual_id>/scoreboard/', ContestViewSet.as_view({'get': 'scoreboard'})),
     path('problems/', ProblemViewSet.as_view({'get': 'list'})),
     path('problems/<uuid:virtual_id>/', ProblemViewSet.as_view({'get': 'list_by_contest'})),
     path('problems/<uuid:virtual_id>/<int:pk>/', ProblemViewSet.as_view({'get': 'retrieve_by_contest'})),
