@@ -347,8 +347,12 @@ class AdminUserListView(APIView):
 
     def get(self, request):
         # 페이지네이션
-        page = int(request.query_params.get('page', 1))
-        limit = int(request.query_params.get('limit', 20))
+        try:
+            page = int(request.query_params.get('page', 1))
+            limit = int(request.query_params.get('limit', 20))
+        except (ValueError, TypeError):
+            page = 1
+            limit = 20
         offset = (page - 1) * limit
 
         # 검색 필터
