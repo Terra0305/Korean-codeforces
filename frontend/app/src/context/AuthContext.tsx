@@ -13,7 +13,7 @@ interface AuthContextType {
     user: User | null;
     isLoggedin: boolean;
     login: (username: string, password: string) => Promise<boolean>;
-    logout: () => void;
+    logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,9 +35,14 @@ export const AuthProvider = ({ children } : {children : ReactNode}) => {
         }
     };
 
-    const logout = () => {
-        setUser(null);
-        return true;
+    const logout = async () => {
+        try {
+            await client.post("/users/logout/");
+        } catch (error) {
+            console.error("Logout API failed:", error);
+        } finally {
+            setUser(null);
+        }
     };
 
     return (

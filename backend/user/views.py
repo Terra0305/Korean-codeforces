@@ -155,7 +155,10 @@ class ProfileViewSet(viewsets.ViewSet):
 
     def top(self, request):
         """ELO 레이팅 상위 사용자 조회"""
-        limit = int(request.query_params.get('limit', 10))
+        try:
+            limit = int(request.query_params.get('limit', 10))
+        except (ValueError, TypeError):
+            limit = 10
         top_users = Profile.objects.select_related('user').order_by('-elo_rating')[:limit]
         serializer = ProfileSerializer(top_users, many=True)
         return Response(serializer.data)
@@ -249,8 +252,12 @@ class AdminUserListView(APIView):
 
     def get(self, request):
         # 페이지네이션
-        page = int(request.query_params.get('page', 1))
-        limit = int(request.query_params.get('limit', 20))
+        try:
+            page = int(request.query_params.get('page', 1))
+            limit = int(request.query_params.get('limit', 20))
+        except (ValueError, TypeError):
+            page = 1
+            limit = 20
         offset = (page - 1) * limit
 
         # 검색 필터
