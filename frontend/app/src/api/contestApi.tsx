@@ -17,6 +17,23 @@ interface ContestListResponse {
     results: Contest[];
 }
 
+export interface LeaderboardParticipant {
+    id: number;
+    user: number;
+    user_username: string;
+    contest: string;
+    problem_status: string;
+    total_score: number;
+    penalty: number;
+}
+
+export interface LeaderboardResponse {
+    contest: string;
+    contest_name: string;
+    is_frozen: boolean;
+    participants: LeaderboardParticipant[];
+}
+
 export const contestApi = {
     getAllContests: async () => {
         const response = await client.get<ContestListResponse>('/api/contests/contests/');
@@ -37,5 +54,9 @@ export const contestApi = {
     getParticipants: async (virtual_id: string | null) => {
         const response = await client.get(`/api/contests/admin/participants/?virtual_id=${virtual_id}`);
         return response.data.results;
+    },
+    getLeaderboard: async (virtual_id: string | null) => {
+        const response = await client.get<LeaderboardResponse>(`/api/contests/contests/${virtual_id}/scoreboard/`);
+        return response.data;
     }
 };

@@ -1,21 +1,30 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { problemApi, Problem } from '../api/problemApi';
-import { contestApi } from '../api/contestApi';
+import { contestApi, LeaderboardParticipant } from '../api/contestApi';
 import './Leaderboard.css';
-
-interface Participant {
-    id: number;
-    user_username: string;
-    total_score: number;
-    penalty: number;
-    problem_status: string;
-}
 
 const Leaderboard = () => {
     const { id } = useParams(); // Contest ID
     const [problems, setProblems] = useState<Problem[]>([]);
-    const [participants, setParticipants] = useState<Participant[]>([]);
+    const [participants, setParticipants] = useState<LeaderboardParticipant[]>([]);
+    const [isFrozen, setIsFrozen] = useState(false);
+    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const fetchLeaderboard = async (contestId: string) => {
+        try {
+            const leaderboardData = await contestApi.getLeaderboard(contestId);
+            setIsFrozen(leaderboardData.is_frozen);
+            
+            const sortedParticipants = leaderboardData.participants.sort((a, b) => {
+                if (a.total_score !== b.total_score) return b.total_score - a.total_score;
+                return a.penalty - b.penalty;
+            });
+            setParticipants(sortedParticipants);
+        } catch (error) {
+            console.error("Failed to fetch leaderboard data:", error);
+        }
+    };
 
     useEffect(() => {
         if (id) {
@@ -26,21 +35,34 @@ const Leaderboard = () => {
                     const sortedProblems = problemsData.sort((a, b) => a.index.localeCompare(b.index));
                     setProblems(sortedProblems);
 
-                    // Fetch Participants
-                    const participantsData = await contestApi.getParticipants(id);
-                    // Sort participants by rank (score desc, penalty asc)
-                    // Assuming API returns them or we sort here:
-                    const sortedParticipants = participantsData.sort((a: Participant, b: Participant) => {
-                        if (a.total_score !== b.total_score) return b.total_score - a.total_score;
-                        return a.penalty - b.penalty;
-                    });
-                    setParticipants(sortedParticipants);
+                    // Fetch Leaderboard
+                    await fetchLeaderboard(id);
+
+                    // Fetch contest details to set up freeze timer
+                    const contestDetail = await contestApi.getContestDetail(id);
+                    const endTime = new Date(contestDetail.end_time).getTime();
+                    const freezeTime = endTime - 30 * 60 * 1000; // 30 mins before end
+                    const now = new Date().getTime();
+
+                    // If we are currently before the freeze time, set a timeout to trigger exactly at freeze time
+                    if (now < freezeTime) {
+                        const timeUntilFreeze = freezeTime - now;
+                        timeoutRef.current = setTimeout(() => {
+                            fetchLeaderboard(id);
+                        }, timeUntilFreeze);
+                    }
                 } catch (error) {
-                    console.error("Failed to fetch leaderboard data:", error);
+                    console.error("Failed to fetch initialization data:", error);
                 }
             };
             fetchData();
         }
+
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+        };
     }, [id]);
     
     const handleDummyClick = (e: React.MouseEvent) => {
@@ -66,7 +88,12 @@ const Leaderboard = () => {
     };
 
     return (
-        <div className="card">
+        <div className={`card ${isFrozen ? 'frozen-board' : ''}`}>
+            {isFrozen && (
+                <div className="frozen-indicator">
+                    ❄️ Scoreboard is Frozen ❄️
+                </div>
+            )}
             <table className="leaderboard-table">
                 <thead>
                     <tr>
