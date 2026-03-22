@@ -75,11 +75,9 @@ def update_single_contest_task(contest):
     if updated_participants:
         Participant.objects.bulk_update(updated_participants, ['problem_status', 'total_score', 'penalty'])
 
-        # 프리즈 체크: 프리즈 시점이면 스냅샷 저장
-        if not contest.is_frozen and is_contest_in_freeze(contest):
-            freeze_scoreboard(contest)
-            return f"Updated {len(updated_participants)} participants (Scoreboard frozen)"
+    # 프리즈 체크: 프리즈 시점이면 스냅샷 저장
+    if not contest.is_frozen and is_contest_in_freeze(contest):
+        freeze_scoreboard(contest)
+        return f"Updated {len(updated_participants)} participants (Scoreboard frozen)"
 
-        return f"Updated {len(updated_participants)} participants"
-    else:
-        return "No updates needed"
+    return f"Updated {len(updated_participants)} participants"
