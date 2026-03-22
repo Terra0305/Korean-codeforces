@@ -13,8 +13,7 @@ def is_contest_in_freeze(contest):
     if not contest.end_time or not contest.start_time:
         return False
     now = timezone.now()
-    freeze_time = contest.end_time - timedelta(minutes=contest.freeze_minutes)
-    return freeze_time <= now < contest.end_time
+    return now < contest.end_time
 
 
 def freeze_scoreboard(contest):
