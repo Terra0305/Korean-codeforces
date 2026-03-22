@@ -113,7 +113,7 @@ class ScoreboardParticipantSerializer(serializers.ModelSerializer):
         show_frozen = self.context.get('show_frozen', False)
 
         # 프리즈 상태이고 관리자가 아닌 경우 → frozen 데이터로 교체
-        if show_frozen and not is_admin:
+        if show_frozen:
             data['problem_status'] = instance.frozen_problem_status
             data['total_score'] = instance.frozen_total_score
             data['penalty'] = instance.frozen_penalty
