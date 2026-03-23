@@ -27,13 +27,19 @@ class AdminContestViewSet(viewsets.ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
-        """대회 생성 시 Codeforces 데이터 자동 동기화"""
+        """대회 생성 시 Codeforces 데이터 동기화 (fetch_contest_data 플래그에 따라)"""
         instance = serializer.save()
-        fetch_result = fetch_contest_data(instance.id)
-        if fetch_result:
-            print(f"Successfully fetched data for contest {instance.id}")
+        should_fetch = self.request.data.get('fetch_contest_data', False)
+        if isinstance(should_fetch, str):
+            should_fetch = should_fetch.lower() not in ('false', '0', 'no')
+        if should_fetch:
+            fetch_result = fetch_contest_data(instance.id)
+            if fetch_result:
+                print(f"Successfully fetched data for contest {instance.id}")
+            else:
+                print(f"Failed to fetch data for contest {instance.id}")
         else:
-            print(f"Failed to fetch data for contest {instance.id}")
+            print(f"Skipped fetching data for contest {instance.id}")
     
     @action(detail=True, methods=['post'])
     def sync_codeforces(self, request, pk=None):
