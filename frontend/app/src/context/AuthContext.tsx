@@ -61,6 +61,7 @@ export const AuthProvider = ({ children } : {children : ReactNode}) => {
             if (response.status === 200) {
                 setUser(response.data.user);
                 client.defaults.headers.common['x-csrftoken'] = cookies.get('csrftoken');
+                console.log(cookies.get('csrftoken'));
                 localStorage.setItem('isLoggedin', 'true');
                 return true;
             }

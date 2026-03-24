@@ -233,9 +233,15 @@ CSRF_TRUSTED_ORIGINS = [
 if os.environ.get("CSRF_TRUSTED_ORIGINS"):
     CSRF_TRUSTED_ORIGINS.extend(os.environ.get("CSRF_TRUSTED_ORIGINS").split(","))
 
-# 세션 설정
+# Nginx 등 리버스 프록시 뒤에서 HTTPS를 인식하게 해주는 필수 설정
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# 세션 및 쿠키 보안 설정 (HTTPS 환경용 설정)
+CSRF_COOKIE_SECURE = True    # HTTPS 통신에서만 CSRF 쿠키 허용
+SESSION_COOKIE_SECURE = True # HTTPS 통신에서만 세션 쿠키 허용
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_AGE = 86400  # 24시간
 
 # 비밀번호 검증 강화 (이미 설정되어 있음)
