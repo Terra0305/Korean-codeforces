@@ -185,6 +185,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://mango-mud-0cd127600.6.azurestaticapps.net",  # Azure Static Web App
     "http://4.230.40.102",
     "http://csforces.koreacentral.cloudapp.azure.com",
+    "https://csforces.co.kr",
+    "https://www.csforces.co.kr"
 ]
 
 if os.environ.get("CORS_ALLOWED_ORIGINS"):
