@@ -7,9 +7,9 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://4.230.40.102:8000',
+        target: 'https://csforces.co.kr',
         changeOrigin: true,
-        secure: false,
+        secure: true,
       },
     },
   },
