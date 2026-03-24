@@ -224,6 +224,8 @@ CSRF_TRUSTED_ORIGINS = [
     "https://mango-mud-0cd127600.6.azurestaticapps.net",  # Azure Static Web App
     "http://4.230.40.102",
     "http://csforces.koreacentral.cloudapp.azure.com",
+    "https://www.csforces.co.kr",
+    "https://csforces.co.kr"
 ]
 
 if os.environ.get("CSRF_TRUSTED_ORIGINS"):
