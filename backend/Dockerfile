@@ -14,6 +14,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install gunicorn
 
+# Create media directory for editorial PDFs
+RUN mkdir -p /app/media/editorials
+
 # Copy project files
 COPY . .
 
