@@ -8,13 +8,17 @@ from .utils import fetch_contest_data
 @admin.register(Contest)
 class ContestAdmin(admin.ModelAdmin):
     # 관리자 목록 화면에서 보여줄 칼럼들
-    list_display = ('id', 'name', 'start_time', 'end_time', 'allow_freeze', 'is_frozen', 'freeze_minutes')
+    list_display = ('id', 'name', 'start_time', 'end_time', 'has_editorial', 'allow_freeze', 'is_frozen', 'freeze_minutes')
     # 목록 화면에서 바로 수정 가능한 필드
     list_editable = ('allow_freeze',)
     # 클릭하면 상세 페이지로 들어갈 수 있는 링크 설정
     list_display_links = ('id', 'name')
     # 검색창 추가 (대회명으로 검색 가능)
     search_fields = ('name',)
+
+    @admin.display(boolean=True, description='해설 PDF')
+    def has_editorial(self, obj):
+        return bool(obj.editorial_pdf)
     
     actions = ['refresh_from_codeforces', 'apply_elo_rating']
 

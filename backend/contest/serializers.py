@@ -7,10 +7,14 @@ class ContestSerializer(serializers.ModelSerializer):
     """대회 정보 시리얼라이저"""
     status = serializers.SerializerMethodField()
     remaining_seconds = serializers.SerializerMethodField()
+    has_editorial = serializers.SerializerMethodField()
 
     class Meta:
         model = Contest
-        fields = ['id', 'virtual_id', 'name', 'start_time', 'end_time', 'status', 'remaining_seconds', 'is_frozen', 'freeze_minutes', 'allow_freeze']
+        fields = ['id', 'virtual_id', 'name', 'start_time', 'end_time', 'status', 'remaining_seconds', 'is_frozen', 'freeze_minutes', 'allow_freeze', 'has_editorial']
+
+    def get_has_editorial(self, obj):
+        return bool(obj.editorial_pdf)
     
     def get_status(self, obj):
         if not obj.start_time or not obj.end_time:
@@ -119,3 +123,8 @@ class ScoreboardParticipantSerializer(serializers.ModelSerializer):
             data['penalty'] = instance.frozen_penalty
 
         return data
+
+
+class EditorialUploadSerializer(serializers.Serializer):
+    """해설 PDF 업로드용 시리얼라이저"""
+    editorial_pdf = serializers.FileField()

@@ -28,3 +28,6 @@ db.sqlite3-journal
 # 로그 파일
 logs/
 *.log
+
+# 미디어 파일 (업로드된 PDF 등)
+media/

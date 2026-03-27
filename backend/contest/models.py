@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.conf import settings
+from django.core.validators import FileExtensionValidator
 
 # Create your models here.
 #대회
@@ -12,6 +13,15 @@ class Contest(models.Model):
     name = models.CharField(max_length=100, null=True, blank=True, verbose_name="대회명")
     start_time = models.DateTimeField(null=True, blank=True, verbose_name="대회 시작시간")#시작시간
     end_time = models.DateTimeField(null=True, blank=True, verbose_name="대회 종료시간") #종료시간
+
+    # 해설 PDF
+    editorial_pdf = models.FileField(
+        upload_to='editorials/',
+        null=True,
+        blank=True,
+        verbose_name="해설 PDF",
+        validators=[FileExtensionValidator(allowed_extensions=['pdf'])]
+    )
     
 
     # 스코어보드 프리즈 설정

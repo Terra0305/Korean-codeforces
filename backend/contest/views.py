@@ -1,10 +1,13 @@
+import os
 from django.shortcuts import render, get_object_or_404
+from django.http import FileResponse
 from rest_framework import viewsets
 from rest_framework.permissions import IsAdminUser, IsAuthenticated, AllowAny
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Contest, Problem, Participant, RatingHistory
-from .serializers import ContestSerializer, ProblemSerializer, ParticipantSerializer, ParticipantAdminSerializer, PublicProblemSerializer, RatingHistorySerializer, ScoreboardParticipantSerializer
+from .serializers import ContestSerializer, ProblemSerializer, ParticipantSerializer, ParticipantAdminSerializer, PublicProblemSerializer, RatingHistorySerializer, ScoreboardParticipantSerializer, EditorialUploadSerializer
 from .utils import fetch_contest_data, is_contest_in_freeze
 from django.utils import timezone
 
@@ -62,6 +65,35 @@ class AdminContestViewSet(viewsets.ModelViewSet):
             return Response({'status': '성공', 'message': result['message']})
         else:
             return Response({'status': '실패', 'message': result['message']}, status=400)
+
+    @action(detail=True, methods=['post'], parser_classes=[MultiPartParser, FormParser])
+    def upload_editorial(self, request, pk=None):
+        """해설 PDF 업로드 (관리자 전용)"""
+        contest = self.get_object()
+        serializer = EditorialUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # 기존 파일이 있으면 삭제
+        if contest.editorial_pdf:
+            if os.path.isfile(contest.editorial_pdf.path):
+                os.remove(contest.editorial_pdf.path)
+
+        contest.editorial_pdf = serializer.validated_data['editorial_pdf']
+        contest.save()
+        return Response({'status': '성공', 'message': '해설 PDF가 업로드되었습니다.'}, status=201)
+
+    @action(detail=True, methods=['delete'])
+    def delete_editorial(self, request, pk=None):
+        """해설 PDF 삭제 (관리자 전용)"""
+        contest = self.get_object()
+        if not contest.editorial_pdf:
+            return Response({'error': '삭제할 해설 PDF가 없습니다.'}, status=404)
+
+        if os.path.isfile(contest.editorial_pdf.path):
+            os.remove(contest.editorial_pdf.path)
+        contest.editorial_pdf = None
+        contest.save()
+        return Response({'status': '성공', 'message': '해설 PDF가 삭제되었습니다.'})
 
 
 class AdminProblemViewSet(viewsets.ModelViewSet):
@@ -143,6 +175,36 @@ class ContestViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({'message': '대회 참가 신청이 취소되었습니다.'}, status=200)
         except Participant.DoesNotExist:
              return Response({'error': '신청하지 않은 대회입니다.'}, status=404)
+
+    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
+    def editorial(self, request, virtual_id=None):
+        """해설 PDF 다운로드 (대회 종료 후, 관리자 또는 참가자만)"""
+        contest = self.get_object()
+
+        # 인증 확인
+        if not request.user.is_authenticated:
+            return Response({'error': '로그인이 필요합니다.'}, status=403)
+
+        # 대회 종료 여부 확인
+        if contest.end_time and timezone.now() < contest.end_time:
+            return Response({'error': '대회가 아직 종료되지 않았습니다.'}, status=403)
+
+        # 관리자 또는 참가자인지 확인
+        is_admin = request.user.is_staff or request.user.is_superuser
+        is_participant = Participant.objects.filter(contest=contest, user=request.user).exists()
+        if not (is_admin or is_participant):
+            return Response({'error': '해설 다운로드 권한이 없습니다.'}, status=403)
+
+        # 해설 PDF 존재 여부 확인
+        if not contest.editorial_pdf:
+            return Response({'error': '해설이 아직 업로드되지 않았습니다.'}, status=404)
+
+        return FileResponse(
+            contest.editorial_pdf.open('rb'),
+            content_type='application/pdf',
+            as_attachment=True,
+            filename=f'{contest.name}_editorial.pdf'
+        )
 
     @action(detail=True, methods=['get'])
     def scoreboard(self, request, virtual_id=None):
