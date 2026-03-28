@@ -139,6 +139,34 @@ const Contest = () => {
         setActiveTab('standings');
     };
 
+    const handleDownloadEditorial = async () => {
+        if (!id) return;
+        try {
+            const blob = await contestApi.downloadEditorial(id);
+            const url = window.URL.createObjectURL(new Blob([blob]));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${contest?.name || 'contest'}_해설본.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error: any) {
+            console.error("Failed to download editorial:", error);
+            if (error.response && error.response.data instanceof Blob) {
+                const text = await error.response.data.text();
+                try {
+                    const json = JSON.parse(text);
+                    alert(json.error || "해설 다운로드 중 오류가 발생했습니다.");
+                } catch (e) {
+                    alert("해설 다운로드 중 오류가 발생했습니다.");
+                }
+            } else {
+                alert(error.response?.data?.error || error.message || "해설 다운로드 중 오류가 발생했습니다.");
+            }
+        }
+    };
+
     return (
         <div className="contest-page">
             <Navbar />
@@ -164,6 +192,15 @@ const Contest = () => {
                     >
                         스코어보드
                     </div>
+                    {contest?.end_time && new Date() > new Date(contest.end_time) && (
+                        <div 
+                            className="tab-item"
+                            style={{ marginLeft: 'auto', cursor: 'pointer', color: '#e53e3e', fontWeight: 600 }}
+                            onClick={handleDownloadEditorial}
+                        >
+                            해설 다운로드
+                        </div>
+                    )}
                 </nav>
 
                 {activeTab === 'problems' && (

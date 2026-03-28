@@ -58,5 +58,11 @@ export const contestApi = {
     getLeaderboard: async (virtual_id: string | null) => {
         const response = await client.get<LeaderboardResponse>(`/api/contests/contests/${virtual_id}/scoreboard/`);
         return response.data;
+    },
+    downloadEditorial: async (virtual_id: string) => {
+        const response = await client.get(`/api/contests/contests/${virtual_id}/editorial/`, {
+            responseType: 'blob',
+        });
+        return response.data;
     }
 };
