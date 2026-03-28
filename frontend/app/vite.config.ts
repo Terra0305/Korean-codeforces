@@ -10,6 +10,7 @@ export default defineConfig({
         target: 'https://csforces.co.kr',
         changeOrigin: true,
         secure: true,
+        cookieDomainRewrite: { '*': '' },
       },
     },
   },
