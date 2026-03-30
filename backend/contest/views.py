@@ -190,10 +190,10 @@ class ContestViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({'error': '대회가 아직 종료되지 않았습니다.'}, status=403)
 
         # 관리자 또는 참가자인지 확인
-        is_admin = request.user.is_staff or request.user.is_superuser
-        is_participant = Participant.objects.filter(contest=contest, user=request.user).exists()
-        if not (is_admin or is_participant):
-            return Response({'error': '해설 다운로드 권한이 없습니다.'}, status=403)
+        # is_admin = request.user.is_staff or request.user.is_superuser
+        # is_participant = Participant.objects.filter(contest=contest, user=request.user).exists()
+        # if not (is_admin or is_participant):
+        #    return Response({'error': '해설 다운로드 권한이 없습니다.'}, status=403)
 
         # 해설 PDF 존재 여부 확인
         if not contest.editorial_pdf:
