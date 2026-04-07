@@ -71,8 +71,8 @@ const EditContest = () => {
         loadContestData();
     }, [id]);
 
-    const handleContestSelect = (contestId: string | null) => {
-        navigate(`/edit-contest/${contestId}`);
+    const handleContestSelect = (virtual_Id: string | null) => {
+        navigate(`/edit-contest/${virtual_Id}`);
         setIsModalOpen(false);
     };
 
