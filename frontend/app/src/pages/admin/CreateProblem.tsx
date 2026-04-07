@@ -11,6 +11,7 @@ const CreateProblem = () => {
     
     const [formData, setFormData] = useState({
         contest: '', // Contest ID (FK)
+        virtual_id: '',
         contestName: '', // For display purposes
         index: '', // e.g. 'A', 'B'
         name: '', // Problem Name
@@ -28,11 +29,12 @@ const CreateProblem = () => {
         }));
     };
 
-    const handleContestSelect = (contestId: string | null, contestName: string) => {
-        if (contestId === null) return;
+    const handleContestSelect = (virtual_id: string | null, contestName: string, contestid: string) => {
+        if (virtual_id === null) return;
         setFormData(prev => ({
             ...prev,
-            contest: contestId,
+            contest: contestid,
+            virtual_id: virtual_id,
             contestName: contestName
         }));
         setIsModalOpen(false);
@@ -50,7 +52,7 @@ const CreateProblem = () => {
                 alert('문제가 성공적으로 생성되었습니다.');
                 // Optionally maintain state or clear
                 setFormData({
-                    contest: '', contestName: '', index: '', name: '', points: 0, rating: 0, url: '', description_kr: ''
+                    contest: '', virtual_id: '', contestName: '', index: '', name: '', points: 0, rating: 0, url: '', description_kr: ''
                 });
             }
         } catch (error: any) {

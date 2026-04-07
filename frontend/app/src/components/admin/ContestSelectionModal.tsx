@@ -5,7 +5,7 @@ import '../Modal.css';
 
 interface ContestSelectionModalProps {
     onClose: () => void;
-    onSelect: (contestId: string | null, contestName: string) => void;
+    onSelect: (contestId: string | null, contestName: string, contestid: string) => void;
 }
 
 const ContestSelectionModal = ({ onClose, onSelect }: ContestSelectionModalProps) => {
@@ -49,7 +49,7 @@ const ContestSelectionModal = ({ onClose, onSelect }: ContestSelectionModalProps
                                 <div 
                                     key={contest.virtual_id} 
                                     className="contest-list-item"
-                                    onClick={() => onSelect(contest.virtual_id, contest.name)}
+                                    onClick={() => onSelect(contest.virtual_id, contest.name, String(contest.id))}
                                 >
                                     <div className="contest-id">Virtual ID: {contest.virtual_id}</div>
                                     <div className="contest-name">{contest.name}</div>
