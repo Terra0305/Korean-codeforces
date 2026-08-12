@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A. 최소 사각형 만들기 - CF-KR</title>
+    <style>
+        :root {
+            --primary-color: #3182ce;
+            --bg-color: #f7fafc;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-sub: #718096;
+            --border-color: #e2e8f0;
+            --code-bg: #edf2f7;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 50px;
+            flex-shrink: 0;
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--text-sub);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .timer {
+            font-family: monospace;
+            font-weight: bold;
+            color: #e53e3e;
+            font-size: 1.2rem;
+        }
+
+        /* Main Split Layout */
+        .split-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden; /* 스크롤은 내부에서 처리 */
+        }
+
+        /* Left Panel: Problem Description */
+        .left-panel {
+            flex: 6; /* 60% width */
+            background: white;
+            padding: 2rem 3rem;
+            overflow-y: auto; /* 내부 스크롤 */
+            border-right: 1px solid var(--border-color);
+        }
+
+        /* Right Panel: Codeforces Connection */
+        .right-panel {
+            flex: 4; /* 40% width */
+            background: #f8f9fa;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            border-left: 1px solid #e2e8f0;
+        }
+
+        /* Typography */
+        h1 { margin-top: 0; font-size: 1.8rem; color: var(--primary-color); }
+        h3 { margin-top: 1.5rem; border-bottom: 2px solid var(--bg-color); padding-bottom: 5px; }
+        p { line-height: 1.6; color: #4a5568; }
+        
+        .problem-meta {
+            color: var(--text-sub);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            background: var(--bg-color);
+            padding: 10px;
+            border-radius: 6px;
+        }
+
+        /* Code/Sample Blocks */
+        .sample-block {
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+        .sample-header {
+            background: #e2e8f0;
+            padding: 5px 10px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--text-sub);
+            display: flex;
+            justify-content: space-between;
+        }
+        pre {
+            background: var(--card-bg);
+            margin: 0;
+            padding: 10px;
+            font-family: Consolas, monospace;
+            white-space: pre-wrap;
+        }
+
+        /* Right Panel Components */
+        .cf-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn-submit:hover { background-color: #2b6cb0; }
+
+        .status-box {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            background: #fafbfc;
+        }
+        
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        .verdict {
+            font-weight: bold;
+        }
+        .verdict-running { color: #d69e2e; }
+        .verdict-ac { color: #38a169; }
+
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="#" class="back-btn" onclick="history.back()">← 문제 목록으로 돌아가기</a>
+        <div class="timer">01:32:15</div>
+        <div style="font-weight:600;">Codeforces Round #988 [KR]</div>
+    </header>
+
+    <div class="split-container">
+        <div class="left-panel">
+            <h1>A. 최소 사각형 만들기</h1>
+            <div class="problem-meta">
+                시간 제한: 1.0초 &nbsp;|&nbsp; 메모리 제한: 256MB &nbsp;|&nbsp; 입력: 표준 입력 &nbsp;|&nbsp; 출력: 표준 출력
+            </div>
+
+            <h3>문제 설명</h3>
+            <p>
+                2차원 평면 위에 $N$개의 점이 주어집니다. 당신은 축에 평행한 직사각형 하나를 그려서 이 점들을 모두 포함하려고 합니다. 
+                이때, 만들어지는 직사각형의 넓이를 최소화하는 것이 목표입니다.
+            </p>
+            <p>
+                단, 당신은 주어진 점들 중 <strong>정확히 하나</strong>를 제거할 수 있습니다. 점 하나를 최적으로 제거했을 때, 남은 $N-1$개의 점을 모두 포함하는 최소 직사각형의 넓이를 구하세요.
+            </p>
+
+            <h3>입력</h3>
+            <p>
+                첫 번째 줄에 정수 $N$ ($3 \le N \le 100,000$)이 주어집니다.<br>
+                두 번째 줄부터 $N$개의 줄에 걸쳐 각 점의 좌표 $x_i, y_i$가 주어집니다. ($0 \le x_i, y_i \le 10^9$)
+            </p>
+
+            <h3>출력</h3>
+            <p>
+                점 하나를 제거한 후 만들 수 있는 가장 작은 직사각형의 넓이를 출력합니다.
+            </p>
+
+            <h3>예제 입력 1</h3>
+            <div class="sample-block">
+                <div class="sample-header">Input <span style="cursor:pointer; color:#3182ce;">Copy</span></div>
+                <pre>4
+1 1
+10 10
+1 10
+10 1</pre>
+            </div>
+
+            <h3>예제 출력 1</h3>
+            <div class="sample-block">
+                <div class="sample-header">Output</div>
+                <pre>0</pre>
+            </div>
+            
+            <p style="margin-top: 50px; color: #718096; font-size: 0.8rem;">
+                * 본 문제는 Codeforces의 문제를 학습 목적으로 번역한 것입니다. <br>
+                Original Problem: <a href="#" style="color:#3182ce;">Codeforces 1234A</a>
+            </p>
+        </div>
+
+        <div class="right-panel">
+            
+            <div class="cf-card">
+                <h2 style="margin-top:0; font-size:1.2rem;">Codeforces Linkage</h2>
+                <p style="font-size:0.9rem; color:#718096; margin-bottom: 20px;">
+                    이곳에서 답안을 제출하면 Codeforces Virtual Contest에 자동으로 반영됩니다.
+                </p>
+                
+                <button class="btn-submit" onclick="submitToCF()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                    Codeforces에서 제출하기
+                </button>
+            </div>
+
+            <div class="cf-card" style="flex: 1;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <h3 style="margin:0; border:none; font-size:1rem;">Real-time Status</h3>
+                    <span style="font-size:0.8rem; background:#edf2f7; padding:2px 6px; border-radius:4px;">Auto-refreshing</span>
+                </div>
+
+                <div class="status-box" id="status-container">
+                    <div style="color:#718096; text-align:center; padding: 20px;">
+                        아직 제출 이력이 없습니다.<br>
+                        위 버튼을 눌러 제출을 진행해주세요.
+                    </div>
+                </div>
+
+                <div style="margin-top:20px; font-size:0.75rem; color:#a0aec0; font-family:monospace;">
+                    > Connected to CF API (v.2.0)<br>
+                    > Fetching user status: OK<br>
+                    > Last Sync: <span id="sync-time">Just now</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function submitToCF() {
+            // 1. 실제로는 새 탭으로 CF 제출 페이지를 띄움
+            window.open('https://codeforces.com', '_blank');
+
+            // 2. UI 시뮬레이션: 제출 후 상태 확인 로직
+            const container = document.getElementById('status-container');
+            
+            // 상태 1: 제출 감지 중
+            container.innerHTML = `
+                <div class="status-row" style="justify-content:center; padding:20px;">
+                    <div class="loader"></div>
+                    <span style="margin-left:10px;">Codeforces 제출 감지 중...</span>
+                </div>
+            `;
+
+            // 상태 2: 채점 중 (2초 뒤)
+            setTimeout(() => {
+                container.innerHTML = `
+                    <div class="status-row">
+                        <span>Run ID: 2948102</span>
+                        <span class="verdict verdict-running">Running on test 12...</span>
+                    </div>
+                    <div style="width:100%; background:#edf2f7; height:4px; border-radius:2px; overflow:hidden;">
+                        <div style="width:60%; background:#d69e2e; height:100%;"></div>
+                    </div>
+                `;
+            }, 2000);
+
+            // 상태 3: 채점 완료 (4초 뒤)
+            setTimeout(() => {
+                const now = new Date().toLocaleTimeString('ko-KR');
+                container.innerHTML = `
+                    <div class="status-row">
+                        <span># 2948102</span>
+                        <span style="color:#718096;">${now}</span>
+                    </div>
+                    <div class="status-row">
+                        <span>Language: C++20</span>
+                        <span>Time: 46ms</span>
+                    </div>
+                    <div class="status-row" style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">
+                        <span>Verdict:</span>
+                        <span class="verdict verdict-ac">Accepted</span>
+                    </div>
+                `;
+                
+                // 알림
+                // alert("축하합니다! 정답입니다. (Elo Rating 갱신 예정)");
+            }, 4500);
+        }
+
+        // 시계
+        setInterval(() => {
+             document.getElementById('sync-time').innerText = new Date().toLocaleTimeString();
+        }, 5000);
+    </script>
+</body>
+</html>

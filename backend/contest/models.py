@@ -1,0 +1,144 @@
+import uuid
+from django.db import models
+from django.conf import settings
+from django.core.validators import FileExtensionValidator
+
+# Create your models here.
+#대회
+class Contest(models.Model):
+    id = models.IntegerField(primary_key=True, verbose_name="대회 ID (Codeforces)")
+    virtual_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, verbose_name="가상 ID")
+
+
+    name = models.CharField(max_length=100, null=True, blank=True, verbose_name="대회명")
+    start_time = models.DateTimeField(null=True, blank=True, verbose_name="대회 시작시간")#시작시간
+    end_time = models.DateTimeField(null=True, blank=True, verbose_name="대회 종료시간") #종료시간
+
+    # 해설 PDF
+    editorial_pdf = models.FileField(
+        upload_to='editorials/',
+        null=True,
+        blank=True,
+        verbose_name="해설 PDF",
+        validators=[FileExtensionValidator(allowed_extensions=['pdf'])]
+    )
+    
+
+    # 스코어보드 프리즈 설정
+    allow_freeze = models.BooleanField(default=True, verbose_name="프리즈 허용 여부")  # 프리즈 기능 사용 여부
+    freeze_minutes = models.IntegerField(default=30, verbose_name="프리즈 시간(분)")  # 종료 30분 전부터 프리즈
+    is_frozen = models.BooleanField(default=False, verbose_name="프리즈 상태")  # 스냅샷 저장 완료 여부
+
+    # ELO 레이팅 반영 여부 (중복 반영 방지)
+    is_rating_applied = models.BooleanField(default=False, verbose_name="레이팅 반영 여부")
+
+    class Meta:
+        verbose_name = "대회"
+        verbose_name_plural = "대회"
+    
+    def __str__(self):
+        return f"{self.name} (ID: {self.id})" # 대회명 (ID: 대회ID) 형식 반환
+
+#문제
+class Problem(models.Model):
+    contest = models.ForeignKey(
+        Contest, 
+        on_delete=models.CASCADE, 
+        related_name='problems',
+        verbose_name="관련 대회"
+    )
+    # 문제 번호 ex) A번 문제 B번 문제 
+    index = models.CharField(max_length=10, verbose_name="문제 번호") 
+    name = models.CharField(max_length=100, verbose_name="문제명")
+    
+    # ICPC 룰이라 점수가 없으면 기본값을 넣거나 null
+    points = models.FloatField(default=0, verbose_name="배점")
+    rating = models.IntegerField(default=0, verbose_name="난이도")
+    url = models.URLField(max_length=200, blank=True, verbose_name="문제 링크")
+    description_kr = models.TextField(blank=True, verbose_name="문제 설명")
+
+    class Meta:
+        # (대회 ID, 문제 번호)는 유일해야 함
+        unique_together = ('contest', 'index') 
+        verbose_name = "대회 문제"
+        verbose_name_plural = "대회 문제"
+
+    def __str__(self):
+        # A번 문제, B번 문제... 로 표시
+        return f"[{self.contest.name}] {self.index}번 (배점: {self.points} 난이도: {self.rating})"
+
+#참가자
+class Participant(models.Model):
+
+    # 추후 User 모델과 연결
+    # 직접 User를 import 하지 않고 설정을 통해 가져오므로, 나중에 유저 기능이 합쳐져도 에러x
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        related_name='participated_contests', #유저 입장에서 참가한 대회 조회 가능
+        verbose_name="참가자"
+    )
+    contest = models.ForeignKey(
+        Contest, 
+        on_delete=models.CASCADE, 
+        related_name='participants', # 대회 입장에서 참가자들 조회 가능
+        verbose_name="참가 대회"
+    )
+    
+    # 문자열 형태로 풀이 현황 저장
+    # 예시: "+:+2:-1" (A번 정답, B번 2번 시도 후 정답, C번 1번 시도 후 실패)
+    # 나중에 이 문자열을 파이썬으로 쪼개서(split) 분석
+    problem_status = models.CharField(max_length=100, default="", verbose_name="문제 풀이 현황")
+    
+    # 총점
+    total_score = models.FloatField(default=0, verbose_name="총점")
+
+    # 계산식: (각 문제 풀이 시간) + (틀린 횟수 * 20분) 의 총합
+    # 계산식은 임의로 정의하였으므로 추후 논의 필요
+    penalty = models.IntegerField(default=0, verbose_name="패널티")
+
+    # 스코어보드 프리즈 스냅샷 (프리즈 시점의 데이터 보존)
+    frozen_problem_status = models.CharField(max_length=100, default="", blank=True, verbose_name="프리즈 시점 풀이 현황")
+    frozen_total_score = models.FloatField(default=0, verbose_name="프리즈 시점 총점")
+    frozen_penalty = models.IntegerField(default=0, verbose_name="프리즈 시점 패널티")
+
+    class Meta:
+        # 한 유저는 한 대회에 한 번만 참가 등록이 가능해야 함 (중복 방지)
+        unique_together = ('user', 'contest')
+        verbose_name = "대회 참가자"
+        verbose_name_plural = "대회 참가자"
+        ordering = ['-total_score', 'penalty']
+
+    def __str__(self):
+        # 예: "Codeforces Round #900 - 윤태건" 형식으로 출력
+        return f"{self.contest.name} - {self.user}"
+
+class RatingHistory(models.Model):
+    """
+    사용자의 ELO Rating 변동 기록을 저장하는 모델
+    """
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='rating_history',
+        verbose_name="사용자"
+    )
+    contest = models.ForeignKey(
+        Contest,
+        on_delete=models.CASCADE,
+        related_name='rating_history',
+        verbose_name="관련 대회"
+    )
+    # 변동 후 레이팅 
+    rating = models.IntegerField(verbose_name="변동 후 Rating")
+    rating_change = models.IntegerField(verbose_name="Rating 변동량")
+    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="생성일")
+
+    class Meta:
+        verbose_name = "레이팅 변동 기록"
+        verbose_name_plural = "레이팅 변동 기록"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user} - {self.contest.name} ({self.rating_change:+d})"

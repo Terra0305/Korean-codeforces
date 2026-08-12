@@ -1,0 +1,262 @@
+import '../components/user/Login.css';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import client from '../api/client';
+import { useAuth } from '../context/AuthContext';
+
+const SignupPage = () => {
+    const {setIsLoading} = useAuth();
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        username: '',
+        password: '',
+        password_confirm: '',
+        school: '',
+        department: '',
+        student_id: '',
+        real_name: '',
+        codeforces_id: ''
+    });
+    const [isUsernameVerified, setIsUsernameVerified] = useState(false);
+    const [isCodeforcesVerified, setIsCodeforcesVerified] = useState(false);
+    const [isStudentIdVerified, setIsStudentIdVerified] = useState(false);
+
+    const handleVerifyId = async () => {
+        if (!formData.username) {
+            alert("아이디를 입력해주세요.");
+            return;
+        }
+        try {
+            const response = await client.get(`/api/users/profile/check-id/?username=${formData.username}`);   
+            if (!response.data.available) {
+                alert("이미 존재하는 아이디입니다.");
+                setIsUsernameVerified(false);
+            } else {
+                alert("사용 가능한 아이디입니다.");
+                setIsUsernameVerified(true);
+            }
+        } catch (error) {
+            console.error("ID verify error:", error);
+            alert("중복 확인 중 오류가 발생했습니다.");
+            setIsUsernameVerified(false);
+        }
+    };
+
+    const handleVerifyCodeforces = async () => {
+        if (!formData.codeforces_id) {
+            alert("Codeforces Handle을 입력해주세요.");
+            return;
+        }
+        try {
+            const response = await client.get(`/api/users/verify-codeforces/?handle=${formData.codeforces_id}`);
+            if (response.status === 200) {
+                setIsCodeforcesVerified(true);
+            }
+        } catch (error: any) {
+            console.error("CF verify error:", error);
+            setIsCodeforcesVerified(false);
+            const msg = error.response?.data?.error || error.response?.data?.message || "Codeforces 검증에 실패했습니다.";
+            alert(msg);
+        }
+    };
+
+    const handleVerifyStudentId = async () => {
+        if (!formData.student_id) {
+            alert("학번을 입력해주세요.");
+            return;
+        }
+        try {
+            const response = await client.get(`/api/users/check-whitelist/?student_id=${formData.student_id}`);   
+            if (response.status === 200) {
+                alert("사용 가능한 학번입니다.");
+                setIsStudentIdVerified(true);
+            } else {
+                alert("알 수 없는 오류가 발생했습니다.");
+                setIsStudentIdVerified(false);
+            }
+        } catch (error: any) {
+            if(error.status === 403) {
+                alert("가입이 허용되지 않은 학번입니다.");
+                setIsStudentIdVerified(false);
+            } else if (error.status === 400) {
+                alert("이미 등록된 학번입니다.");
+                setIsStudentIdVerified(false);
+            } else {
+                alert("알 수 없는 오류가 발생했습니다.");
+                setIsStudentIdVerified(false);
+            }
+        }
+    };
+
+    const handleSignup = async (e : React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        if (formData.password !== formData.password_confirm) {
+            alert('비밀번호가 일치하지 않습니다.');
+            return;
+        }
+
+        try {
+            setIsLoading(true);
+            const response = await client.post('/api/users/register/', formData);
+            if (response.status === 201) {
+                alert('회원가입이 완료되었습니다.');
+                navigate('/'); // Go back to home, user can login there
+            }
+        } catch (error: any) {
+            console.error('Signup failed:', error);
+            const errorMessage = error.response?.data ? 
+                Object.values(error.response.data as Record<string, string[]>).flat().join('\n') :
+                '회원가입에 실패했습니다.';
+            alert(errorMessage);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        if (name === 'username') setIsUsernameVerified(false);
+        if (name === 'codeforces_id') setIsCodeforcesVerified(false);
+    };
+
+    return (
+        <div className="signup-page-container" style={{display: 'flex', justifyContent: 'center', padding: '50px 0'}}>
+            <div className="signup-wrapper" style={{width: '100%', maxWidth: '500px', background: 'white', padding: '2rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'}}>
+                <div className="header-text">
+                    <h1>Create Account</h1>
+                    <p>우리 학교 학생 인증을 통해 가입하세요.</p>
+                </div>
+
+                <form onSubmit={handleSignup}>
+                    <div className="form-group">
+                        <label className="form-label">아이디 (ID)</label>
+                        <div className="input-group">
+                            <input 
+                                name="username"
+                                value={formData.username}
+                                onChange={handleChange} 
+                                type="text" 
+                                className="form-input" 
+                                placeholder="아이디를 입력해주세요" 
+                                required
+                                style={{ backgroundColor: isUsernameVerified ? '#d4edda' : 'white' }}
+                            />
+                            <button type="button" className="btn-verify" onClick={handleVerifyId}>Check</button>
+                        </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">비밀번호</label>
+                        <input 
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange} 
+                            type="password" 
+                            className="form-input" 
+                            placeholder="영문/숫자/특수문자 포함 8자 이상" 
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">비밀번호 확인</label>
+                        <input 
+                            name="password_confirm"
+                            value={formData.password_confirm}
+                            onChange={handleChange} 
+                            type="password" 
+                            className="form-input" 
+                            placeholder="비밀번호를 다시 입력해주세요" 
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">이름 (Real Name)</label>
+                        <input 
+                            name="real_name"
+                            value={formData.real_name}
+                            onChange={handleChange} 
+                            type="text" 
+                            className="form-input" 
+                            placeholder="실명을 입력해주세요" 
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Codeforces Handle</label>
+                        <div className="input-group">
+                            <input 
+                                name="codeforces_id"
+                                value={formData.codeforces_id}
+                                onChange={handleChange} 
+                                type="text" 
+                                className="form-input" 
+                                placeholder="ex) tourist" 
+                                required
+                                style={{ backgroundColor: isCodeforcesVerified ? '#d4edda' : 'white' }}
+                            />
+                            <button type="button" className="btn-verify" onClick={handleVerifyCodeforces}>Check</button>
+                        </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">학교 (School)</label>
+                        <input 
+                            name="school"
+                            value={formData.school}
+                            onChange={handleChange} 
+                            type="text" 
+                            className="form-input" 
+                            placeholder="학교명을 입력해주세요" 
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">학과 (Department)</label>
+                        <input 
+                            name="department"
+                            value={formData.department}
+                            onChange={handleChange} 
+                            type="text" 
+                            className="form-input" 
+                            placeholder="학과를 입력해주세요" 
+                            required
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">학번 (Student ID)</label>
+                        <div className="input-group">
+                            <input 
+                                name="student_id"
+                                value={formData.student_id}
+                                onChange={handleChange} 
+                                type="text" 
+                                className="form-input" 
+                                placeholder="ex) 2023123456" 
+                                required
+                                style={{ backgroundColor: isStudentIdVerified ? '#d4edda' : 'white' }}
+                            />
+                            <button type="button" className="btn-verify" onClick={handleVerifyStudentId}>Check</button>
+                        </div>
+                    </div>
+
+                    <button type="submit" className="btn-submit">회원가입 완료</button>
+                </form>
+                <div className="footer-links">
+                    이미 계정이 있으신가요? <a href="#" onClick={(e) => { e.preventDefault(); navigate('/'); }}>로그인 하기</a>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default SignupPage;

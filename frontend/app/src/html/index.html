@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CF-KR : Codeforces Virtual Judge Platform</title>
+    <style>
+        :root {
+            --primary-color: #3182ce;
+            --primary-dark: #2c5282;
+            --bg-color: #f7fafc;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-sub: #718096;
+            --border-color: #e2e8f0;
+            --accent-gradient: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+        }
+
+        /* Header */
+        header {
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo span { color: var(--primary-color); }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.9rem;
+        }
+
+        .user-badge {
+            background: #ebf8ff;
+            color: #2b6cb0;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        /* Main Layout */
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 2rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--bg-color);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        /* --- NEW: Hero Banner Style (강조 영역) --- */
+        .hero-banner {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 2.5rem 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 10px 15px -3px rgba(66, 153, 225, 0.4);
+        }
+        
+        .hero-tag {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0 0 1rem 0;
+            line-height: 1.2;
+        }
+
+        .hero-secret-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0,0,0,0.2);
+            width: fit-content;
+            margin: 0 auto 2rem auto;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        /* 텍스트 흐리게 처리 (Spoiler Effect) */
+        .blur-text {
+            color: rgba(255,255,255,0.6);
+            filter: blur(6px);
+            user-select: none;
+            transition: filter 0.3s;
+        }
+        /* 호버 시 살짝 보여줄지 말지는 선택 사항 (지금은 보안 컨셉상 계속 흐리게) */
+        
+        .hero-timer {
+            font-size: 1.2rem;
+            font-weight: 500;
+            margin-bottom: 2rem;
+        }
+        .hero-timer span {
+            font-weight: 800;
+            color: #ffd700; /* Gold */
+        }
+
+        .btn-hero {
+            background-color: white;
+            color: var(--primary-color);
+            font-size: 1.1rem;
+            font-weight: 800;
+            padding: 12px 32px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-hero:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        /* --- End of Hero Style --- */
+
+        /* Table Styles */
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th { text-align: left; color: var(--text-sub); font-weight: 600; padding: 12px; border-bottom: 2px solid var(--bg-color); }
+        td { padding: 16px 12px; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
+        tr:last-child td { border-bottom: none; }
+
+        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; }
+        .status-done { background: #edf2f7; color: #4a5568; } 
+
+        .btn { background-color: var(--primary-color); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: background 0.2s; }
+        .btn:hover { background-color: var(--primary-dark); }
+        .btn-outline { background: transparent; border: 1px solid #cbd5e0; color: #4a5568; }
+
+        /* Sidebar & Others */
+        .sidebar-section { background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .rank-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--bg-color); }
+        .rank-high { color: #e53e3e; font-weight: bold; }
+        
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal { background: white; padding: 2rem; border-radius: 12px; width: 500px; max-width: 90%; text-align: center; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .modal h2 { margin-top: 0; color: var(--text-main); }
+        
+        footer { text-align: center; padding: 2rem; color: var(--text-sub); font-size: 0.8rem; border-top: 1px solid var(--border-color); }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+            </svg>
+            CF-KR <span>Virtual Judge</span>
+        </div>
+        <div class="user-profile">
+            <span style="color:var(--text-sub);">Time (KST): <span id="clock" style="font-family:monospace;">Loading...</span></span>
+            <div class="user-badge">20250001</div>
+            <div style="font-weight:bold;">Taegeon_Yoon</div>
+        </div>
+    </header>
+
+    <main>
+        <section>
+            <div class="hero-banner">
+                <div class="hero-tag">Coming Soon</div>
+                <h1 class="hero-title">제 12회 CF-KR 정기 가상 대회</h1>
+                
+                <div class="hero-secret-info">
+                    <span style="font-size:1.5rem;">🔒</span>
+                    <span>Target Round: </span>
+                    <span class="blur-text">Codeforces Round #991 (Div. 2)</span>
+                    <span style="font-size: 0.8rem; opacity: 0.8; margin-left: 10px;">(Hidden)</span>
+                </div>
+
+                <div class="hero-timer">
+                    Starts in: <span id="countdown">04:12:59</span>
+                </div>
+
+                <button class="btn-hero" onclick="alert('아직 입장 시간이 아닙니다. (20:00 시작)')">
+                    참가 등록 대기중
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">📚 Past Contest History</span>
+                    <button class="btn-outline btn" style="font-size:0.8rem;">View All</button>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 40%;">Contest Name</th>
+                            <th>Original Source</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>제 11회 CF-KR 정기 대회</strong></td>
+                            <td style="color:var(--text-sub);">CF Round #988</td>
+                            <td>2025. 11. 15</td>
+                            <td><span class="status-badge status-done">종료됨</span></td>
+                            <td><button class="btn-outline btn" style="padding: 4px 10px; font-size:0.8rem;">결과 보기</button></td>
+                        </tr>
+                        <tr>
+                            <td><strong>제 10회 CF-KR 정기 대회</strong></td>
+                            <td style="color:var(--text-sub);">Global Round 40</td>
+                            <td>2025. 11. 10</td>
+                            <td><span class="status-badge status-done">종료됨</span></td>
+                            <td><button class="btn-outline btn" style="padding: 4px 10px; font-size:0.8rem;">결과 보기</button></td>
+                        </tr>
+                        <tr>
+                            <td><strong>제 9회 특별 모의고사</strong></td>
+                            <td style="color:var(--text-sub);">Edu Round 170</td>
+                            <td>2025. 10. 28</td>
+                            <td><span class="status-badge status-done">종료됨</span></td>
+                            <td><button class="btn-outline btn" style="padding: 4px 10px; font-size:0.8rem;">결과 보기</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">📊 My Performance Analysis</span>
+                </div>
+                <div style="height: 150px; background: #edf2f7; border-radius: 8px; display: flex; justify-content: center; align-items: center; color: #a0aec0; border: 2px dashed #cbd5e0;">
+                    [Interactive Elo Graph Area]
+                </div>
+            </div>
+        </section>
+
+        <aside>
+            <div class="sidebar-section">
+                <h3 style="margin-top:0;">🏆 Top Rankers</h3>
+                <div class="rank-item">
+                    <span>1. <strong>Genius_Park</strong></span>
+                    <span class="rank-high">1850</span>
+                </div>
+                <div class="rank-item">
+                    <span>2. <strong>Algorithm_King</strong></span>
+                    <span class="rank-high">1720</span>
+                </div>
+                <div class="rank-item">
+                    <span>3. <strong>Django_Master</strong></span>
+                    <span>1605</span>
+                </div>
+                <div class="rank-item" style="background:#ebf8ff; margin: 5px -10px; padding: 10px;">
+                    <span>12. <strong>Me (Taegeon)</strong></span>
+                    <span>1400</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 style="margin-top:0; font-size: 1rem;">🖥 System Status</h3>
+                <div style="font-size: 0.85rem; line-height: 1.8;">
+                    <div><span style="color:green;">●</span> API Gateway: <strong>Online</strong></div>
+                    <div><span style="color:green;">●</span> Crawler: <strong>Standby</strong></div>
+                    <div><span style="color:green;">●</span> DB Connection: <strong>Stable</strong></div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.toLocaleTimeString('ko-KR', { hour12: false });
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // 간단한 카운트다운 로직
+        let timeLeft = 4 * 3600 + 12 * 60 + 59; // 4시간 12분 59초 예시
+        function countdown() {
+            const hours = Math.floor(timeLeft / 3600);
+            const minutes = Math.floor((timeLeft % 3600) / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('countdown').innerText = 
+                `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            timeLeft--;
+        }
+        setInterval(countdown, 1000);
+    </script>
+</body>
+</html>

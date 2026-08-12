@@ -1,0 +1,94 @@
+import { createContext, useState, useContext, useEffect } from "react";
+import type {ReactNode} from "react";
+import client from "../api/client";
+import { LoginResponse, Profile } from "../types/auth.d";
+
+interface User {
+    id: number;
+    username: string;
+    is_staff: boolean;
+    profile: Profile;
+}
+
+interface AuthContextType {
+    user: User | null;
+    isLoggedin: boolean;
+    isLoading: boolean;
+    setIsLoading: (isLoading: boolean) => void;
+    login: (username: string, password: string) => Promise<boolean>;
+    logout: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider = ({ children } : {children : ReactNode}) => {
+    const [user, setUser] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Check for existing session on mount
+    useEffect(() => {
+        const checkSession = async () => {
+            try {
+                if(localStorage.getItem('isLoggedin') === 'true'){
+                    const response = await client.get('/api/users/me/');
+                    if (response.status === 200) {
+                        const userData = response.data;
+                        setUser(userData); 
+                    }
+                }
+            } catch (error: any) {
+                // Silent fail for 401 (Not logged in) or other errors during initial check
+                setUser(null);
+                // Ensure local storage is synced if verify fails (e.g. cookie expired but localStorage says logged in)
+                if (localStorage.getItem('isLoggedin')) {
+                     localStorage.removeItem('isLoggedin');
+                }
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        checkSession();
+    }, []);
+
+    const login = async (username: string, password: string): Promise<boolean> => {
+        try{
+            setIsLoading(true);
+            const response = await client.post<LoginResponse>("/api/users/login/", {username, password});
+            if (response.status === 200) {
+                setUser(response.data.user);
+                localStorage.setItem('isLoggedin', 'true');
+                return true;
+            }
+            return false;
+        } catch (error) {
+            console.error("Login failed:", error);
+            return false;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const logout = async () => {
+        try {
+             await client.post('/api/users/logout/');
+        } catch (error) {
+             console.error("Logout failed", error);
+        }
+        setUser(null);
+        localStorage.removeItem('isLoggedin');
+    };
+
+    return (
+        <AuthContext.Provider value={{user, isLoggedin: !!user, isLoading, setIsLoading, login, logout}}>
+            {children}
+        </AuthContext.Provider>
+    );
+};
+
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuth must be used within an AuthProvider');
+    }
+    return context;
+}

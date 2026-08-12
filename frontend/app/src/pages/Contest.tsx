@@ -1,0 +1,217 @@
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
+import { problemApi, Problem } from '../api/problemApi';
+import { contestApi, Contest as ContestType } from '../api/contestApi';
+import { useAuth } from '../context/AuthContext';
+import ProblemSet from '../components/ProblemSet';
+import Leaderboard from './Leaderboard';
+import './Contest.css';
+
+const Contest = () => {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    const isDebugMode = id === '1234567890';
+    
+    const [activeTab, setActiveTab] = useState('problems');
+    const [problems, setProblems] = useState<Problem[]>([]);
+    const [contest, setContest] = useState<ContestType | null>(null);
+    const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
+    const [timerText, setTimerText] = useState("Loading...");
+    const [statusMap, setStatusMap] = useState<Record<string, string>>({});
+
+    // Fetch Contest Details
+    useEffect(() => {
+        if (id) {
+            const fetchContest = async () => {
+                try {
+                    const data = await contestApi.getContestDetail(id);
+                    setContest(data);
+                } catch (error) {
+                    console.error("Failed to fetch contest:", error);
+                }
+            };
+            fetchContest();
+        }
+    }, [id]);
+
+    useEffect(() => {
+        if (isDebugMode) {
+            console.log("Debug Mode Activated: You are viewing the contest with ID 1234567890");
+        }
+    }, [isDebugMode]);
+
+    // Fetch Problems
+    useEffect(() => {
+        if (id) {
+            const fetchProblems = async () => {
+                try {
+                    const data = await problemApi.getProblemsByContest(id);
+                    const sortedData = data.sort((a, b) => a.index.localeCompare(b.index));
+                    setProblems(sortedData);
+                } catch (error) {
+                    console.error("Failed to fetch problems:", error);
+                }
+            };
+            fetchProblems();
+        }
+    }, [id]);
+    // Fetch User Status
+    useEffect(() => {
+        if (!id || !user || problems.length === 0) return;
+
+        const fetchStatus = async () => {
+            try {
+                // Warning: fetching all participants is not efficient for large contests
+                const participants = await contestApi.getParticipants(id);
+                const me = participants.find((p: any) => p.user_username === user.username);
+                
+                if (me) {
+                    const newStatusMap: Record<string, string> = {};
+                    const parts = me.problem_status.split(':');
+                    
+                    problems.forEach((prob, idx) => {
+                        if (idx < parts.length) {
+                             const stat = parts[idx];
+                             if (stat.startsWith('+')) {
+                                 newStatusMap[prob.index] = 'AC';
+                             } else if (stat.startsWith('-')) {
+                                 newStatusMap[prob.index] = 'WA';
+                             }
+                        }
+                    });
+                    setStatusMap(newStatusMap);
+                }
+            } catch (error) {
+                console.error("Failed to fetch user status:", error);
+            }
+        };
+        fetchStatus();
+    }, [id, user, problems]);
+
+    // Timer Logic
+    useEffect(() => {
+        if (!contest) return;
+
+        const updateTimer = () => {
+            setRemainingSeconds((prev) => {
+                if (prev === null) return contest.remaining_seconds;
+                return prev - 1;
+            });
+            
+        };
+
+        updateTimer(); // Initial call
+        const intervalId = setInterval(updateTimer, 1000);
+
+        return () => clearInterval(intervalId);
+    }, [contest]);
+
+    useEffect(() => {
+        const formatSeconds = (sec: number) => {
+            if (sec < 0) return "00:00:00";
+            const h = Math.floor(sec / 3600);
+            const m = Math.floor((sec % 3600) / 60);
+            const s = sec % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        };
+
+        const now = remainingSeconds;
+
+        if (now === null) {
+            // Before start: Show total duration
+            setTimerText("대회 진행 정보를 불러올 수 없습니다.");
+        } else if (now <= 0) {
+            // After end
+            setTimerText("대회가 종료되었습니다.");
+        } else {
+            // Ongoing: Show remaining time
+            setTimerText(formatSeconds(now));
+        }
+    }, [remainingSeconds]);
+
+    const openProblem = (problemId: number) => {
+        navigate(`/contest/${id}/${problemId}`);
+    };
+
+    const openLeaderboard = () => {
+        setActiveTab('standings');
+    };
+
+    const handleDownloadEditorial = async () => {
+        if (!id) return;
+        try {
+            const blob = await contestApi.downloadEditorial(id);
+            const url = window.URL.createObjectURL(new Blob([blob]));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${contest?.name || 'contest'}_해설본.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error: any) {
+            console.error("Failed to download editorial:", error);
+            if (error.response && error.response.data instanceof Blob) {
+                const text = await error.response.data.text();
+                try {
+                    const json = JSON.parse(text);
+                    alert(json.error || "해설 다운로드 중 오류가 발생했습니다.");
+                } catch (e) {
+                    alert("해설 다운로드 중 오류가 발생했습니다.");
+                }
+            } else {
+                alert(error.response?.data?.error || error.message || "해설 다운로드 중 오류가 발생했습니다.");
+            }
+        }
+    };
+
+    return (
+        <div className="contest-page">
+            <Navbar />
+            
+            <main className="contest-main">
+                <header className="contest-header">
+                    <h1 className="contest-title">{contest ? contest.name : `Contest #${id}`}</h1>
+                    <div className="contest-timer">
+                        {timerText}
+                    </div>
+                </header>
+                
+                <nav className="tabs">
+                    <div 
+                        className={`tab-item ${activeTab === 'problems' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('problems')}
+                    >
+                        문제 (Problems)
+                    </div>
+                    <div 
+                        className={`tab-item ${activeTab === 'standings' ? 'active' : ''}`}
+                        onClick={() => openLeaderboard()}
+                    >
+                        스코어보드
+                    </div>
+                    {contest?.end_time && new Date() > new Date(contest.end_time) && (
+                        <div 
+                            className="tab-item"
+                            style={{ marginLeft: 'auto', cursor: 'pointer', color: '#e53e3e', fontWeight: 600 }}
+                            onClick={handleDownloadEditorial}
+                        >
+                            해설 다운로드
+                        </div>
+                    )}
+                </nav>
+
+                {activeTab === 'problems' && (
+                    <ProblemSet problems={problems} onProblemClick={openProblem} statusMap={statusMap} startTime={contest?.start_time} />
+                )}
+                {activeTab === 'standings' && (
+                    <Leaderboard />
+                )}
+            </main>
+        </div>
+    );
+};
+
+export default Contest;

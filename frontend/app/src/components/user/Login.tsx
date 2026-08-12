@@ -1,0 +1,65 @@
+import './Login.css';
+import { useAuth } from '../../context/AuthContext';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+interface LoginProps {
+    onClose: () => void;
+}
+
+const Login = ({ onClose }: LoginProps) => {
+    const { login } = useAuth();
+    const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        username: '',
+        password: '',
+    });
+
+    const handleLogin = async (e : React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        const success = await login(formData.username, formData.password);
+        if (success) {
+            onClose();
+        }
+        else{
+            alert('로그인 실패');
+        }
+    }
+
+    const handleSignupClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        onClose();
+        navigate('/signup');
+    };
+
+    return (
+        <>
+                <div className="login-logo">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path>
+                    </svg>
+                    Korean <span>Codeforces</span>
+                </div>
+
+                <form onSubmit={handleLogin}> 
+                    <div className="form-group">
+                        <label className="form-label">아이디 (ID)</label>
+                        <input type="text" className="form-input" placeholder="아이디를 입력해주세요." required value={formData.username} onChange={(e) => setFormData({...formData, username: e.target.value})}/>
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">비밀번호</label>
+                        <input type="password" className="form-input" placeholder="비밀번호를 입력해주세요." required value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})}/>
+                    </div>
+
+                    <button type="submit" className="btn-submit">로그인</button>
+                </form>
+
+                <div className="footer-links">
+                    계정이 없으신가요? <a href="#" onClick={handleSignupClick}>회원가입 하기</a>
+                </div>
+        </>
+    );
+}
+
+export default Login;

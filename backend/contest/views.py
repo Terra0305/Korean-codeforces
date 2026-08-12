@@ -1,0 +1,299 @@
+import os
+from django.shortcuts import render, get_object_or_404
+from django.http import FileResponse
+from rest_framework import viewsets
+from rest_framework.permissions import IsAdminUser, IsAuthenticated, AllowAny
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser
+from .models import Contest, Problem, Participant, RatingHistory
+from .serializers import ContestSerializer, ProblemSerializer, ParticipantSerializer, ParticipantAdminSerializer, PublicProblemSerializer, RatingHistorySerializer, ScoreboardParticipantSerializer, EditorialUploadSerializer
+from .utils import fetch_contest_data, is_contest_in_freeze
+from django.utils import timezone
+
+# Create your views here.
+
+class AdminContestViewSet(viewsets.ModelViewSet):
+    """
+    관리자 전용 대회 관리 ViewSet
+    - 대회 생성, 조회, 수정, 삭제 가능
+    """
+    queryset = Contest.objects.all().order_by('-start_time')
+    serializer_class = ContestSerializer
+    permission_classes = [IsAdminUser]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        name = self.request.query_params.get('name')
+        if name:
+            queryset = queryset.filter(name__icontains=name)
+        return queryset
+
+    def perform_create(self, serializer):
+        """대회 생성 시 Codeforces 데이터 동기화 (fetch_contest_data 플래그에 따라)"""
+        instance = serializer.save()
+        should_fetch = self.request.data.get('fetch_contest_data', False)
+        if isinstance(should_fetch, str):
+            should_fetch = should_fetch.lower() not in ('false', '0', 'no')
+        if should_fetch:
+            fetch_result = fetch_contest_data(instance.id)
+            if fetch_result:
+                print(f"Successfully fetched data for contest {instance.id}")
+            else:
+                print(f"Failed to fetch data for contest {instance.id}")
+        else:
+            print(f"Skipped fetching data for contest {instance.id}")
+    
+    @action(detail=True, methods=['post'])
+    def sync_codeforces(self, request, pk=None):
+        contest = self.get_object() # 해당 대회 객체 가져오기
+        result = fetch_contest_data(contest.id)
+        
+        if result:
+            return Response({'status': '동기화 성공', 'data': result})
+        return Response({'status': '동기화 실패'}, status=400)
+
+    @action(detail=True, methods=['post'])
+    def apply_rating(self, request, pk=None):
+        """대회 결과를 바탕으로 ELO 레이팅 반영 (관리자 전용)"""
+        contest = self.get_object()
+        from .rating_calculator import apply_contest_rating
+        
+        result = apply_contest_rating(contest.id)
+        
+        if result['success']:
+            return Response({'status': '성공', 'message': result['message']})
+        else:
+            return Response({'status': '실패', 'message': result['message']}, status=400)
+
+    @action(detail=True, methods=['post'], parser_classes=[MultiPartParser, FormParser])
+    def upload_editorial(self, request, pk=None):
+        """해설 PDF 업로드 (관리자 전용)"""
+        contest = self.get_object()
+        serializer = EditorialUploadSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # 기존 파일이 있으면 삭제
+        if contest.editorial_pdf:
+            if os.path.isfile(contest.editorial_pdf.path):
+                os.remove(contest.editorial_pdf.path)
+
+        contest.editorial_pdf = serializer.validated_data['editorial_pdf']
+        contest.save()
+        return Response({'status': '성공', 'message': '해설 PDF가 업로드되었습니다.'}, status=201)
+
+    @action(detail=True, methods=['delete'])
+    def delete_editorial(self, request, pk=None):
+        """해설 PDF 삭제 (관리자 전용)"""
+        contest = self.get_object()
+        if not contest.editorial_pdf:
+            return Response({'error': '삭제할 해설 PDF가 없습니다.'}, status=404)
+
+        if os.path.isfile(contest.editorial_pdf.path):
+            os.remove(contest.editorial_pdf.path)
+        contest.editorial_pdf = None
+        contest.save()
+        return Response({'status': '성공', 'message': '해설 PDF가 삭제되었습니다.'})
+
+
+class AdminProblemViewSet(viewsets.ModelViewSet):
+    """
+    관리자 전용 문제 관리 ViewSet
+    - 문제 생성, 조회, 수정, 삭제 가능
+    """
+    queryset = Problem.objects.all().order_by('contest', 'index')
+    serializer_class = ProblemSerializer
+    permission_classes = [IsAdminUser]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        contest = self.request.query_params.get('contest')
+        index = self.request.query_params.get('index')
+        
+        if contest:
+            queryset = queryset.filter(contest=contest)
+        if index:
+            queryset = queryset.filter(index=index)
+            
+        return queryset
+
+
+class AdminParticipantViewSet(viewsets.ModelViewSet):
+    """
+    관리자 전용 참가자 관리 ViewSet
+    - 참가자 목록 조회, 수정, 삭제 (강제 취소)
+    """
+    queryset = Participant.objects.all().order_by('-total_score', 'penalty')
+    serializer_class = ParticipantAdminSerializer
+    permission_classes = [IsAdminUser]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        return [IsAdminUser()]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        virtual_id = self.request.query_params.get('virtual_id')
+        
+        if virtual_id:
+            queryset = queryset.filter(contest__virtual_id=virtual_id)
+            
+        return queryset
+
+
+class ContestViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    일반 사용자용 대회 조회 ViewSet
+    """
+    queryset = Contest.objects.all().order_by('-start_time')
+    serializer_class = ContestSerializer
+    lookup_field = 'virtual_id'
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def register(self, request, virtual_id=None):
+        """대회 참가 신청"""
+        contest = self.get_object()
+        user = request.user
+        
+        if Participant.objects.filter(contest=contest, user=user).exists():
+           return Response({'error': '이미 등록된 대회입니다.'}, status=400)
+           
+        participant = Participant.objects.create(contest=contest, user=user)
+        serializer = ParticipantSerializer(participant)
+        return Response({'message': '대회에 성공적으로 등록되었습니다.', 'participant': serializer.data}, status=201)
+
+    @action(detail=True, methods=['delete'], permission_classes=[IsAuthenticated])
+    def unregister(self, request, virtual_id=None):
+        """대회 참가 취소"""
+        contest = self.get_object()
+        user = request.user
+
+        try:
+            participant = Participant.objects.get(contest=contest, user=user)
+            participant.delete()
+            return Response({'message': '대회 참가 신청이 취소되었습니다.'}, status=200)
+        except Participant.DoesNotExist:
+             return Response({'error': '신청하지 않은 대회입니다.'}, status=404)
+
+    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
+    def editorial(self, request, virtual_id=None):
+        """해설 PDF 다운로드 (대회 종료 후, 관리자 또는 참가자만)"""
+        contest = self.get_object()
+
+        # 인증 확인
+        if not request.user.is_authenticated:
+            return Response({'error': '로그인이 필요합니다.'}, status=403)
+
+        # 대회 종료 여부 확인
+        if contest.end_time and timezone.now() < contest.end_time:
+            return Response({'error': '대회가 아직 종료되지 않았습니다.'}, status=403)
+
+        # 관리자 또는 참가자인지 확인
+        # is_admin = request.user.is_staff or request.user.is_superuser
+        # is_participant = Participant.objects.filter(contest=contest, user=request.user).exists()
+        # if not (is_admin or is_participant):
+        #    return Response({'error': '해설 다운로드 권한이 없습니다.'}, status=403)
+
+        # 해설 PDF 존재 여부 확인
+        if not contest.editorial_pdf:
+            return Response({'error': '해설이 아직 업로드되지 않았습니다.'}, status=404)
+
+        return FileResponse(
+            contest.editorial_pdf.open('rb'),
+            content_type='application/pdf',
+            as_attachment=True,
+            filename=f'{contest.name}_editorial.pdf'
+        )
+
+    @action(detail=True, methods=['get'])
+    def scoreboard(self, request, virtual_id=None):
+        """스코어보드 조회 (프리즈 상태 반영)"""
+        contest = self.get_object()
+        now = timezone.now()
+
+        # 대회 시작 전에는 스코어보드 비공개
+        if not request.user.is_staff and contest.start_time and now < contest.start_time:
+            return Response({'error': '대회가 시작되지 않았습니다.'}, status=403)
+
+        participants = Participant.objects.filter(contest=contest).order_by('-total_score', 'penalty')
+
+        # 프리즈 상태 판단: 대회 진행 중 + 프리즈 구간 + 스냅샷 저장 완료
+        show_frozen = contest.is_frozen and is_contest_in_freeze(contest)
+
+        serializer = ScoreboardParticipantSerializer(
+            participants,
+            many=True,
+            context={'request': request, 'show_frozen': show_frozen}
+        )
+
+        return Response({
+            'contest': str(contest.virtual_id),
+            'contest_name': contest.name,
+            'is_frozen': show_frozen,
+            'participants': serializer.data
+        })
+
+
+class ProblemViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    일반 사용자용 문제 조회 ViewSet
+    """
+    queryset = Problem.objects.all().order_by('contest', 'index')
+    serializer_class = PublicProblemSerializer
+
+    def get_queryset(self):
+        """
+        기본 쿼리셋: 시작된 대회의 문제만 노출
+        """
+        queryset = super().get_queryset()
+        now = timezone.now()
+        # 시작 시간이 현재 시간보다 이전인 대회의 문제만 필터링
+        return queryset.filter(contest__start_time__lte=now)
+
+    def list_by_contest(self, request, virtual_id=None):
+        """특정 대회에 속한 문제 목록 조회 (virtual_id 사용)"""
+        # virtual_id here maps to virtual_id URL param
+        contest = get_object_or_404(Contest, virtual_id=virtual_id)
+
+        # Check start time
+        if not request.user.is_staff and contest.start_time and timezone.now() < contest.start_time:
+            return Response({'error': '대회가 시작되지 않았습니다.'}, status=403)
+
+        queryset = self.queryset.filter(contest=contest)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve_by_contest(self, request, virtual_id=None, pk=None):
+        """특정 문제 조회 (virtual_id 검증 포함)"""
+        contest = get_object_or_404(Contest, virtual_id=virtual_id)
+        
+        # Check start time
+        if contest.start_time and timezone.now() < contest.start_time:
+            return Response({'error': '대회가 시작되지 않았습니다.'}, status=403)
+
+        try:
+            problem = self.queryset.get(contest=contest, pk=pk)
+            serializer = self.get_serializer(problem)
+            return Response(serializer.data)
+        except Problem.DoesNotExist:
+            return Response({'error': '문제를 찾을 수 없습니다.'}, status=404)
+
+
+class RatingHistoryViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    레이팅 변동 기록 조회 ViewSet
+    GET /api/contests/rating-history/?user_id=xxx
+    """
+    queryset = RatingHistory.objects.all().order_by('-created_at')
+    serializer_class = RatingHistorySerializer
+    permission_classes = [AllowAny] # 누구나 조회 가능 (Codeforces 방식)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user_id = self.request.query_params.get('user_id')
+        
+        if user_id:
+            queryset = queryset.filter(user_id=user_id)
+            
+        return queryset

@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard - Codeforces Round #988 [KR]</title>
+    <style>
+        :root {
+            --primary-color: #3182ce;
+            --bg-color: #f7fafc;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-sub: #718096;
+            --border-color: #e2e8f0;
+            --header-border: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header (Same as problem.html) */
+        header {
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--header-border);
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 50px;
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .back-btn {
+            text-decoration: none;
+            color: var(--text-sub);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .timer {
+            font-family: monospace;
+            font-weight: bold;
+            color: #e53e3e;
+            font-size: 1.2rem;
+        }
+
+        /* Main Content */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .title-section {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 { margin: 0; font-size: 1.8rem; color: var(--primary-color); }
+
+        /* Leaderboard Table */
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            padding: 1rem;
+            overflow-x: auto;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .leaderboard-table th, .leaderboard-table td {
+            text-align: center;
+            padding: 12px 8px;
+            border: 1px solid #edf2f7;
+        }
+
+        .leaderboard-table th {
+            background-color: #f7fafc;
+            color: #4a5568;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .rank-cell { font-weight: bold; color: #718096; width: 50px; }
+        .rank-1 { color: #d69e2e; font-size: 1.1rem; } /* Gold */
+        .rank-2 { color: #718096; font-size: 1.05rem; } /* Silver - using gray */
+        .rank-3 { color: #b7791f; font-size: 1.02rem; } /* Bronze */
+
+        .user-cell {
+            text-align: left !important;
+            font-weight: 600;
+            color: #2b6cb0;
+            min-width: 150px;
+        }
+        .user-cell .handle { cursor: pointer; }
+        .user-cell .handle:hover { text-decoration: underline; }
+
+        .score-cell {
+            font-weight: bold;
+            color: #2d3748;
+            background-color: #f8fafc;
+        }
+
+        /* Problem Status Cells */
+        .prob-cell {
+            width: 60px;
+            font-family: monospace;
+        }
+        .ac {
+            background-color: #d4edda;
+            color: #155724;
+            font-weight: bold;
+        }
+        .wa {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .time-mark {
+            display: block;
+            font-size: 0.75rem;
+            color: inherit;
+            opacity: 0.8;
+            font-weight: normal;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="#" class="back-btn" onclick="history.back()">← 대회 홈으로</a>
+        <div class="timer" id="timer">01:32:15</div>
+        <div style="font-weight:600;">Codeforces Round #988 [KR]</div>
+    </header>
+
+    <div class="container">
+        <div class="title-section">
+            <h1>🏆 Standings</h1>
+            <div style="font-size: 0.9rem; color: #718096;">
+                Last updated: <span id="update-time">Just now</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">#</th>
+                        <th>Who</th>
+                        <th style="width: 60px;">=</th>
+                        <th style="width: 80px;">Penalty</th>
+                        <th>A</th>
+                        <th>B</th>
+                        <th>C</th>
+                        <th>D</th>
+                        <th>E</th>
+                        <th>F</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Rank 1 -->
+                    <tr>
+                        <td class="rank-cell rank-1">1</td>
+                        <td class="user-cell"><span class="handle">tourist</span></td>
+                        <td class="score-cell">6</td>
+                        <td>142</td>
+                        <td class="prob-cell ac">+<span class="time-mark">00:05</span></td>
+                        <td class="prob-cell ac">+<span class="time-mark">00:12</span></td>
+                        <td class="prob-cell ac">+1<span class="time-mark">00:25</span></td>
+                        <td class="prob-cell ac">+<span class="time-mark">00:41</span></td>
+                        <td class="prob-cell ac">+<span class="time-mark">00:54</span></td>
+                        <td class="prob-cell ac">+2<span class="time-mark">01:10</span></td>
+                    </tr>
+                    <!-- Rank 2 -->
+                    <tr>
+                        <td class="rank-cell rank-2">2</td>
+                        <td class="user-cell"><span class="handle">Benq</span></td>
+                        <td class="score-cell">5</td>
+                        <td>98</td>
+                        <td class="prob-cell ac">+<span class="time-mark">00:04</span></td>
+                        <td class="prob-cell ac">+<span class="time-mark">00:10</span></td>
+                        <td class="prob-cell ac">+<span class="time-mark">00:20</span></td>
+                        <td class="prob-cell ac">+1<span class="time-mark">00:35</span></td>
+                        <td class="prob-cell ac">+<span class="time-mark">01:30</span></td>
+                        <td class="prob-cell wa">-2</td>
+                    </tr>
+                    <!-- Rank 3 -->
+                    <tr>
+                        <td class="rank-cell rank-3">3</td>
+                        <td class="user-cell"><span class="handle">Um_nik</span></td>
+                        <td class="score-cell">4</td>
+                        <td>85</td>
+                        <td class="prob-cell ac">+<span class="time-mark">00:06</span></td>
+                        <td class="prob-cell ac">+<span class="time-mark">00:15</span></td>
+                        <td class="prob-cell pending">?1<span class="time-mark">01:31</span></td>
+                        <td class="prob-cell ac">+<span class="time-mark">00:50</span></td>
+                        <td class="prob-cell wa">-1</td>
+                        <td class="prob-cell ac">+<span class="time-mark">01:05</span></td>
+                    </tr>
+                    <!-- Rank 4 -->
+                    <tr>
+                        <td class="rank-cell">4</td>
+                        <td class="user-cell"><span class="handle">mnbv</span></td>
+                        <td class="score-cell">3</td>
+                        <td>45</td>
+                        <td class="prob-cell ac">+<span class="time-mark">00:08</span></td>
+                        <td class="prob-cell ac">+<span class="time-mark">00:22</span></td>
+                        <td class="prob-cell ac">+<span class="time-mark">00:45</span></td>
+                        <td class="prob-cell"></td>
+                        <td class="prob-cell"></td>
+                        <td class="prob-cell"></td>
+                    </tr>
+                    <!-- Rank 5 -->
+                    <tr>
+                        <td class="rank-cell">5</td>
+                        <td class="user-cell"><span class="handle">Myungwoo</span></td>
+                        <td class="score-cell">2</td>
+                        <td>30</td>
+                        <td class="prob-cell ac">+<span class="time-mark">00:10</span></td>
+                        <td class="prob-cell ac">+<span class="time-mark">00:40</span></td>
+                        <td class="prob-cell wa">-3</td>
+                        <td class="prob-cell"></td>
+                        <td class="prob-cell"></td>
+                        <td class="prob-cell"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Timer simulation
+        let seconds = 5535; // 1h 32m 15s
+        setInterval(() => {
+            seconds--;
+            if(seconds < 0) seconds = 0;
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            document.getElementById('timer').innerText = 
+                `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            
+            // Randomly update "Last updated" time
+            if (s % 10 === 0) {
+                document.getElementById('update-time').innerText = new Date().toLocaleTimeString();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

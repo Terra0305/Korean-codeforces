@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <style>
+        /* 🎨 기본 스타일 설정 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f3f4f6; /* 부드러운 회색 배경 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* 🪪 프로필 카드 컨테이너 */
+        .profile-card {
+            background: white;
+            width: 100%;
+            max-width: 450px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* 붕 뜬 느낌의 그림자 */
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+
+        /* 🔥 강조 영역 (Header): Username, Handle, Rating */
+        .profile-header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); /* 고급진 어두운 배경 */
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .username {
+            font-size: 28px;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -0.5px;
+        }
+
+        .handle-box {
+            margin-top: 8px;
+            font-size: 16px;
+            color: #94a3b8; /* 살짝 연한 회색 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .handle-link {
+            color: #38bdf8; /* Codeforces 느낌의 하늘색 */
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .rating-badge {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 8px 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            font-size: 24px;
+            font-weight: 900;
+            color: #fbbf24; /* 골드 색상 (Elo 강조) */
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .rating-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 2px;
+            color: #cbd5e1;
+            font-weight: normal;
+        }
+
+        /* 📋 상세 정보 영역 (Body): 실명, 학교, 전공, 학번 */
+        .profile-body {
+            padding: 30px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #64748b;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .info-value {
+            color: #334155;
+            font-weight: 700;
+            font-size: 16px;
+            text-align: right;
+        }
+
+/* 버튼 영역 스타일 */
+.action-area {
+    padding: 0 30px 30px 30px; /* 위쪽 패딩은 0, 아래 좌우 30 */
+}
+
+.btn-edit {
+    display: block;
+    width: 100%;
+    padding: 15px 0;
+    background-color: #3b82f6; /* 시원한 파란색 */
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: 12px;
+    transition: background-color 0.2s;
+    border: none;
+    cursor: pointer;
+    box-sizing: border-box; /* 패딩 포함 크기 계산 */
+}
+
+.btn-edit:hover {
+    background-color: #2563eb; /* 호버 시 진해짐 */
+}
+    </style>
+</head>
+<body>
+
+    <div class="profile-card">
+        <div class="profile-header">
+            <h1 class="username">DevCat_Master</h1>
+            
+            <div class="handle-box">
+                <span>Codeforces:</span>
+                <a href="#" class="handle-link">@tourist_fan</a>
+            </div>
+
+            <div class="rating-badge">
+                <span class="rating-label">ELO RATING</span>
+                2150
+            </div>
+        </div>
+
+        <div class="profile-body">
+            <div class="info-row">
+                <span class="info-label">이름</span>
+                <span class="info-value">김코딩</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">학교</span>
+                <span class="info-value">한국대학교</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">전공</span>
+                <span class="info-value">컴퓨터공학과</span>
+            </div>
+
+            <div class="info-row">
+                <span class="info-label">학번</span>
+                <span class="info-value">20241234</span>
+            </div>
+        </div>
+<div class="action-area">
+            <a href="/profile/edit" class="btn-edit">회원정보 변경</a>
+        </div>
+    </div>
+
+</body>
+</html>
